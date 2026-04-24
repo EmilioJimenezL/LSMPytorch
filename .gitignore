@@ -1,0 +1,57 @@
+# --- Archivos de Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+*.manifest
+*.spec
+
+# --- Entornos virtuales ---
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# --- Logs y salidas ---
+*.log
+*.out
+*.err
+
+# --- Directorios de compilación ---
+build/
+dist/
+develop-eggs/
+.eggs/
+parts/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+# --- Configuración de PyCharm ---
+.idea/
+*.iml
+
+# --- Cachés de PyTorch y datasets ---
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+runs/           # directorio típico de TensorBoard
+data/
+datasets/
+outputs/
+dataset/
+
+# --- Archivos temporales ---
+*.tmp
+*.temp
+*.swp
+*.swo
+*~

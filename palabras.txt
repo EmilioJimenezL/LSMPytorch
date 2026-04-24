@@ -1,0 +1,269 @@
+
+──────────────────────────────────────────────────
+  Alimentos y Bebidas  (40 palabras)
+──────────────────────────────────────────────────
+  Aceite                                         carpeta: Aceite
+  Agua                                           carpeta: Agua
+  Agua de horchata                               carpeta: Agua Horchata
+  Agua de jamaica                                carpeta: Agua Jamaica
+  Agua mineral / Peñafiel                        carpeta: Agua Mineral_Peñafiel
+  Alimentos / Comida / Comer                     carpeta: Alimentos_Comida_Comer
+  Enchiladas                                     carpeta: Enchiladas
+  Ensalada                                       carpeta: Ensalada
+  Fanta (Refresco)                               carpeta: Fanta (Color_Color_Refresco)
+  Galleta                                        carpeta: Galleta
+  Gelatina                                       carpeta: Gelatina
+  Hamburguesa                                    carpeta: Hamburguesa
+  Harina                                         carpeta: Harina
+  Helado                                         carpeta: Helado
+  Hot Dog                                        carpeta: Hot-Dog
+  Huevo                                          carpeta: Huevo
+  Leche                                          carpeta: Leche
+  Mermelada                                      carpeta: Mermelada
+  Mezcal                                         carpeta: Mezcal
+  Miel                                           carpeta: Miel
+  Mole                                           carpeta: Mole
+  Mole verde                                     carpeta: Mole verde
+  Mostaza                                        carpeta: Mostaza
+  Naranjada                                      carpeta: Naranjada
+  Ostión                                         carpeta: Ostión
+  Paleta                                         carpeta: Paleta
+  Pan                                            carpeta: Pan
+  Peñafiel                                       carpeta: Peñafiel
+  Pescado                                        carpeta: Pescado
+  Pizza                                          carpeta: Pizza
+  Postre                                         carpeta: Postre
+  Refresco                                       carpeta: Refresco
+  Sal                                            carpeta: Sal
+  Salsa Catsup                                   carpeta: Salsa Catsup
+  Sopa                                           carpeta: Sopa
+  Sopa de fideos                                 carpeta: Sopa de Fideos
+  Spaguetti                                      carpeta: Spaguetti
+  Sprite (Refresco)                              carpeta: Sprite
+  Té                                             carpeta: Té
+  Tequila                                        carpeta: Tequila
+
+──────────────────────────────────────────────────
+  Animales e Insectos  (40 palabras)
+──────────────────────────────────────────────────
+  Abeja                                          carpeta: Abeja
+  Águila                                         carpeta: Águila
+  Almeja / Ostión                                carpeta: Almeja_Ostión
+  Elefante                                       carpeta: Elefante
+  Estrella de Mar                                carpeta: Estrella de Mar
+  Foca                                           carpeta: Foca
+  Gallina                                        carpeta: Gallina
+  Gato                                           carpeta: Gato
+  Gorila                                         carpeta: Gorila
+  Gusano                                         carpeta: Gusano
+  Hipopótamo                                     carpeta: Hipopótamo
+  Hormiga                                        carpeta: Hormiga
+  Langosta                                       carpeta: Langosta
+  Lagartija                                      carpeta: Lagartija
+  León                                           carpeta: León
+  Leopardo                                       carpeta: Leopardo
+  Mosco                                          carpeta: Mosco
+  Mosca                                          carpeta: Mosca
+  Oso                                            carpeta: Oso
+  Oso Panda                                      carpeta: Oso Panda
+  Oso Polar                                      carpeta: Oso Polar
+  Pájaro                                         carpeta: Pájaro
+  Paloma                                         carpeta: Paloma
+  Pantera                                        carpeta: Pantera
+  Pavo                                           carpeta: Pavo
+  Pavo Real                                      carpeta: Pavo Real
+  Pelícano                                       carpeta: Pelícano
+  Perro                                          carpeta: Perro
+  Pez                                            carpeta: Pez
+  Pingüino                                       carpeta: Pingüino
+  Piojo                                          carpeta: Piojo
+  Piraña                                         carpeta: Piraña
+  Pollo                                          carpeta: Pollo
+  Puerco                                         carpeta: Puerco
+  Pulpo                                          carpeta: Pulpo
+  Rana                                           carpeta: Rana
+  Rata                                           carpeta: Rata
+  Ratón                                          carpeta: Ratón
+  Reptil                                         carpeta: Reptil
+  Sapo                                           carpeta: Sapo
+
+──────────────────────────────────────────────────
+  Colores  (2 palabras)
+──────────────────────────────────────────────────
+  Amarillo                                       carpeta: Amarillo
+  Gris                                           carpeta: Gris
+
+──────────────────────────────────────────────────
+  Familia  (21 palabras)
+──────────────────────────────────────────────────
+  Abuela                                         carpeta: Abuela
+  Abuelo                                         carpeta: Abuelo
+  Adulto                                         carpeta: Adulto
+  Hermana                                        carpeta: Hermana
+  Hermanastro                                    carpeta: Hermanastro
+  Hermano                                        carpeta: Hermano
+  Hija                                           carpeta: Hija
+  Hijastra                                       carpeta: Hijastra
+  Hijastro                                       carpeta: Hijastro
+  Hijo                                           carpeta: Hijo
+  Padrastro                                      carpeta: Padrastro
+  Padres                                         carpeta: Padres
+  Papá                                           carpeta: Papá
+  Pareja                                         carpeta: Pareja
+  Prima                                          carpeta: Prima
+  Primo                                          carpeta: Primo
+  Sobrina                                        carpeta: Sobrina
+  Sobrino                                        carpeta: Sobrino
+  Soltero                                        carpeta: Soltero
+  Tía                                            carpeta: Tia
+  Tío                                            carpeta: Tío
+
+──────────────────────────────────────────────────
+  Festividades  (20 palabras)
+──────────────────────────────────────────────────
+  Aguinaldo                                      carpeta: Aguinaldo
+  Esferas de Navidad                             carpeta: Esferas de Navidad
+  Año Nuevo                                      carpeta: Año Nuevo
+  Feliz Cumpleaños                               carpeta: Feliz Cumpleaños
+  Feliz Navidad                                  carpeta: Feliz Navidad
+  Noche Buena                                    carpeta: Noche Buena
+  Fuegos Artificiales                            carpeta: Fuegos Artificiales
+  Globo                                          carpeta: Globo
+  Guirnalda Navideña                             carpeta: Guirnalda Navideña
+  Intercambio de regalos                         carpeta: Intercambio de regalos
+  Pavo de Navidad                                carpeta: Pavo de Navidad
+  Ponche                                         carpeta: Ponche
+  Reyes Magos                                    carpeta: Reyes Magos
+  Rosca de Reyes                                 carpeta: Rosca de Reyes
+  San / Santo / Santa                            carpeta: San_Santo_Santa
+  San Judas                                      carpeta: San Judas
+  Santa Claus                                    carpeta: Santa Claus
+  Santa Muerte                                   carpeta: Santa Muerte
+  Series de Navidad                              carpeta: Series de Navidad
+  Tarjeta de Navidad                             carpeta: Tarjeta de Navidad
+
+──────────────────────────────────────────────────
+  Frutas, Verduras y Plantas  (29 palabras)
+──────────────────────────────────────────────────
+  Aguacate                                       carpeta: Aguacate
+  Ajo                                            carpeta: Ajo
+  Almendra                                       carpeta: Almendra
+  Durazno                                        carpeta: Durazno
+  Ejote                                          carpeta: Ejote
+  Elote                                          carpeta: Elote
+  Fresa                                          carpeta: Fresa
+  Frijol                                         carpeta: Frijol
+  Fruta                                          carpeta: Fruta
+  Granada                                        carpeta: Granada
+  Guamuchil                                      carpeta: Guamuchil
+  Guayaba                                        carpeta: Guayaba
+  Higo                                           carpeta: Higo
+  Hongo                                          carpeta: Hongo
+  Lechuga                                        carpeta: Lechuga
+  Naranja                                        carpeta: Naranja
+  Nopal                                          carpeta: Nopal
+  Nuez                                           carpeta: Nuez
+  Pepino                                         carpeta: Pepino
+  Pera                                           carpeta: Pera
+  Pimiento                                       carpeta: Pimiento
+  Piña                                           carpeta: Piña
+  Pistacho                                       carpeta: Pistacho
+  Plátano                                        carpeta: Plátano
+  Rábano                                         carpeta: Rábano
+  Repollo                                        carpeta: Repollo
+  Rosa (Flor)                                    carpeta: Rosa
+  Sandía                                         carpeta: Sandía
+  Tamarindo                                      carpeta: Tamarindo
+
+──────────────────────────────────────────────────
+  Locaciones  (2 palabras)
+──────────────────────────────────────────────────
+  XXX                                            carpeta: XXX
+  XXX                                            carpeta: XXXX
+
+──────────────────────────────────────────────────
+  Objetos  (17 palabras)
+──────────────────────────────────────────────────
+  Acta de nacimiento                             carpeta: Acta de nacimiento
+  Anillo de compromiso                           carpeta: Anillo_Compromiso
+  Encendedor                                     carpeta: Encendedor
+  Escalera                                       carpeta: Escalera_Escalera
+  Escoba                                         carpeta: Escoba
+  Espejo                                         carpeta: Espejo
+  Esponja                                        carpeta: Esponja
+  Estufa                                         carpeta: Estufa
+  Foco                                           carpeta: Foco
+  Goma                                           carpeta: Goma
+  Grifo                                          carpeta: Grifo
+  Horno                                          carpeta: Horno
+  Horno de microondas                            carpeta: Horno Microondas
+  Lápiz                                          carpeta: Lápiz
+  Láptop                                         carpeta: Laptop
+  Libro                                          carpeta: Libro
+  Licencia                                       carpeta: Licencia
+
+──────────────────────────────────────────────────
+  Personajes Históricos  (10 palabras)
+──────────────────────────────────────────────────
+  Adolf Hitler                                   carpeta: Adolf Hitler
+  Frida Khalo                                    carpeta: Frida Khalo
+  Gustavo Madero                                 carpeta: Gustavo Madero
+  Lázaro Cárdenas                                carpeta: Lázaro Cárdenas
+  Miguel Hidalgo y Costilla                      carpeta: Miguel Hidalgo y Costilla
+  Moctezuma                                      carpeta: Moctezuma
+  Napoleón Bonaparte                             carpeta: Napoleón Bonaparte
+  Pancho Villa                                   carpeta: Pancho Villa
+  Pedro Infante                                  carpeta: Pedro Infante
+  Porfirio Díaz                                  carpeta: Porfirio Díaz
+
+──────────────────────────────────────────────────
+  Personas  (11 palabras)
+──────────────────────────────────────────────────
+  Alguien                                        carpeta: Alguien
+  Algunos                                        carpeta: Algunos
+  Amante                                         carpeta: Amante
+  Amiga                                          carpeta: Amiga
+  Amigo                                          carpeta: Amigo
+  Amistad                                        carpeta: Amistad
+  Apellido                                       carpeta: Apellido
+  Él                                             carpeta: Él
+  Ellos                                          carpeta: Ellos
+  Esposo / Casado                                carpeta: Esposo_Casado
+  Gente                                          carpeta: Gente
+
+──────────────────────────────────────────────────
+  Profesiones  (29 palabras)
+──────────────────────────────────────────────────
+  Abogado                                        carpeta: abogado
+  Actor / Artista                                carpeta: Actor_Artista
+  Agente                                         carpeta: Agente
+  Edecán                                         carpeta: Edecán
+  Emperador                                      carpeta: Emperador
+  Enfermera                                      carpeta: Enfermera
+  General                                        carpeta: General
+  Gobernador                                     carpeta: Gobernador
+  Herrero                                        carpeta: Herrero
+  Ingeniero                                      carpeta: Ingeniero
+  Licenciado / Licenciatura                      carpeta: Licenciado_Licenciatura
+  Militar                                        carpeta: Militar
+  Minero                                         carpeta: Minero
+  Misionero                                      carpeta: Misionero
+  Monja                                          carpeta: Monja
+  Narcotraficante                                carpeta: Narcotraficante
+  Padre (Religión)                               carpeta: Padre (Religión)
+  Peluquero                                      carpeta: Peluquero
+  Pescar / Pesca                                 carpeta: Pescar_Pesca
+  Policía                                        carpeta: Policía
+  Presidente                                     carpeta: Presidente
+  Príncipe                                       carpeta: Príncipe
+  Profesión / Profesional                        carpeta: Profesión_Profesional
+  Profesor                                       carpeta: Profesor
+  Rey                                            carpeta: Rey
+  Sacerdote                                      carpeta: Sacerdote
+  Sastre                                         carpeta: Sastre
+  Secretaria                                     carpeta: Secretaria
+  Soldado                                        carpeta: Soldado
+
+══════════════════════════════════════════════════
+  Total: 221 palabras en 11 categorías
+══════════════════════════════════════════════════
