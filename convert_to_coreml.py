@@ -31,7 +31,22 @@ def convert(checkpoint_path: str, output_path: str):
     print(f"  Val Acc    : {ckpt.get('best_val_acc', 0):.4f}")
 
     # ── Reconstruir modelo ────────────────────────────────────────────────────
-    model = LSM_CNN(n_classes=n_classes)
+    model_type = ckpt.get("model_type", "cnn")
+    print(f"  Arquitectura: {model_type}")
+
+    if model_type == "cnn":
+        model = LSM_CNN(n_classes=n_classes)
+    elif model_type == "tcn":
+        from model_tcn import LSM_TCN
+        model = LSM_TCN(n_classes=n_classes)
+        print(f"  Campo recep.: {model.receptive_field()} frames")
+    elif model_type == "3dcnn":
+        from model_3dcnn import LSM_3DCNN
+        model = LSM_3DCNN(n_classes=n_classes)
+        print(f"  Campo recep.: {model.receptive_field()}")
+    else:
+        raise ValueError(f"model_type desconocido: '{model_type}'")
+
     model.load_state_dict(ckpt["model"])
     model.eval()
 

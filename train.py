@@ -17,7 +17,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from dataset import load_raw_dataset, apply_augmentation, N_FRAMES, FEATURE_DIM
-from model import LSM_CNN, count_parameters
+from model import LSM_CNN, count_parameters as count_parameters_fn
 
 
 # ── PyTorch Dataset ───────────────────────────────────────────────────────────
@@ -156,8 +156,18 @@ def main(args):
                               shuffle=False, num_workers=4, pin_memory=True)
 
     # ── Modelo ────────────────────────────────────────────────────────────────
-    model = LSM_CNN(n_classes=n_classes, dropout=args.dropout).to(device)
-    print(f"\n  Parámetros: {count_parameters(model):,}")
+    if args.model == "cnn":
+        model = LSM_CNN(n_classes=n_classes, dropout=args.dropout)
+    elif args.model == "tcn":
+        from model_tcn import LSM_TCN
+        model = LSM_TCN(n_classes=n_classes, dropout=args.dropout)
+        print(f"  Campo recep.: {model.receptive_field()} frames")
+    elif args.model == "3dcnn":
+        from model_3dcnn import LSM_3DCNN
+        model = LSM_3DCNN(n_classes=n_classes, dropout=args.dropout)
+        print(f"  Campo recep.: {model.receptive_field()}")
+    model = model.to(device)
+    print(f"\n  Parámetros: {count_parameters_fn(model):,}")
 
     criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
     optimizer = torch.optim.AdamW(model.parameters(),
@@ -217,6 +227,7 @@ def main(args):
                 "classes":      classes,
                 "n_frames":     N_FRAMES,
                 "feature_dim":  FEATURE_DIM,
+                "model_type":   args.model,
             }, os.path.join(args.output, "best_model.pt"))
 
         # Checkpoint periódico cada 10 epochs
@@ -231,6 +242,7 @@ def main(args):
                 "classes":      classes,
                 "n_frames":     N_FRAMES,
                 "feature_dim":  FEATURE_DIM,
+                "model_type":   args.model,
             }, os.path.join(args.output, f"checkpoint_epoch{epoch+1}.pt"))
 
     print(f"{'─'*65}")
@@ -283,7 +295,9 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Entrenamiento LSM 1D CNN")
+    parser = argparse.ArgumentParser(description="Entrenamiento LSM — modelos CNN / TCN / 3DCNN")
+    parser.add_argument("--model",      default="cnn",        choices=["cnn", "tcn", "3dcnn"],
+                        help="Arquitectura a entrenar: cnn | tcn | 3dcnn")
     parser.add_argument("--dataset",    required=True,        help="Carpeta raíz del dataset extraído")
     parser.add_argument("--output",     default="./runs",     help="Carpeta de salida para checkpoints")
     parser.add_argument("--epochs",     type=int,   default=100)
