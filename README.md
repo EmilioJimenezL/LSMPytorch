@@ -1,6 +1,9 @@
-# LSM Training Pipeline — 1D CNN
+# LSM Training Pipeline — Multi-Model (CNN, TCN, 3D CNN)
 
-Pipeline completo para reconocimiento de **Lengua de Señas Mexicana (LSM)** usando una red neuronal convolucional 1D entrenada sobre landmarks de manos y pose extraídos con Vision Framework (iOS/macOS).
+Pipeline completo para reconocimiento de **Lengua de Señas Mexicana (LSM)** con soporte para tres arquitecturas de redes neuronales entrenadas sobre landmarks de manos y pose extraídos con Vision Framework (iOS/macOS):
+- **1D CNN** (baseline rápido)
+- **TCN** (Temporal Convolutional Network — temporal receptivo más amplio)
+- **3D CNN** (convolución espaciotemporal directa)
 
 ```
 videos .mp4  →  organize  →  skeletization (iOS)  →  train  →  Core ML .mlpackage
@@ -133,15 +136,28 @@ La detección es automática — `dataset.py` comprueba si las subcarpetas de pr
 ### 3. Entrenamiento
 
 ```bash
-# Entrenamiento básico
+# Entrenamiento con 1D CNN (default)
 python train.py \
     --dataset ./SalidasLSMSkeletization \
     --output  ./runs
+
+# Entrenar TCN (Temporal Convolutional Network)
+python train.py \
+    --dataset ./SalidasLSMSkeletization \
+    --output  ./runs_tcn \
+    --model   tcn
+
+# Entrenar 3D CNN
+python train.py \
+    --dataset ./SalidasLSMSkeletization \
+    --output  ./runs_3dcnn \
+    --model   3dcnn
 
 # Con todos los parámetros
 python train.py \
     --dataset    ./SalidasLSMSkeletization \
     --output     ./runs \
+    --model      cnn \
     --epochs     150 \
     --batch      64 \
     --lr         1e-3 \
@@ -154,7 +170,8 @@ python train.py \
 python train.py \
     --dataset ./SalidasLSMSkeletization \
     --output  ./runs \
-    --resume  ./runs/checkpoint_epoch50.pt
+    --model   tcn \
+    --resume  ./runs_tcn/checkpoint_epoch50.pt
 ```
 
 **Flujo interno:**
@@ -174,12 +191,25 @@ python train.py \
 ```bash
 pip install coremltools
 
+# Convertir modelo 1D CNN
 python convert_to_coreml.py \
     --checkpoint ./runs/best_model.pt \
-    --output     ./lsm_model
+    --output     ./lsm_model_cnn
+
+# Convertir modelo TCN
+python convert_to_coreml.py \
+    --checkpoint ./runs_tcn/best_model.pt \
+    --output     ./lsm_model_tcn
+
+# Convertir modelo 3D CNN
+python convert_to_coreml.py \
+    --checkpoint ./runs_3dcnn/best_model.pt \
+    --output     ./lsm_model_3dcnn
 ```
 
-Genera `lsm_model.mlpackage` listo para arrastrar al proyecto Xcode.
+Genera `lsm_model*.mlpackage` listo para arrastrar al proyecto Xcode.
+
+**Nota:** El script detecta automáticamente la arquitectura (`model_type`) desde el checkpoint, por lo que no necesita parámetro adicional.
 
 **Metadata embebida en el modelo:**
 
@@ -292,6 +322,8 @@ Los videos se normalizan a **85 frames** mediante interpolación lineal (`N_FRAM
 
 ## Arquitectura del modelo
 
+### 1. CNN 1D (Baseline)
+
 **`LSM_CNN`** — Red convolucional 1D para clasificación de secuencias de landmarks.
 
 ```
@@ -299,26 +331,94 @@ Input  : (batch, 85, 135)
          └── permute ──→ (batch, 135, 85)
 
 Block 1: Conv1d(135→128, k=3) + BatchNorm + ReLU + Dropout + MaxPool(2)
-         └── (batch, 128, 42)
-
 Block 2: Conv1d(128→256, k=3) + BatchNorm + ReLU + Dropout + MaxPool(2)
-         └── (batch, 256, 21)
-
 Block 3: Conv1d(256→512, k=3) + BatchNorm + ReLU + Dropout
-         └── (batch, 512, 21)
 
-Global Average Pooling → (batch, 512, 1)
-
+Global Average Pooling → (batch, 512)
 FC(512 → 256) + ReLU + Dropout
 FC(256 → n_classes)
 
 Output : logits (batch, n_classes)
 ```
 
+**Características:**
+- Parámetros: ~690K
+- Receptive field: N/A (standard Conv1d)
+- Velocidad: muy rápida (~15-20ms/sample)
+- Mejor para: inferencia en tiempo real, dispositivos con recursos limitados
+
+### 2. TCN (Temporal Convolutional Network)
+
+**`LSM_TCN`** — Red convolucional temporal con dilación exponencial para mayor receptive field.
+
+```
+Input  : (batch, 85, 135)
+         └── permute ──→ (batch, 135, 85)
+
+Proyección: Conv1d(135→64, k=1)
+
+Block 1: ResidualBlock(64→64, dilation=1, kernel=5)
+Block 2: ResidualBlock(64→128, dilation=2, kernel=5)
+Block 3: ResidualBlock(128→256, dilation=4, kernel=5)
+Block 4: ResidualBlock(256→256, dilation=8, kernel=5)
+         └─ Convoluciones causales (padding izquierdo)
+
+Global Average Pooling → (batch, 256)
+FC(256 → 128) + BatchNorm + ReLU + Dropout
+FC(128 → n_classes)
+
+Output : logits (batch, n_classes)
+```
+
+**Características:**
+- Parámetros: ~1.5M
+- Receptive field: 61 frames (71.8% de 85)
+- Velocidad: moderada (~100-150ms/sample)
+- Mejor para: capturar dependencias temporales largas, patrones complejos
+
+### 3. 3D CNN
+
+**`LSM_3DCNN`** — Red convolucional 3D con atención temporal para procesamiento espaciotemporal directo.
+
+```
+Input  : (batch, 85, 135)
+         └── view ──→ (batch, 1, 85, 135, 1)
+
+Block 1: Conv3d(1→32, k=3×3×1, stride=1×1×1) + BatchNorm3d + ReLU + Dropout3d
+Block 2: Conv3d(32→64, k=3×3×1, stride=2×1×1) + BatchNorm3d + ReLU + Dropout3d  (downsample tiempo)
+Block 3: Conv3d(64→128, k=3×3×1, stride=2×1×1) + BatchNorm3d + ReLU + Dropout3d (downsample tiempo)
+
+Temporal Attention: Conv3d(128→32→1) + Sigmoid
+                   └─ Escala cada posición temporal
+
+Global Average Pooling → (batch, 128)
+FC(128 → 256) + BatchNorm + ReLU + Dropout
+FC(256 → n_classes)
+
+Output : logits (batch, n_classes)
+```
+
+**Características:**
+- Parámetros: ~144K (el más ligero)
+- Receptive field: ~11 frames (temporal), todas las features (spatial)
+- Velocidad: moderada (~80-90ms/sample)
+- Mejor para: modelos compactos, despliegue en mobile, balance eficiencia-precisión
+
+### Configuración de entrenamiento
+
 - **Optimizador:** AdamW, weight decay 1e-4
 - **LR scheduler:** CosineAnnealingLR (eta_min = 1e-6)
 - **Loss:** CrossEntropyLoss con label_smoothing = 0.1
 - **Gradient clipping:** max_norm = 1.0
+- **Dispositivo:** GPU (CUDA/MPS) o CPU (fallback automático)
+
+### Comparativa rápida
+
+| Modelo | Parámetros | Velocidad | Receptive Field | Mejor para |
+|---|---|---|---|---|
+| **CNN 1D** | ~690K | ⚡⚡⚡ Muy rápido | Standard | Producción mobile |
+| **TCN** | ~1.5M | ⚡⚡ Rápido | 61 frames | Patrones temporales |
+| **3D CNN** | ~144K | ⚡⚡ Rápido | ~11 frames | Modelos compactos |
 
 ---
 
@@ -343,6 +443,7 @@ Las transformaciones solo modifican coordenadas `x, y`. Los valores de `visibili
 
 | Parámetro | Default | Descripción |
 |---|---|---|
+| `--model` | `cnn` | Arquitectura: `cnn` \| `tcn` \| `3dcnn` |
 | `--dataset` | _(requerido)_ | Carpeta raíz del dataset con los JSON de landmarks |
 | `--output` | `./runs` | Carpeta de salida para checkpoints y curvas |
 | `--epochs` | `100` | Número de épocas |
@@ -372,17 +473,20 @@ runs/
 
 ```python
 {
-    "epoch":        int,       # Epoch en que se guardó (0-indexed)
-    "model":        dict,      # state_dict del modelo
-    "optimizer":    dict,      # state_dict del optimizador
-    "scheduler":    dict,      # state_dict del scheduler
-    "best_val_acc": float,     # Mejor val_acc hasta ese momento
-    "history":      dict,      # train_loss, train_acc, val_loss, val_acc por época
-    "classes":      list[str], # Lista de clases (orden = índice de logits)
-    "n_frames":     int,       # 85
-    "feature_dim":  int,       # 135
+    "epoch":        int,         # Epoch en que se guardó (0-indexed)
+    "model":        dict,        # state_dict del modelo
+    "optimizer":    dict,        # state_dict del optimizador
+    "scheduler":    dict,        # state_dict del scheduler
+    "best_val_acc": float,       # Mejor val_acc hasta ese momento
+    "history":      dict,        # train_loss, train_acc, val_loss, val_acc por época
+    "classes":      list[str],   # Lista de clases (orden = índice de logits)
+    "n_frames":     int,         # 85
+    "feature_dim":  int,         # 135
+    "model_type":   str,         # "cnn" | "tcn" | "3dcnn"
 }
 ```
+
+El campo `model_type` permite a `convert_to_coreml.py` reconstruir automáticamente la arquitectura correcta.
 
 ### `classes.json`
 

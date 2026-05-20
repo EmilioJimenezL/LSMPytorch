@@ -248,15 +248,17 @@ def main(args):
     print(f"{'─'*65}")
 
     # ── Top-5 accuracy final ──────────────────────────────────────────────────
-    best_ckpt = torch.load(os.path.join(args.output, "best_model.pt"),
-                           map_location=device)
-    model.load_state_dict(best_ckpt["model"])
-    top5 = top_k_accuracy(model, val_loader, device, k=5)
-
+    best_model_path = os.path.join(args.output, "best_model.pt")
     print(f"\n  Mejor modelo:")
     print(f"    Val Acc  (Top-1) : {best_val_acc:.4f} ({best_val_acc*100:.2f}%)")
-    print(f"    Val Acc  (Top-5) : {top5:.4f} ({top5*100:.2f}%)")
-    print(f"    Guardado en      : {args.output}/best_model.pt")
+    if os.path.exists(best_model_path):
+        best_ckpt = torch.load(best_model_path, map_location=device)
+        model.load_state_dict(best_ckpt["model"])
+        top5 = top_k_accuracy(model, val_loader, device, k=5)
+        print(f"    Val Acc  (Top-5) : {top5:.4f} ({top5*100:.2f}%)")
+        print(f"    Guardado en      : {best_model_path}")
+    else:
+        print(f"    (Sin mejora en val_acc — best_model.pt no guardado)")
 
     # ── Curvas de entrenamiento ───────────────────────────────────────────────
     try:

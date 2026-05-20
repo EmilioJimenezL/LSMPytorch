@@ -55,3 +55,12 @@ dataset/
 *.swp
 *.swo
 *~
+
+# --- Archivos de documentación del agente (no README) ---
+00_MASTER_INDEX.md
+AGENT_INSTRUCTIONS.md
+AI_AGENT_CODE_TEMPLATES.md
+AI_AGENT_PROMPT_MultiModel_Implementation.md
+AI_AGENT_QUICK_START_GUIDE.md
+CLAUDE.md
+TCN_vs_3DCNN_Detailed_Analysis.md
