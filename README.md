@@ -1,499 +1,276 @@
-# LSM Training Pipeline — Multi-Model (CNN, TCN, 3D CNN)
+# LSM Training Pipeline
 
-Pipeline completo para reconocimiento de **Lengua de Señas Mexicana (LSM)** con soporte para tres arquitecturas de redes neuronales entrenadas sobre landmarks de manos y pose extraídos con Vision Framework (iOS/macOS):
-- **1D CNN** (baseline rápido)
-- **TCN** (Temporal Convolutional Network — temporal receptivo más amplio)
-- **3D CNN** (convolución espaciotemporal directa)
+Pipeline de entrenamiento para **reconocimiento de Lengua de Señas Mexicana (LSM)**. El proyecto clasifica gestos a partir de landmarks de manos y pose corporal extraídos de videos, entrena modelos de deep learning en PyTorch y los exporta a Core ML para despliegue en iOS/macOS.
 
-```
-videos .mp4  →  organize  →  skeletization (iOS)  →  train  →  Core ML .mlpackage
-```
+## Resumen
 
----
+El flujo completo es:
 
-## Contenido
+1. **Organizar videos** según categorías y palabras definidas en `themes.json`
+2. **Extraer landmarks** con Apple Vision Framework (fuera de este repo) → archivos `*_landmarks.json`
+3. **Preprocesar y cargar** secuencias temporales normalizadas
+4. **Entrenar** uno de tres modelos (1D CNN, TCN o 3D CNN)
+5. **Exportar** el mejor checkpoint a Core ML (`.mlpackage`)
 
-- [Requisitos](#requisitos)
-- [Setup](#setup)
-- [Pipeline completo](#pipeline-completo)
-  - [1. Organizar videos](#1-organizar-videos)
-  - [2. Extraer landmarks](#2-extraer-landmarks)
-  - [3. Entrenamiento](#3-entrenamiento)
-  - [4. Conversión a Core ML](#4-conversión-a-core-ml)
-- [Scripts de utilidad](#scripts-de-utilidad)
-- [Formato de datos](#formato-de-datos)
-- [Arquitectura del modelo](#arquitectura-del-modelo)
-- [Augmentation](#augmentation)
-- [Parámetros de entrenamiento](#parámetros-de-entrenamiento)
-- [Outputs del entrenamiento](#outputs-del-entrenamiento)
+## Vocabulario y datos
 
----
+`themes.json` define el vocabulario del proyecto:
 
-## Requisitos
-
-- Python 3.9+
-- CUDA (opcional, también soporta Apple MPS y CPU)
-- `ffprobe` / `ffmpeg` (para validación de videos en `organize_from_json.py`)
-- Xcode con Vision Framework (para la etapa de extracción de landmarks, fuera de este repo)
-
----
-
-## Setup
-
-```bash
-python -m venv ~/lsm_env
-source ~/lsm_env/bin/activate
-pip install -r requirements.txt
-
-# Con soporte CUDA (opcional)
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
-```
-
-**`requirements.txt`:**
-```
-torch>=2.0.0
-torchvision
-numpy
-scipy
-matplotlib
-coremltools
-```
-
----
-
-## Pipeline completo
-
-### 1. Organizar videos
-
-Antes de extraer landmarks, los videos crudos deben organizarse en la estructura de carpetas que espera la app iOS de skeletization.
-
-**Script:** `organize_from_json.py`
-
-Lee `themes.json` como fuente de verdad, valida cada `.mp4` con `ffprobe` y los mueve a:
-
-```
-output/
-└── Categoria/
-    └── Nombre Palabra/
-        └── video.mp4
-```
-
-Archivos problemáticos se separan automáticamente:
-- `_invalidos/` — GIFs renombrados, encoding corrupto, duración < 0.5 s
-- `_sin_match/` — archivos sin correspondencia en el JSON
-
-```bash
-# Ver qué haría sin mover nada
-python3 organize_from_json.py \
-    --json   themes.json \
-    --input  ./videos \
-    --output ./dataset \
-    --dry-run
-
-# Ejecución real
-python3 organize_from_json.py \
-    --json   themes.json \
-    --input  ./videos \
-    --output ./dataset \
-    --verbose
-```
-
-| Parámetro | Descripción |
+| Categoría | Palabras |
 |---|---|
-| `--json` | Ruta al `themes.json` |
-| `--input` | Carpeta con los `.mp4` planos |
-| `--output` | Carpeta destino del dataset organizado |
-| `--dry-run` | Simula sin mover archivos |
-| `--verbose` | Muestra cada archivo procesado |
+| Alimentos y Bebidas | 40 |
+| Animales e Insectos | 40 |
+| Colores | 2 |
+| Familia | 21 |
+| Festividades | 20 |
+| Frutas, Verduras y Plantas | 29 |
+| Locaciones | 2 |
+| Objetos | 17 |
+| Personajes Históricos | 10 |
+| Personas | 11 |
+| Profesiones | 29 |
 
----
+**Total: 221 palabras en 11 categorías.**
 
-### 2. Extraer landmarks
+Cada entrada incluye un nombre de visualización y una ruta de video (`videoUrl`) que determina la carpeta destino al organizar el dataset.
 
-Esta etapa se realiza en la app iOS/macOS usando Vision Framework (fuera de este repo). La app procesa cada video y genera un archivo `*_landmarks.json` por video con los keypoints de manos y pose por frame.
+### Formato de entrada (landmarks)
 
-El pipeline de entrenamiento soporta dos estructuras de salida:
+Los modelos consumen JSON generados por Vision Framework. Cada frame se convierte en un vector de **135 dimensiones**:
 
-**Estructura plana** (un nivel de carpetas):
+| Componente | Dimensiones | Descripción |
+|---|---|---|
+| Mano izquierda | 42 | 21 puntos × (x, y) |
+| Mano derecha | 42 | 21 puntos × (x, y) |
+| Pose corporal | 51 | 17 puntos × (x, y, visibility) |
+
+Las secuencias se interpolan linealmente a **85 frames** (percentil 10 del dataset). Puntos no detectados se rellenan con `0.0`.
+
+### Estructura del dataset
+
+El loader (`dataset.py`) soporta dos layouts:
+
 ```
-SalidasLSMSkeletization/
-└── palabra/
+# Anidada (recomendada)
+dataset/
+└── Categoria/
+    └── Palabra/
+        └── video_landmarks.json
+
+# Plana
+dataset/
+└── Palabra/
     └── video_landmarks.json
 ```
 
-**Estructura anidada** (dos niveles):
-```
-SalidasLSMSkeletization/
-└── Categoria/
-    └── palabra/
-        └── video_landmarks.json
-```
+Solo se incluyen clases con al menos `--min-videos` secuencias válidas (por defecto: 2).
 
-La detección es automática — `dataset.py` comprueba si las subcarpetas de primer nivel contienen JSON directamente o subcarpetas.
+## Modelos disponibles
 
----
-
-### 3. Entrenamiento
-
-```bash
-# Entrenamiento con 1D CNN (default)
-python train.py \
-    --dataset ./SalidasLSMSkeletization \
-    --output  ./runs
-
-# Entrenar TCN (Temporal Convolutional Network)
-python train.py \
-    --dataset ./SalidasLSMSkeletization \
-    --output  ./runs_tcn \
-    --model   tcn
-
-# Entrenar 3D CNN
-python train.py \
-    --dataset ./SalidasLSMSkeletization \
-    --output  ./runs_3dcnn \
-    --model   3dcnn
-
-# Con todos los parámetros
-python train.py \
-    --dataset    ./SalidasLSMSkeletization \
-    --output     ./runs \
-    --model      cnn \
-    --epochs     150 \
-    --batch      64 \
-    --lr         1e-3 \
-    --dropout    0.3 \
-    --val_split  0.15 \
-    --augment    10 \
-    --min_videos 2
-
-# Continuar desde checkpoint
-python train.py \
-    --dataset ./SalidasLSMSkeletization \
-    --output  ./runs \
-    --model   tcn \
-    --resume  ./runs_tcn/checkpoint_epoch50.pt
-```
-
-**Flujo interno:**
-1. Carga todos los `*_landmarks.json` con `load_raw_dataset()`
-2. Excluye clases con menos de `--min_videos` videos
-3. Hace el split train/val **antes** del augmentation (evita data leakage)
-4. Aplica `augment_factor` versiones aumentadas solo al conjunto de train
-5. Entrena con AdamW + cosine annealing, cross-entropy con label smoothing 0.1
-6. Guarda `best_model.pt` en cada mejora de `val_acc`
-7. Guarda checkpoint periódico cada 10 épocas
-8. Al finalizar, calcula Top-1 y Top-5 accuracy y genera curvas de entrenamiento
-
----
-
-### 4. Conversión a Core ML
-
-```bash
-pip install coremltools
-
-# Convertir modelo 1D CNN
-python convert_to_coreml.py \
-    --checkpoint ./runs/best_model.pt \
-    --output     ./lsm_model_cnn
-
-# Convertir modelo TCN
-python convert_to_coreml.py \
-    --checkpoint ./runs_tcn/best_model.pt \
-    --output     ./lsm_model_tcn
-
-# Convertir modelo 3D CNN
-python convert_to_coreml.py \
-    --checkpoint ./runs_3dcnn/best_model.pt \
-    --output     ./lsm_model_3dcnn
-```
-
-Genera `lsm_model*.mlpackage` listo para arrastrar al proyecto Xcode.
-
-**Nota:** El script detecta automáticamente la arquitectura (`model_type`) desde el checkpoint, por lo que no necesita parámetro adicional.
-
-**Metadata embebida en el modelo:**
-
-| Campo | Descripción |
-|---|---|
-| `classes` | JSON con la lista de clases (mismo orden que los logits) |
-| `n_frames` | Longitud de secuencia esperada (85) |
-| `feature_dim` | Dimensión del vector por frame (135) |
-| `n_classes` | Número de clases |
-| `val_acc` | Accuracy de validación del checkpoint |
-
-**Input/output del modelo Core ML:**
-
-| Nombre | Shape | Tipo |
+| Modelo | Flag en `train.py` | Descripción |
 |---|---|---|
-| `landmarks` | `(1, 85, 135)` | `float32` |
-| `logits` | `(1, n_classes)` | `float32` |
+| **1D CNN** | `cnn` (default) | Convoluciones 1D sobre la dimensión temporal. Baseline rápido (~0.76M parámetros). |
+| **TCN** | `tcn` | Red convolucional temporal con bloques residuales causales y dilatación exponencial. Campo receptivo: 61 frames. |
+| **3D CNN** | `3dcnn` | Convoluciones 3D con atención temporal aprendida. Más compacto (~0.2M parámetros). |
 
-Los logits son sin normalizar — aplicar softmax en el lado iOS para obtener probabilidades.
+Los tres modelos reciben tensores de forma `(batch, 85, 135)` y producen logits de clasificación.
 
-**Verificación rápida del modelo guardado:**
+También existe un paquete modular en `models/` con un registro de fábrica (`create_model`) usado por los smoke tests.
+
+## Características actuales
+
+### Preprocesamiento y augmentación
+
+- Interpolación temporal a longitud fija
+- Split train/val **antes** de augmentar (evita data leakage)
+- Augmentación configurable (por defecto 10×) sobre el conjunto de entrenamiento:
+  - Escala alrededor del centroide (0.9–1.1)
+  - Traslación (±0.05)
+  - Time warp / cambio de velocidad (0.8–1.2×)
+  - Ruido gaussiano (σ = 0.01)
+
+### Entrenamiento
+
+- Optimizador AdamW con weight decay
+- Scheduler coseno annealing
+- Cross-entropy con label smoothing (0.1)
+- Gradient clipping (max norm 1.0)
+- Soporte para CUDA, Apple MPS y CPU
+- Checkpoints: mejor modelo por `val_acc` + checkpoint cada 10 epochs
+- Resume desde checkpoint interrumpido
+- Métricas Top-1 y Top-5 al finalizar
+- Gráficas de loss/accuracy (`training_curves.png`)
+
+### Exportación móvil
+
+- Conversión PyTorch → Core ML vía TorchScript
+- Metadata embebida: lista de clases, dimensiones, accuracy de validación
+- Target: iOS 16+
+
+### Utilidades de datos
+
+- **`organize_from_json.py`**: organiza videos `.mp4` en la estructura de carpetas correcta usando `themes.json`, con validación `ffprobe` (rechaza GIFs, codecs de imagen, archivos corruptos)
+- **`list_words.py`**: lista o exporta el vocabulario completo
+
+## Requisitos
+
+- Python 3.11+
+- PyTorch 2.1+
+- `ffprobe` (FFmpeg) para organizar videos
+- GPU recomendada para entrenamiento (CUDA o Apple Silicon MPS)
+
+## Instalación
+
 ```bash
-python testCoreml.py
+# Opción 1: script de setup (crea venv + instala PyTorch CUDA 12.4)
+./setup_env.sh
+source venv/bin/activate
+
+# Opción 2: manual
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
----
+Con [direnv](https://direnv.net/), el proyecto usa `layout python3` automáticamente.
 
-## Scripts de utilidad
+## Uso
 
-### `list_words.py` — Explorar el catálogo de palabras
+### 1. Organizar videos
 
 ```bash
-# Listar todas las palabras
-python3 list_words.py --json themes.json
+python organize_from_json.py \
+  --json themes.json \
+  --input ./videos \
+  --output ./dataset
 
-# Filtrar por categoría
-python3 list_words.py --json themes.json --categoria "Animales e Insectos"
-
-# Exportar a archivo de texto
-python3 list_words.py --json themes.json --exportar palabras.txt
+# Vista previa sin mover archivos
+python organize_from_json.py --json themes.json --input ./videos --output ./dataset --dry-run
 ```
 
-### `testCoreml.py` — Verificar modelo Core ML
+Archivos inválidos van a `_invalidos/`; archivos sin match a `_sin_match/`.
+
+### 2. Listar vocabulario
 
 ```bash
-python testCoreml.py
+python list_words.py --json themes.json
+python list_words.py --json themes.json --categoria "Animales e Insectos"
+python list_words.py --json themes.json --exportar palabras.txt
 ```
 
-Carga `./coreml_models.mlpackage` e imprime los metadatos embebidos.
+### 3. Verificar dataset
 
----
-
-## Formato de datos
-
-### `themes.json`
-
-Catálogo de palabras organizado por categorías. Estructura esperada:
-
-```json
-[
-  {
-    "name": "Categoria",
-    "words": [
-      {
-        "name":     "Nombre para mostrar",
-        "videoUrl": "https://.../.../carpeta_destino"
-      }
-    ]
-  }
-]
+```bash
+python dataset.py ./dataset
 ```
 
-El último segmento de `videoUrl` es el nombre de la carpeta destino en el dataset.
+### 4. Entrenar
 
-### `*_landmarks.json` (salida de Vision Framework)
+```bash
+# 1D CNN (baseline)
+python train.py --dataset ./dataset --epochs 100 --batch 64
 
-Cada archivo representa un video. Puede ser:
-- Un array JSON de frames directamente: `[frame, frame, ...]`
-- Un objeto con clave `"frames"`: `{"frames": [frame, frame, ...]}`
+# TCN
+python train.py --model tcn --dataset ./dataset --epochs 120 --batch 16 --output ./runs_tcn
 
-Cada frame tiene la estructura:
+# 3D CNN
+python train.py --model 3dcnn --dataset ./dataset --epochs 100 --batch 12 --output ./runs_3dcnn
 
-```json
-{
-  "leftHand":  [ {"x": 0.5, "y": 0.3}, ... ],
-  "rightHand": [ {"x": 0.6, "y": 0.4}, ... ],
-  "pose": [
-    {"id": 0, "x": 0.5, "y": 0.2, "visibility": 0.99},
-    ...
-  ]
-}
+# Reanudar entrenamiento
+python train.py --dataset ./dataset --resume ./runs/checkpoint_epoch50.pt
 ```
 
-- `leftHand` / `rightHand`: 21 puntos `(x, y)` en coordenadas normalizadas [0, 1]
-- `pose`: hasta 17 keypoints con `id`, `x`, `y`, `visibility`
-- Puntos no detectados → ausentes del JSON (se rellenan con 0.0)
-- Nombres alternativos soportados: `left_hand`, `right_hand`
-
-### Vector de features (135 valores / frame)
-
-```
-[ 0: 42]  left_hand  — 21 puntos × (x, y)
-[42: 84]  right_hand — 21 puntos × (x, y)
-[84:135]  pose       — 17 puntos × (x, y, visibility)
-```
-
-Los videos se normalizan a **85 frames** mediante interpolación lineal (`N_FRAMES = 85`, percentil 10 del dataset).
-
----
-
-## Arquitectura del modelo
-
-### 1. CNN 1D (Baseline)
-
-**`LSM_CNN`** — Red convolucional 1D para clasificación de secuencias de landmarks.
-
-```
-Input  : (batch, 85, 135)
-         └── permute ──→ (batch, 135, 85)
-
-Block 1: Conv1d(135→128, k=3) + BatchNorm + ReLU + Dropout + MaxPool(2)
-Block 2: Conv1d(128→256, k=3) + BatchNorm + ReLU + Dropout + MaxPool(2)
-Block 3: Conv1d(256→512, k=3) + BatchNorm + ReLU + Dropout
-
-Global Average Pooling → (batch, 512)
-FC(512 → 256) + ReLU + Dropout
-FC(256 → n_classes)
-
-Output : logits (batch, n_classes)
-```
-
-**Características:**
-- Parámetros: ~690K
-- Receptive field: N/A (standard Conv1d)
-- Velocidad: muy rápida (~15-20ms/sample)
-- Mejor para: inferencia en tiempo real, dispositivos con recursos limitados
-
-### 2. TCN (Temporal Convolutional Network)
-
-**`LSM_TCN`** — Red convolucional temporal con dilación exponencial para mayor receptive field.
-
-```
-Input  : (batch, 85, 135)
-         └── permute ──→ (batch, 135, 85)
-
-Proyección: Conv1d(135→64, k=1)
-
-Block 1: ResidualBlock(64→64, dilation=1, kernel=5)
-Block 2: ResidualBlock(64→128, dilation=2, kernel=5)
-Block 3: ResidualBlock(128→256, dilation=4, kernel=5)
-Block 4: ResidualBlock(256→256, dilation=8, kernel=5)
-         └─ Convoluciones causales (padding izquierdo)
-
-Global Average Pooling → (batch, 256)
-FC(256 → 128) + BatchNorm + ReLU + Dropout
-FC(128 → n_classes)
-
-Output : logits (batch, n_classes)
-```
-
-**Características:**
-- Parámetros: ~1.5M
-- Receptive field: 61 frames (71.8% de 85)
-- Velocidad: moderada (~100-150ms/sample)
-- Mejor para: capturar dependencias temporales largas, patrones complejos
-
-### 3. 3D CNN
-
-**`LSM_3DCNN`** — Red convolucional 3D con atención temporal para procesamiento espaciotemporal directo.
-
-```
-Input  : (batch, 85, 135)
-         └── view ──→ (batch, 1, 85, 135, 1)
-
-Block 1: Conv3d(1→32, k=3×3×1, stride=1×1×1) + BatchNorm3d + ReLU + Dropout3d
-Block 2: Conv3d(32→64, k=3×3×1, stride=2×1×1) + BatchNorm3d + ReLU + Dropout3d  (downsample tiempo)
-Block 3: Conv3d(64→128, k=3×3×1, stride=2×1×1) + BatchNorm3d + ReLU + Dropout3d (downsample tiempo)
-
-Temporal Attention: Conv3d(128→32→1) + Sigmoid
-                   └─ Escala cada posición temporal
-
-Global Average Pooling → (batch, 128)
-FC(128 → 256) + BatchNorm + ReLU + Dropout
-FC(256 → n_classes)
-
-Output : logits (batch, n_classes)
-```
-
-**Características:**
-- Parámetros: ~144K (el más ligero)
-- Receptive field: ~11 frames (temporal), todas las features (spatial)
-- Velocidad: moderada (~80-90ms/sample)
-- Mejor para: modelos compactos, despliegue en mobile, balance eficiencia-precisión
-
-### Configuración de entrenamiento
-
-- **Optimizador:** AdamW, weight decay 1e-4
-- **LR scheduler:** CosineAnnealingLR (eta_min = 1e-6)
-- **Loss:** CrossEntropyLoss con label_smoothing = 0.1
-- **Gradient clipping:** max_norm = 1.0
-- **Dispositivo:** GPU (CUDA/MPS) o CPU (fallback automático)
-
-### Comparativa rápida
-
-| Modelo | Parámetros | Velocidad | Receptive Field | Mejor para |
-|---|---|---|---|---|
-| **CNN 1D** | ~690K | ⚡⚡⚡ Muy rápido | Standard | Producción mobile |
-| **TCN** | ~1.5M | ⚡⚡ Rápido | 61 frames | Patrones temporales |
-| **3D CNN** | ~144K | ⚡⚡ Rápido | ~11 frames | Modelos compactos |
-
----
-
-## Augmentation
-
-Se aplica **solo al conjunto de train**, después del split, para evitar data leakage.
-
-Cada video original genera `--augment` (default: 10) versiones adicionales con las siguientes transformaciones aleatorias:
-
-| Transformación | Probabilidad | Rango |
-|---|---|---|
-| Escala alrededor del centroide | 80% | 0.9× – 1.1× |
-| Traslación (x, y) | 80% | ±0.05 |
-| Time warp (cambio de velocidad) | 70% | 0.8× – 1.2× |
-| Ruido gaussiano | 60% | σ = 0.01 |
-
-Las transformaciones solo modifican coordenadas `x, y`. Los valores de `visibility` de pose no se alteran. Los puntos no detectados (valor 0.0) no reciben augmentation.
-
----
-
-## Parámetros de entrenamiento
+#### Parámetros principales de `train.py`
 
 | Parámetro | Default | Descripción |
 |---|---|---|
-| `--model` | `cnn` | Arquitectura: `cnn` \| `tcn` \| `3dcnn` |
-| `--dataset` | _(requerido)_ | Carpeta raíz del dataset con los JSON de landmarks |
-| `--output` | `./runs` | Carpeta de salida para checkpoints y curvas |
-| `--epochs` | `100` | Número de épocas |
-| `--batch` | `64` | Batch size |
-| `--lr` | `1e-3` | Learning rate inicial (decae con cosine annealing) |
-| `--dropout` | `0.3` | Dropout en capas Conv y FC |
-| `--val_split` | `0.15` | Fracción de videos originales para validación |
-| `--augment` | `10` | Versiones augmentadas por video de train |
-| `--min_videos` | `2` | Mínimo de videos por clase para incluirla |
-| `--resume` | `None` | Checkpoint `.pt` desde el que continuar |
+| `--model` | `cnn` | Arquitectura: `cnn`, `tcn`, `3dcnn` |
+| `--dataset` | — | Carpeta raíz del dataset (requerido) |
+| `--output` | `./runs` | Carpeta de salida para checkpoints |
+| `--epochs` | 100 | Épocas de entrenamiento |
+| `--batch` | 64 | Tamaño de batch |
+| `--lr` | 1e-3 | Learning rate |
+| `--dropout` | 0.3 | Tasa de dropout |
+| `--val_split` | 0.15 | Fracción de validación |
+| `--augment` | 10 | Versiones augmentadas por video |
+| `--min_videos` | 2 | Mínimo de videos por clase |
+| `--resume` | — | Checkpoint para continuar |
 
----
+Hiperparámetros de referencia adicionales en `configs/` (`cnn1d_config.yaml`, `tcn_config.yaml`, `cnn3d_config.yaml`).
 
-## Outputs del entrenamiento
+### 5. Exportar a Core ML
 
-```
-runs/
-├── best_model.pt          # Mejor checkpoint según val_acc (Top-1)
-├── checkpoint_epoch10.pt  # Checkpoints periódicos cada 10 épocas
-├── checkpoint_epoch20.pt
-├── ...
-├── classes.json           # Lista de clases ordenada alfabéticamente
-└── training_curves.png    # Curvas de loss y accuracy (train vs val)
+```bash
+python convert_to_coreml.py \
+  --checkpoint ./runs/best_model.pt \
+  --output ./lsm_model
 ```
 
-### Contenido de un checkpoint `.pt`
+Genera `lsm_model.mlpackage` listo para integrar en un proyecto Xcode.
 
-```python
-{
-    "epoch":        int,         # Epoch en que se guardó (0-indexed)
-    "model":        dict,        # state_dict del modelo
-    "optimizer":    dict,        # state_dict del optimizador
-    "scheduler":    dict,        # state_dict del scheduler
-    "best_val_acc": float,       # Mejor val_acc hasta ese momento
-    "history":      dict,        # train_loss, train_acc, val_loss, val_acc por época
-    "classes":      list[str],   # Lista de clases (orden = índice de logits)
-    "n_frames":     int,         # 85
-    "feature_dim":  int,         # 135
-    "model_type":   str,         # "cnn" | "tcn" | "3dcnn"
-}
+### 6. Smoke tests de modelos
+
+```bash
+python test_models_smoke.py
 ```
 
-El campo `model_type` permite a `convert_to_coreml.py` reconstruir automáticamente la arquitectura correcta.
+Verifica que las tres arquitecturas del paquete `models/` producen salidas con la forma correcta.
 
-### `classes.json`
+## Estructura del proyecto
 
-Lista JSON con los nombres de clase en orden alfabético. El índice en la lista corresponde al índice de logit que produce el modelo:
-
-```json
-["Abuela", "Agua", "Amor", ...]
+```
+TrainingPipeline/
+├── train.py                 # Script principal de entrenamiento
+├── dataset.py               # Carga, interpolación y augmentación
+├── model.py                 # 1D CNN (usado por train.py)
+├── model_tcn.py             # TCN (usado por train.py)
+├── model_3dcnn.py           # 3D CNN (usado por train.py)
+├── convert_to_coreml.py     # Exportación PyTorch → Core ML
+├── organize_from_json.py    # Organización de videos
+├── list_words.py            # Listado del vocabulario
+├── test_models_smoke.py     # Tests de forma de los modelos
+├── themes.json              # Vocabulario y categorías LSM
+├── palabras.txt             # Exportación del vocabulario
+├── requirements.txt         # Dependencias Python
+├── setup_env.sh             # Script de instalación
+├── configs/                 # Hiperparámetros de referencia (YAML)
+│   ├── cnn1d_config.yaml
+│   ├── tcn_config.yaml
+│   └── cnn3d_config.yaml
+├── models/                  # Implementaciones modulares + factory
+│   ├── __init__.py
+│   ├── cnn1d.py
+│   ├── tcn.py
+│   └── cnn3d.py
+├── runs/                    # Salida de entrenamiento (checkpoints, classes.json)
+├── runs_3dcnn_test/         # Runs de prueba 3D CNN
+└── coreml_models.mlpackage/ # Modelo Core ML exportado
 ```
 
-Este archivo es necesario para interpretar las predicciones del modelo Core ML en la app iOS.
+## Salidas de entrenamiento
+
+Cada run genera en la carpeta `--output`:
+
+| Archivo | Descripción |
+|---|---|
+| `best_model.pt` | Mejor checkpoint por accuracy de validación |
+| `checkpoint_epoch{N}.pt` | Checkpoint periódico cada 10 epochs |
+| `classes.json` | Lista de clases entrenadas (necesaria para inferencia) |
+| `training_curves.png` | Gráficas de loss y accuracy |
+
+El checkpoint incluye: pesos del modelo, optimizer, scheduler, historial, tipo de modelo, `n_frames`, `feature_dim` y `classes`.
+
+## Estado actual
+
+- Vocabulario definido: **221 palabras** en 11 categorías temáticas
+- Último entrenamiento documentado en `runs/`: **187 clases** (clases con suficientes videos de entrenamiento)
+- Tres arquitecturas implementadas y seleccionables desde `train.py`
+- Exportación a Core ML funcional para despliegue en dispositivos Apple
+- Extracción de landmarks desde video **no incluida** en este repo (se espera salida de Apple Vision Framework)
+
+## Dependencias principales
+
+```
+torch, torchvision, numpy, scipy, matplotlib,
+coremltools, pyyaml, tensorboard, scikit-learn, pandas
+```
