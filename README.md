@@ -4,13 +4,19 @@ Pipeline de entrenamiento para **reconocimiento de Lengua de Señas Mexicana (LS
 
 ## Resumen
 
-El flujo completo es:
+El flujo completo tiene dos fases:
+
+**Fase 1 (sin entrenamiento):** huella estadística + DTW — ver [lsm_fingerprints](./lsm_fingerprints/)
+
+**Fase 2 (red neuronal):**
 
 1. **Organizar videos** según categorías y palabras definidas en `themes.json`
-2. **Extraer landmarks** con Apple Vision Framework (fuera de este repo) → archivos `*_landmarks.json`
+2. **Extraer landmarks** con LSMExtractorGUI → archivos `*_landmarks.json`
 3. **Preprocesar y cargar** secuencias temporales normalizadas
 4. **Entrenar** uno de tres modelos (1D CNN, TCN o 3D CNN)
 5. **Exportar** el mejor checkpoint a Core ML (`.mlpackage`)
+
+El TCN de Fase 2 debe superar el baseline de Fase 1 (~60% top-1 LOO) para validar el entrenamiento.
 
 ## Vocabulario y datos
 
@@ -244,7 +250,14 @@ TrainingPipeline/
 │   └── cnn3d.py
 ├── runs/                    # Salida de entrenamiento (checkpoints, classes.json)
 ├── runs_3dcnn_test/         # Runs de prueba 3D CNN
-└── coreml_models.mlpackage/ # Modelo Core ML exportado
+├── coreml_models.mlpackage/ # Modelo Core ML exportado
+├── LSM_Fase1_Architecture.md  # Especificación Fase 1
+└── lsm_fingerprints/        # Fase 1: huella estadística + DTW (sin entrenamiento)
+    ├── build_db.py
+    ├── evaluate.py
+    ├── fingerprint.py
+    ├── matcher.py
+    └── tests/
 ```
 
 ## Salidas de entrenamiento
@@ -266,7 +279,9 @@ El checkpoint incluye: pesos del modelo, optimizer, scheduler, historial, tipo d
 - Último entrenamiento documentado en `runs/`: **187 clases** (clases con suficientes videos de entrenamiento)
 - Tres arquitecturas implementadas y seleccionables desde `train.py`
 - Exportación a Core ML funcional para despliegue en dispositivos Apple
-- Extracción de landmarks desde video **no incluida** en este repo (se espera salida de Apple Vision Framework)
+- Extracción de landmarks: [AppLSMTests/LSMExtractorGUI](../AppLSMTests/LSMExtractorGUI/)
+- Baseline Fase 1: [lsm_fingerprints](./lsm_fingerprints/) — `python evaluate.py --db fingerprints.npz`
+- Inferencia móvil: [AppLSMTests/LSMMobileModelTesting](../AppLSMTests/LSMMobileModelTesting/)
 
 ## Dependencias principales
 
