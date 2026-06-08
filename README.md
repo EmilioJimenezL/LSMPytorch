@@ -9,18 +9,15 @@ Aplicaciones Swift para el proyecto **LSM (Lengua de Señas Mexicana)**. Este re
 │                         Flujo completo LSM                              │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  Videos .mp4          LSMExtractorGUI          TrainingPipeline         │
-│  + themes.json   ──►  (macOS, Vision)    ──►   (PyTorch)                │
-│                       *_landmarks.json          train.py                │
-│                       *_overlay.mp4             │                       │
-│                                                   ▼                       │
-│                                            best_model.pt                │
-│                                                   │                       │
-│                                            convert_to_coreml.py         │
-│                                                   │                       │
-│                                                   ▼                       │
-│  LSMMobileModelTesting  ◄──  coreml_models.mlpackage + classes.json    │
-│  (iOS, cámara en vivo)                                                  │
+│  LSMVideos/           LSMExtractorGUI          lsm_fingerprints (Fase 1) │
+│  category/word/*.mp4  (macOS, Vision)    ──►   fingerprints.npz/.bin      │
+│  + manifest (opt.)    *_landmarks.json          evaluate.py (LOO)         │
+│                       *_overlay.mp4 (opt.)      │                         │
+│                                                   ├──► LSMMobileModelTesting│
+│                                                   │    (Fingerprint+DTW)  │
+│  TrainingPipeline (Fase 2)                        │                         │
+│  train.py ──► Core ML ────────────────────────────┘                         │
+│  (iOS, cámara en vivo — Fase 1 o Core ML)                                 │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -28,8 +25,8 @@ Aplicaciones Swift para el proyecto **LSM (Lengua de Señas Mexicana)**. Este re
 | Repositorio / app | Plataforma | Rol |
 |---|---|---|
 | **LSMExtractorGUI** | macOS | Extrae landmarks de manos y pose desde videos con Vision Framework |
-| **TrainingPipeline** | Python | Entrena modelos y exporta a Core ML |
-| **LSMMobileModelTesting** | iOS | Inferencia en tiempo real con la cámara del dispositivo |
+| **TrainingPipeline** | Python | Fase 2: entrena modelos y exporta a Core ML; incluye **lsm_fingerprints** (Fase 1) |
+| **LSMMobileModelTesting** | iOS | Inferencia en vivo (Fase 1 fingerprint o Fase 2 Core ML) |
 
 ## Proyectos incluidos
 
@@ -39,11 +36,12 @@ App de escritorio en SwiftUI que procesa videos en lote y genera los archivos JS
 
 **Qué hace:**
 
-- Lee videos `.mp4`, `.mov` o `.m4v` de una carpeta de dataset
+- Lee videos `.mp4`, `.mov` o `.m4v` desde una estructura `category/word/`
 - Detecta por frame manos (`VNDetectHumanHandPoseRequest`) y pose corporal (`VNDetectHumanBodyPoseRequest`) con Apple Vision
 - Guarda secuencias de landmarks en JSON
-- Genera un video con overlay visual de esqueleto para inspección
-- Clasifica videos por categoría usando `themes.json` (opcional)
+- Opcionalmente genera un video con overlay visual de esqueleto para inspección
+- Descubre categoría y palabra desde la ruta de carpetas (sin `themes.json`)
+- Mantiene un catálogo `dataset_manifest.json` (opcional al inicio, siempre actualizado al final)
 - Produce un reporte de batch (`_batch_report.json`)
 
 **Requisitos:**
@@ -56,34 +54,38 @@ App de escritorio en SwiftUI que procesa videos en lote y genera los archivos JS
 
 1. Abrir `LSMExtractorGUI/LSMExtractorGUI.xcodeproj` en Xcode
 2. Compilar y ejecutar (⌘R)
-3. Seleccionar opcionalmente `themes.json` (puede copiarse desde `TrainingPipeline/themes.json`)
-4. Seleccionar la carpeta de **Dataset** con los videos
-5. Seleccionar la carpeta de **Salida**
-6. Pulsar **Procesar**
+3. Seleccionar la carpeta raíz **Dataset** (`LSMVideos/`) con estructura `category/word/*.mp4`
+4. Seleccionar la carpeta de **Salida** (`LSMVideosOutput/`)
+5. Opcional: cargar un `dataset_manifest.json` existente (se actualiza en el mismo archivo al terminar)
+6. Opcional: desactivar **Generar video overlay** para modo rápido (solo JSON)
+7. Pulsar **Procesar**
 
 **Estructura de entrada esperada:**
 
-El extractor recorre recursivamente la carpeta de dataset y acepta videos con nombres del tipo `{palabra}[N].mp4` (letras, espacios, guiones y número opcional al final).
+El extractor recorre solo `inputRoot/{category}/{word}/*.mp4`. La categoría y la palabra se infieren de las carpetas, no del nombre del archivo.
 
 ```
-dataset/
-├── Categoria/
-│   └── Palabra/
-│       ├── Palabra1.mp4
-│       └── Palabra2.mp4
+LSMVideos/
+├── Familia/
+│   └── Abuela/
+│       ├── Abuela1.mp4
+│       └── Abuela2.mp4
 └── ...
 ```
 
-Si se carga `themes.json`, solo se procesan videos cuyo nombre coincide con una palabra del vocabulario. Los demás se omiten y aparecen en el log.
+Videos fuera de esa profundidad (p. ej. directamente bajo la raíz o bajo `category/`) se registran en el log como omitidos.
 
 **Estructura de salida:**
 
+La salida replica la estructura de entrada bajo una raíz separada:
+
 ```
-output/
-├── Categoria/
-│   └── Palabra/
-│       ├── Palabra1_landmarks.json    ← input para train.py
-│       └── Palabra1_overlay.mp4       ← video con esqueleto dibujado
+LSMVideosOutput/
+├── dataset_manifest.json              ← catálogo del dataset (generado o actualizado)
+├── Familia/
+│   └── Abuela/
+│       ├── Abuela1_landmarks.json     ← input para train.py
+│       └── Abuela1_overlay.mp4        ← opcional (toggle en UI)
 └── _batch_report.json                 ← resumen del procesamiento
 ```
 
@@ -91,9 +93,10 @@ output/
 
 | Archivo | Responsabilidad |
 |---|---|
-| `LandmarkExtractor.swift` | Detección Vision, dibujo de overlay, lectura/escritura de video |
-| `BatchProcessor.swift` | Descubrimiento de videos, procesamiento en lote, estado de la UI |
-| `Models.swift` | Tipos JSON, `ThemeMap`, modelos de estado (`VideoItem`, `BatchReport`) |
+| `LandmarkExtractor.swift` | Detección Vision, overlay opcional, lectura/escritura de video |
+| `BatchProcessor.swift` | Procesamiento en lote, manifiesto, estado de la UI |
+| `DatasetScanner.swift` | Descubrimiento por ruta, build/merge de `dataset_manifest.json` |
+| `Models.swift` | Tipos JSON, `DatasetManifest`, modelos de estado (`VideoItem`, `BatchReport`) |
 | `ContentView.swift` | Interfaz SwiftUI con panel de control, log y lista de videos |
 
 ---
@@ -131,18 +134,40 @@ App de prueba en SwiftUI que ejecuta modelos Core ML en tiempo real usando la c�
 
 | Control | Función |
 |---|---|
-| Selector de modelo | Cambia entre modelos Core ML disponibles |
+| Selector de modelo | Cambia entre **Fase 1 (Fingerprint+DTW)** y **Fase 2 (Core ML)** |
 | Esqueleto (figura) | Muestra/oculta overlay de manos y pose |
 | Info (ⓘ) | Muestra panel de debug |
 | Rotar cámara | Alterna cámara frontal / trasera (reinicia el buffer) |
 | Anillo de progreso | Indica cuántos frames hay en el buffer (0–85) |
 | Reset (↺) | Limpia buffer y predicciones |
 
-**Modelo incluido:**
+**Modelos incluidos:**
 
-El bundle incluye `coreml_models.mlpackage` (187 clases, baseline v1) y `classes.json` como respaldo. El modelo espera entrada `landmarks` con forma `(1, 85, 135)` y produce logits de salida.
+| Modo | Archivo | Descripción |
+|---|---|---|
+| Fase 1 | `fingerprints.bin` | Huella estadística + DTW (sin entrenamiento) |
+| Fase 2 | `coreml_models.mlpackage` | Red neuronal (187 clases) + `classes.json` |
 
-**Agregar un nuevo modelo:**
+El selector de modelos en la app permite alternar entre ambos backends.
+
+**Actualizar base de datos Fase 1:**
+
+```bash
+cd ../TrainingPipeline/lsm_fingerprints
+python build_db.py --dataset ../output --output ./fingerprints.npz --export-bin ./fingerprints.bin
+# Copiar fingerprints.bin al target iOS en Xcode
+```
+
+**Agregar palabra nueva (Fase 1, sin reentrenar):**
+
+```python
+from build_db import add_class
+from preprocess import prepare_sequence
+add_class("./fingerprints.npz", "NuevaPalabra", [prepare_sequence("video_landmarks.json")],
+          export_bin_path="./fingerprints.bin")
+```
+
+**Agregar un nuevo modelo Core ML (Fase 2):**
 
 1. Exportar desde Python:
    ```bash
@@ -162,11 +187,15 @@ El bundle incluye `coreml_models.mlpackage` (187 clases, baseline v1) y `classes
 
 | Archivo | Responsabilidad |
 |---|---|
-| `LandmarkPipeline.swift` | Extracción Vision, buffer temporal, interpolación, inferencia Core ML |
+| `LandmarkPipeline.swift` | Extracción Vision, buffer, inferencia (Core ML o fingerprint) |
+| `SequencePreprocessor.swift` | Normalización hombro + filtro valid (Fase 1) |
+| `FingerprintExtractor.swift` | Huella 810-dim (Fase 1) |
+| `FingerprintMatcher.swift` | Carga `fingerprints.bin`, cosine + DTW + voting |
 | `CameraManager.swift` | Sesión AVCapture, permisos, cambio de cámara |
 | `ContentView.swift` | UI: cámara, esqueleto, predicciones, debug |
-| `classes.json` | Lista de clases (fallback si no están en metadata del modelo) |
-| `coreml_models.mlpackage` | Modelo Core ML exportado desde PyTorch |
+| `fingerprints.bin` | Base de datos Fase 1 para inferencia |
+| `classes.json` | Lista de clases Core ML (fallback) |
+| `coreml_models.mlpackage` | Modelo Core ML Fase 2 |
 
 ---
 
@@ -219,10 +248,10 @@ python organize_from_json.py --json themes.json --input ./videos --output ./data
 
 ```bash
 # Abrir LSMExtractorGUI en Xcode
-# Dataset: ./dataset   Salida: ./output
+# Dataset: ./LSMVideos   Salida: ./LSMVideosOutput
 ```
 
-La carpeta `./output` resultante es el `--dataset` de `train.py`.
+La carpeta `./LSMVideosOutput` resultante es el `--dataset` de `train.py`.
 
 ### 3. Entrenar modelo (Python)
 
@@ -253,7 +282,8 @@ AppLSMTests/
 │       ├── ContentView.swift           # UI principal
 │       ├── LandmarkExtractor.swift     # Vision + AVFoundation
 │       ├── BatchProcessor.swift        # Procesamiento en lote
-│       └── Models.swift                # Tipos y ThemeMap
+│       ├── DatasetScanner.swift        # Descubrimiento y manifiesto
+│       └── Models.swift                # Tipos y DatasetManifest
 │
 └── LSMMobileModelTesting/              # App iOS — inferencia en vivo
     ├── LSMMobileModelTesting.xcodeproj
@@ -294,15 +324,42 @@ Frame de cámara
 
 La inferencia se ejecuta cada **15 frames** cuando el buffer tiene al menos 85 frames. Una seña se considera detectada cuando la confianza del top-1 supera **15%**.
 
-### themes.json
+### dataset_manifest.json
 
-El extractor usa el mismo archivo de vocabulario que el pipeline de Python. Para cada video, normaliza el nombre del archivo y lo busca en un mapa construido a partir de:
+El extractor puede cargar un manifiesto existente y lo actualiza al finalizar (mismo archivo si se seleccionó uno, o `{outputRoot}/dataset_manifest.json` si no). El escaneo de disco agrega categorías/palabras/videos nuevos sin borrar entradas históricas que ya no estén en disco.
 
-- Nombre de carpeta destino (`videoUrl`)
-- Nombre de visualización (`name`)
-- Variante sin paréntesis
+Esquema simplificado:
 
-Esto permite emparejar archivos como `Abuela2.mp4` con la entrada `"Abuela"` del JSON.
+```json
+{
+  "version": 1,
+  "source_root": "/path/LSMVideos",
+  "output_root": "/path/LSMVideosOutput",
+  "categories": [
+    {
+      "name": "Familia",
+      "words": [
+        {
+          "name": "Abuela",
+          "relative_path": "Familia/Abuela",
+          "videos": [
+            {
+              "filename": "Abuela1.mp4",
+              "landmarks_file": "Abuela1_landmarks.json",
+              "overlay_file": "Abuela1_overlay.mp4",
+              "status": "done",
+              "frames": 120
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "totals": { "categories": 11, "words": 221, "videos": 500 }
+}
+```
+
+`themes.json` sigue usándose en **TrainingPipeline** para organizar videos y entrenar; el extractor ya no lo consume.
 
 ---
 
@@ -328,8 +385,8 @@ Esto permite emparejar archivos como `Abuela2.mp4` con la entrada `"Abuela"` del
 
 | Componente | Estado |
 |---|---|
-| Extracción batch macOS | Funcional — procesa videos, genera JSON + overlay |
-| Integración con themes.json | Funcional — categorización automática |
+| Extracción batch macOS | Funcional — procesa videos, genera JSON + overlay opcional |
+| Catálogo dataset_manifest.json | Funcional — descubrimiento por ruta, merge y persistencia |
 | Inferencia iOS en vivo | Funcional — Top-5, esqueleto, debug |
 | Modelo incluido | `coreml_models` — 187 clases, 85×135 input |
 | Multi-modelo | Soporte en código (`AVAILABLE_MODELS`); solo v1 incluido en bundle |

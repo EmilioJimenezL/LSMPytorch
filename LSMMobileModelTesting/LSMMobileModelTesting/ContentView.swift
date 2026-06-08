@@ -130,6 +130,9 @@ struct ContentView: View {
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 3) {
                 debugRow("FPS",        String(format: "%.0f", pipeline.debug.fps))
                 debugRow("Inferencia", String(format: "%.1f ms", pipeline.debug.inferenceMs))
+                if pipeline.debug.dtwMs > 0 {
+                    debugRow("DTW", String(format: "%.1f ms", pipeline.debug.dtwMs))
+                }
                 debugRow("Buffer",     "\(pipeline.debug.framesInBuffer)/\(N_FRAMES)")
                 debugRow("Modelo",     pipeline.debug.modelName)
                 debugRow("Clases",     "\(pipeline.debug.nClasses)")

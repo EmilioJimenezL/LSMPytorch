@@ -54,16 +54,15 @@ struct ContentView: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
 
-            // themes.json picker
             FolderPickerRow(
-                label: "Categorías (themes.json)",
+                label: "Manifiesto (dataset_manifest.json)",
                 systemImage: "doc.badge.gearshape",
                 color: .orange,
-                url: processor.themesURL,
-                placeholder: "Seleccionar themes.json (opcional)..."
+                url: processor.manifestURL,
+                placeholder: "Seleccionar manifiesto (opcional)..."
             ) {
-                if let url = pickFile(title: "Seleccionar themes.json", ext: "json") {
-                    processor.loadThemes(from: url)
+                if let url = pickFile(title: "Seleccionar dataset_manifest.json", ext: "json") {
+                    processor.loadManifest(from: url)
                 }
             }
 
@@ -72,7 +71,7 @@ struct ContentView: View {
                 systemImage: "folder.fill",
                 color: .blue,
                 url: processor.inputURL,
-                placeholder: "Seleccionar carpeta de videos..."
+                placeholder: "Seleccionar carpeta LSMVideos..."
             ) {
                 if let url = pickFolder(title: "Seleccionar dataset") {
                     processor.loadDataset(from: url)
@@ -84,12 +83,27 @@ struct ContentView: View {
                 systemImage: "folder.badge.plus",
                 color: .green,
                 url: processor.outputURL,
-                placeholder: "Seleccionar carpeta de salida..."
+                placeholder: "Seleccionar carpeta LSMVideosOutput..."
             ) {
                 if let url = pickFolder(title: "Seleccionar carpeta de salida") {
                     processor.outputURL = url
+                    if processor.inputURL != nil {
+                        processor.loadDataset(from: processor.inputURL!)
+                    }
                 }
             }
+
+            Toggle(isOn: $processor.generateOverlay) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Generar video overlay")
+                        .font(.subheadline)
+                    Text("Desactivar para extraer solo JSON (más rápido)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .toggleStyle(.switch)
+            .disabled(processor.isRunning)
 
             // Action buttons
             HStack(spacing: 8) {
@@ -257,10 +271,10 @@ struct ContentView: View {
             Image(systemName: "film.stack")
                 .font(.system(size: 48))
                 .foregroundStyle(.quaternary)
-            Text("Selecciona una carpeta de dataset")
+            Text("Selecciona la carpeta raíz del dataset")
                 .font(.headline)
                 .foregroundStyle(.secondary)
-            Text("La carpeta debe tener subcarpetas por clase,\ncada una con archivos .mp4 o .mov")
+            Text("Estructura esperada: category/word/*.mp4\nEjemplo: Familia/Abuela/Abuela1.mp4")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .multilineTextAlignment(.center)
@@ -354,7 +368,12 @@ struct VideoRow: View {
                     .font(.subheadline)
                     .lineLimit(1)
                 HStack(spacing: 4) {
-                    Text(item.className)
+                    Text(item.categoryName)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("·")
+                        .foregroundStyle(.tertiary)
+                    Text(item.wordFolder)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     if item.framesProcessed > 0 {

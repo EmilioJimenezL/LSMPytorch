@@ -17,72 +17,134 @@ let POSE_LABELS = [
     "left_wrist", "right_wrist"
 ]
 
-// ── Themes JSON models ────────────────────────────────────────────────────────
+// ── Dataset manifest ──────────────────────────────────────────────────────────
 
-struct ThemeWord: Codable {
-    let name: String
-    let videoUrl: String
+struct ManifestTotals: Codable {
+    var categories: Int
+    var words: Int
+    var videos: Int
+}
 
-    /// Nombre de carpeta destino = último segmento del videoUrl
-    var destFolder: String {
-        videoUrl.split(separator: "/").last.map(String.init) ?? name
+struct ManifestVideo: Codable, Equatable {
+    var filename: String
+    var landmarksFile: String?
+    var overlayFile: String?
+    var status: String
+    var frames: Int
+    var error: String?
+
+    enum CodingKeys: String, CodingKey {
+        case filename
+        case landmarksFile = "landmarks_file"
+        case overlayFile   = "overlay_file"
+        case status, frames, error
+    }
+
+    static func pending(filename: String) -> ManifestVideo {
+        ManifestVideo(
+            filename: filename,
+            landmarksFile: nil,
+            overlayFile: nil,
+            status: "pending",
+            frames: 0,
+            error: nil
+        )
     }
 }
 
-struct ThemeCategory: Codable {
-    let name: String
-    let words: [ThemeWord]
+struct ManifestWord: Codable, Equatable {
+    var name: String
+    var relativePath: String
+    var videoCount: Int
+    var videos: [ManifestVideo]
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case relativePath = "relative_path"
+        case videoCount   = "video_count"
+        case videos
+    }
 }
 
-/// Mapa normalizado: nombreNormalizado → (categoria, ThemeWord)
-struct ThemeMap {
-    private var map: [String: (category: String, word: ThemeWord)] = [:]
+struct ManifestCategory: Codable, Equatable {
+    var name: String
+    var videoCount: Int
+    var wordCount: Int
+    var words: [ManifestWord]
 
-    init(categories: [ThemeCategory]) {
-        for cat in categories {
-            for word in cat.words {
-                let key = normalize(word.destFolder)
-                if map[key] == nil { map[key] = (cat.name, word) }
+    enum CodingKeys: String, CodingKey {
+        case name
+        case videoCount = "video_count"
+        case wordCount  = "word_count"
+        case words
+    }
+}
 
-                let key2 = normalize(word.name)
-                if map[key2] == nil { map[key2] = (cat.name, word) }
+struct DatasetManifest: Codable {
+    var version: Int
+    var generatedAt: String
+    var updatedAt: String
+    var sourceRoot: String
+    var outputRoot: String
+    var categories: [ManifestCategory]
+    var totals: ManifestTotals
 
-                // Sin paréntesis: "Fanta (Refresco)" → "Fanta"
-                let sinParen = word.destFolder
-                    .replacingOccurrences(of: "\\(.*?\\)", with: "", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespaces)
-                let key3 = normalize(sinParen)
-                if !key3.isEmpty, map[key3] == nil { map[key3] = (cat.name, word) }
+    enum CodingKeys: String, CodingKey {
+        case version
+        case generatedAt = "generated_at"
+        case updatedAt   = "updated_at"
+        case sourceRoot  = "source_root"
+        case outputRoot  = "output_root"
+        case categories, totals
+    }
+
+    static let currentVersion = 1
+
+    mutating func recomputeCounts() {
+        for i in categories.indices {
+            var catVideos = 0
+            for j in categories[i].words.indices {
+                categories[i].words[j].videoCount = categories[i].words[j].videos.count
+                catVideos += categories[i].words[j].videoCount
             }
+            categories[i].wordCount = categories[i].words.count
+            categories[i].videoCount = catVideos
         }
+        totals = ManifestTotals(
+            categories: categories.count,
+            words: categories.reduce(0) { $0 + $1.wordCount },
+            videos: categories.reduce(0) { $0 + $1.videoCount }
+        )
     }
 
-    /// Busca match para un nombre de archivo sin extensión.
-    /// Soporta {palabra}[N] — quita el número final antes de buscar.
-    func match(for stem: String) -> (category: String, word: ThemeWord)? {
-        let stemSinNumero = stem.replacingOccurrences(
-            of: "\\d+$", with: "", options: .regularExpression)
-        for candidate in [stemSinNumero, stem] {
-            if let result = map[normalize(candidate)] { return result }
-        }
-        return nil
-    }
+    mutating func updateVideo(
+        relativePath: String,
+        filename: String,
+        status: String,
+        frames: Int,
+        landmarksFile: String?,
+        overlayFile: String?,
+        error: String?
+    ) {
+        let parts = relativePath.split(separator: "/").map(String.init)
+        guard parts.count == 2 else { return }
+        let (category, word) = (parts[0], parts[1])
 
-    private func normalize(_ text: String) -> String {
-        var s = text.lowercased()
-        let replacements: [(String, String)] = [
-            ("á","a"),("é","e"),("í","i"),("ó","o"),("ú","u"),
-            ("ü","u"),("ñ","n"),("à","a"),("è","e"),("ì","i"),("ò","o"),("ù","u"),
-        ]
-        for (src, dst) in replacements { s = s.replacingOccurrences(of: src, with: dst) }
-        s = s.replacingOccurrences(of: "[-_/\\\\]+", with: " ", options: .regularExpression)
-        s = s.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespaces)
-        return s
+        guard let catIdx = categories.firstIndex(where: { $0.name == category }),
+              let wordIdx = categories[catIdx].words.firstIndex(where: { $0.name == word }),
+              let vidIdx = categories[catIdx].words[wordIdx].videos.firstIndex(where: { $0.filename == filename })
+        else { return }
+
+        categories[catIdx].words[wordIdx].videos[vidIdx].status = status
+        categories[catIdx].words[wordIdx].videos[vidIdx].frames = frames
+        categories[catIdx].words[wordIdx].videos[vidIdx].landmarksFile = landmarksFile
+        categories[catIdx].words[wordIdx].videos[vidIdx].overlayFile = overlayFile
+        categories[catIdx].words[wordIdx].videos[vidIdx].error = error
+        recomputeCounts()
     }
 }
 
-// ── JSON Output Models ────────────────────────────────────────────────────────
+// ── Landmark JSON models ──────────────────────────────────────────────────────
 
 struct Point2D: Codable {
     let x: Float
@@ -112,7 +174,7 @@ struct FrameLandmarks: Codable {
     }
 }
 
-// ── Processing State ──────────────────────────────────────────────────────────
+// ── Processing state ──────────────────────────────────────────────────────────
 
 enum VideoStatus: String {
     case pending    = "Pendiente"
@@ -126,6 +188,7 @@ struct VideoItem: Identifiable {
     let id           = UUID()
     let categoryName: String
     let wordFolder:   String
+    let relativePath: String
     let className:    String
     let fileName:     String
     let inputURL:     URL
@@ -133,13 +196,21 @@ struct VideoItem: Identifiable {
     var framesProcessed: Int = 0
     var errorMessage: String? = nil
 
-    init(categoryName: String, wordFolder: String, fileName: String, inputURL: URL) {
+    init(categoryName: String, wordFolder: String, relativePath: String,
+         fileName: String, inputURL: URL) {
         self.categoryName = categoryName
         self.wordFolder   = wordFolder
+        self.relativePath = relativePath
         self.className    = wordFolder
         self.fileName     = fileName
         self.inputURL     = inputURL
     }
+}
+
+struct ExtractionResult {
+    let frameCount: Int
+    let landmarksFile: String
+    let overlayFile: String?
 }
 
 struct BatchReport: Codable {

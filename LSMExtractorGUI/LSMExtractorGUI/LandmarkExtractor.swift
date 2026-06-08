@@ -233,19 +233,12 @@ class LandmarkExtractor {
     func processVideo(
         item: VideoItem,
         outputDir: URL,
+        generateOverlay: Bool = true,
         onProgress: @escaping (Int) -> Void
-    ) async throws -> Int {
+    ) async throws -> ExtractionResult {
         let baseName = item.inputURL.deletingPathExtension().lastPathComponent
 
-        // Estructura de salida: outputDir/categoria/palabra/
-        let classOutputDir: URL
-        if item.categoryName.isEmpty || item.categoryName == "Sin categoría" {
-            classOutputDir = outputDir.appendingPathComponent(item.wordFolder)
-        } else {
-            classOutputDir = outputDir
-                .appendingPathComponent(item.categoryName)
-                .appendingPathComponent(item.wordFolder)
-        }
+        let classOutputDir = outputDir.appendingPathComponent(item.relativePath)
         try FileManager.default.createDirectory(at: classOutputDir, withIntermediateDirectories: true)
 
         let asset = AVAsset(url: item.inputURL)
@@ -260,7 +253,6 @@ class LandmarkExtractor {
         let duration   = try await asset.load(.duration)
         let totalFrames = Int(CMTimeGetSeconds(duration) * Double(fps))
 
-        // AVAssetReader for input
         let reader = try AVAssetReader(asset: asset)
         let readerOutput = AVAssetReaderTrackOutput(
             track: videoTrack,
@@ -269,28 +261,36 @@ class LandmarkExtractor {
         reader.add(readerOutput)
         reader.startReading()
 
-        // AVAssetWriter for overlay video
-        let outVideoURL = classOutputDir.appendingPathComponent("\(baseName)_overlay.mp4")
-        if FileManager.default.fileExists(atPath: outVideoURL.path) {
-            try FileManager.default.removeItem(at: outVideoURL)
+        var writer: AVAssetWriter?
+        var writerInput: AVAssetWriterInput?
+        var adaptor: AVAssetWriterInputPixelBufferAdaptor?
+
+        if generateOverlay {
+            let outVideoURL = classOutputDir.appendingPathComponent("\(baseName)_overlay.mp4")
+            if FileManager.default.fileExists(atPath: outVideoURL.path) {
+                try FileManager.default.removeItem(at: outVideoURL)
+            }
+            let w = try AVAssetWriter(outputURL: outVideoURL, fileType: .mp4)
+            let input = AVAssetWriterInput(
+                mediaType: .video,
+                outputSettings: [
+                    AVVideoCodecKey: AVVideoCodecType.h264,
+                    AVVideoWidthKey: Int(size.width),
+                    AVVideoHeightKey: Int(size.height),
+                ]
+            )
+            input.expectsMediaDataInRealTime = false
+            let ad = AVAssetWriterInputPixelBufferAdaptor(
+                assetWriterInput: input,
+                sourcePixelBufferAttributes: nil
+            )
+            w.add(input)
+            w.startWriting()
+            w.startSession(atSourceTime: .zero)
+            writer = w
+            writerInput = input
+            adaptor = ad
         }
-        let writer = try AVAssetWriter(outputURL: outVideoURL, fileType: .mp4)
-        let writerInput = AVAssetWriterInput(
-            mediaType: .video,
-            outputSettings: [
-                AVVideoCodecKey: AVVideoCodecType.h264,
-                AVVideoWidthKey: Int(size.width),
-                AVVideoHeightKey: Int(size.height),
-            ]
-        )
-        writerInput.expectsMediaDataInRealTime = false
-        let adaptor = AVAssetWriterInputPixelBufferAdaptor(
-            assetWriterInput: writerInput,
-            sourcePixelBufferAttributes: nil
-        )
-        writer.add(writerInput)
-        writer.startWriting()
-        writer.startSession(atSourceTime: .zero)
 
         var frames: [FrameLandmarks] = []
         var frameIdx = 0
@@ -304,8 +304,6 @@ class LandmarkExtractor {
             let (leftHand, rightHand) = (try? detectHands(in: pixelBuffer)) ?? (nil, nil)
             let pose = try? detectPose(in: pixelBuffer)
 
-            // Flip Y for JSON (Y=0 at top, consistent with screen coords)
-            // Drawing uses raw Vision coords (Y=0 at bottom) which matches CGContext
             let leftHandJSON  = leftHand.map  { pts in pts.map { Point2D(x: $0.x, y: 1.0 - $0.y) } }
             let rightHandJSON = rightHand.map { pts in pts.map { Point2D(x: $0.x, y: 1.0 - $0.y) } }
             let poseJSON      = pose.map { pts in pts.map {
@@ -320,38 +318,45 @@ class LandmarkExtractor {
                 pose: poseJSON
             ))
 
-            drawOverlay(
-                on: pixelBuffer,
-                leftHand: leftHand,
-                rightHand: rightHand,
-                pose: pose,
-                frameIdx: frameIdx,
-                totalFrames: totalFrames
-            )
+            if generateOverlay, let writerInput, let adaptor {
+                drawOverlay(
+                    on: pixelBuffer,
+                    leftHand: leftHand,
+                    rightHand: rightHand,
+                    pose: pose,
+                    frameIdx: frameIdx,
+                    totalFrames: totalFrames
+                )
 
-            while !writerInput.isReadyForMoreMediaData {
-                try await Task.sleep(nanoseconds: 5_000_000) // 5ms
+                while !writerInput.isReadyForMoreMediaData {
+                    try await Task.sleep(nanoseconds: 5_000_000)
+                }
+                let presentationTime = CMTime(value: CMTimeValue(frameIdx), timescale: CMTimeScale(fps))
+                adaptor.append(pixelBuffer, withPresentationTime: presentationTime)
             }
-            let presentationTime = CMTime(value: CMTimeValue(frameIdx), timescale: CMTimeScale(fps))
-            adaptor.append(pixelBuffer, withPresentationTime: presentationTime)
 
             frameIdx += 1
             onProgress(frameIdx)
         }
 
-        // Finalize writer
-        writerInput.markAsFinished()
-        await withCheckedContinuation { continuation in
-            writer.finishWriting { continuation.resume() }
+        if generateOverlay, let writerInput, let writer {
+            writerInput.markAsFinished()
+            await withCheckedContinuation { continuation in
+                writer.finishWriting { continuation.resume() }
+            }
         }
 
-        // Save JSON
         let jsonURL = classOutputDir.appendingPathComponent("\(baseName)_landmarks.json")
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted]
         let jsonData = try encoder.encode(frames)
         try jsonData.write(to: jsonURL)
 
-        return frameIdx
+        let overlayName = generateOverlay ? "\(baseName)_overlay.mp4" : nil
+        return ExtractionResult(
+            frameCount: frameIdx,
+            landmarksFile: "\(baseName)_landmarks.json",
+            overlayFile: overlayName
+        )
     }
 }

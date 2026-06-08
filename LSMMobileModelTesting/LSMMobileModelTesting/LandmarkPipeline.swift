@@ -67,20 +67,33 @@ struct LSMModel: Identifiable, Equatable {
     let name:        String
     let bundleName:  String
     let description: String
+    let isFingerprint: Bool
+
+    init(name: String, bundleName: String, description: String, isFingerprint: Bool = false) {
+        self.name = name
+        self.bundleName = bundleName
+        self.description = description
+        self.isFingerprint = isFingerprint
+    }
 
     static func == (lhs: LSMModel, rhs: LSMModel) -> Bool {
-        lhs.bundleName == rhs.bundleName
+        lhs.bundleName == rhs.bundleName && lhs.isFingerprint == rhs.isFingerprint
     }
 }
 
 // ── MODELOS DISPONIBLES ───────────────────────────────────────────────────────
 let AVAILABLE_MODELS: [LSMModel] = [
     LSMModel(
-        name:        "v1 — baseline",
-        bundleName:  "coreml_models",
-        description: "Primer entrenamiento"
+        name:        "Fase 1 — Fingerprint+DTW",
+        bundleName:  "fingerprints",
+        description: "Huella estadística + DTW (sin entrenamiento)",
+        isFingerprint: true
     ),
-    // Agrega más modelos aquí
+    LSMModel(
+        name:        "Fase 2 — Core ML v1",
+        bundleName:  "coreml_models",
+        description: "Red neuronal entrenada"
+    ),
 ]
 
 // ── Landmark extraction ───────────────────────────────────────────────────────
@@ -184,6 +197,8 @@ struct Prediction: Identifiable {
 struct DebugInfo {
     var fps:              Double = 0
     var inferenceMs:      Double = 0
+    var cosineMs:         Double = 0
+    var dtwMs:            Double = 0
     var framesInBuffer:   Int    = 0
     var handLeft:         Bool   = false
     var handRight:        Bool   = false
@@ -207,7 +222,9 @@ class LandmarkPipeline: ObservableObject {
 
     private var frameBuffer: [[Float]] = []
     private var model:   MLModel?
+    private var fingerprintMatcher: FingerprintMatcher?
     private var classes: [String] = []
+    private var useFingerprint = false
 
     private let inferenceStride = 15
 
@@ -216,6 +233,9 @@ class LandmarkPipeline: ObservableObject {
     private var lastFPSTime = Date()
 
     init() {
+        #if DEBUG
+        Phase1ParityCheck.verify()
+        #endif
         if let first = AVAILABLE_MODELS.first { loadModel(first) }
     }
 
@@ -225,7 +245,24 @@ class LandmarkPipeline: ObservableObject {
         reset()
         loadError   = nil
         model       = nil
+        fingerprintMatcher = nil
         classes     = []
+        useFingerprint = descriptor.isFingerprint
+        activeModel = descriptor
+
+        if descriptor.isFingerprint {
+            let matcher = FingerprintMatcher(bundleName: descriptor.bundleName)
+            if let err = matcher.loadError {
+                loadError = err
+                return
+            }
+            fingerprintMatcher = matcher
+            classes = matcher.classes
+            debug.modelName = descriptor.name
+            debug.nClasses  = classes.count
+            print("✓ Fingerprint DB: \(classes.count) clases, \(matcher.fingerprints.count) videos")
+            return
+        }
 
         let url = Bundle.main.url(forResource: descriptor.bundleName,
                                   withExtension: "mlpackage")
@@ -241,7 +278,6 @@ class LandmarkPipeline: ObservableObject {
             let config = MLModelConfiguration()
             config.computeUnits = .all
             model = try MLModel(contentsOf: modelURL, configuration: config)
-            activeModel = descriptor
 
             // Print ALL metadata for diagnosis
             let desc = model!.modelDescription
@@ -345,6 +381,13 @@ class LandmarkPipeline: ObservableObject {
     // MARK: - Inference
 
     private func runInference() {
+        let t0 = Date()
+
+        if useFingerprint {
+            runFingerprintInference(startTime: t0)
+            return
+        }
+
         guard let model else {
             print("⚠ runInference: modelo es nil")
             return
@@ -354,7 +397,6 @@ class LandmarkPipeline: ObservableObject {
             return
         }
 
-        let t0           = Date()
         let recent       = Array(frameBuffer.suffix(N_FRAMES))
         let interpolated = interpolateSequence(recent, to: N_FRAMES)
         let flat         = interpolated.flatMap { $0 }
@@ -420,6 +462,30 @@ class LandmarkPipeline: ObservableObject {
         debug.topConfidence = top5.first?.confidence ?? 0
         isDetecting = (top5.first?.confidence ?? 0) > 0.15
         predictions = top5
+    }
+
+    private func runFingerprintInference(startTime t0: Date) {
+        guard let matcher = fingerprintMatcher, matcher.isLoaded else {
+            loadError = fingerprintMatcher?.loadError ?? "Fingerprint matcher no cargado"
+            return
+        }
+
+        guard let sequence = SequencePreprocessor.prepareSequence(from: frameBuffer) else {
+            return
+        }
+
+        let tMatch = Date()
+        let results = matcher.match(querySequence: sequence)
+        debug.inferenceMs = Date().timeIntervalSince(t0) * 1000
+        debug.dtwMs = Date().timeIntervalSince(tMatch) * 1000
+
+        let top5 = results.prefix(5).map {
+            Prediction(label: $0.label, confidence: $0.confidence)
+        }
+
+        debug.topConfidence = top5.first?.confidence ?? 0
+        isDetecting = (top5.first?.confidence ?? 0) > LSMConstants.confidenceThreshold
+        predictions = Array(top5)
     }
 
     // MARK: - Reset

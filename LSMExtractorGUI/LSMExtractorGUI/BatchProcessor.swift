@@ -6,34 +6,31 @@ class BatchProcessor: ObservableObject {
 
     // MARK: - Published State
 
-    @Published var inputURL:   URL? = nil
-    @Published var outputURL:  URL? = nil
-    @Published var themesURL:  URL? = nil
-    @Published var themeMap:   ThemeMap? = nil
-    @Published var videos:     [VideoItem] = []
-    @Published var isRunning:  Bool = false
-    @Published var progress:   Double = 0.0
-    @Published var log:        [String] = []
-    @Published var isDone:     Bool = false
-    @Published var report:     BatchReport? = nil
+    @Published var inputURL:        URL? = nil
+    @Published var outputURL:       URL? = nil
+    @Published var manifestURL:     URL? = nil
+    @Published var generateOverlay: Bool = true
+    @Published var videos:          [VideoItem] = []
+    @Published var manifest:        DatasetManifest? = nil
+    @Published var isRunning:       Bool = false
+    @Published var progress:        Double = 0.0
+    @Published var log:             [String] = []
+    @Published var isDone:          Bool = false
+    @Published var report:          BatchReport? = nil
 
     private let extractor = LandmarkExtractor()
 
-    // MARK: - Load themes.json
+    // MARK: - Manifest
 
-    func loadThemes(from url: URL) {
-        themesURL = url
+    func loadManifest(from url: URL) {
+        manifestURL = url
         do {
-            let data = try Data(contentsOf: url)
-            let categories = try JSONDecoder().decode([ThemeCategory].self, from: data)
-            themeMap = ThemeMap(categories: categories)
-            let totalWords = categories.reduce(0) { $0 + $1.words.count }
-            appendLog("📋 Temas cargados: \(categories.count) categorías, \(totalWords) palabras")
-            // Si ya hay un dataset cargado, re-clasificar
+            manifest = try DatasetScanner.loadManifest(from: url)
+            appendLog("📋 Manifiesto cargado: \(manifest?.totals.categories ?? 0) categorías, \(manifest?.totals.words ?? 0) palabras")
             if inputURL != nil { reloadDataset() }
         } catch {
-            appendLog("❌ Error al leer themes.json: \(error.localizedDescription)")
-            themeMap = nil
+            appendLog("❌ Error al leer manifiesto: \(error.localizedDescription)")
+            manifest = nil
         }
     }
 
@@ -46,81 +43,30 @@ class BatchProcessor: ObservableObject {
 
     private func reloadDataset() {
         guard let inputURL else { return }
-        videos = []
         isDone = false
         progress = 0
         report = nil
 
-        let fm = FileManager.default
-        let videoExtensions = ["mp4", "mov", "m4v"]
+        let outputPath = outputURL?.path ?? ""
+        let scan = DatasetScanner.scan(inputRoot: inputURL, outputRoot: outputPath)
 
-        // Recopilar todos los videos de la carpeta (estructura plana o anidada)
-        var allVideos: [URL] = []
-        if let enumerator = fm.enumerator(
-            at: inputURL,
-            includingPropertiesForKeys: [.isRegularFileKey],
-            options: [.skipsHiddenFiles]
-        ) {
-            for case let fileURL as URL in enumerator {
-                if videoExtensions.contains(fileURL.pathExtension.lowercased()) {
-                    allVideos.append(fileURL)
-                }
-            }
-        }
-        allVideos.sort { $0.lastPathComponent < $1.lastPathComponent }
-
-        var found:   [VideoItem] = []
-        var skipped: [String]    = []
-
-        for videoURL in allVideos {
-            let stem = videoURL.deletingPathExtension().lastPathComponent
-
-            // Validar formato {palabra}[N].mp4 — debe tener solo letras/espacios + número opcional
-            guard isValidName(stem) else {
-                skipped.append(videoURL.lastPathComponent)
-                continue
-            }
-
-            // Si hay themes.json, buscar la categoría
-            if let themeMap {
-                if let match = themeMap.match(for: stem) {
-                    found.append(VideoItem(
-                        categoryName: match.category,
-                        wordFolder:   match.word.destFolder,
-                        fileName:     videoURL.lastPathComponent,
-                        inputURL:     videoURL
-                    ))
-                } else {
-                    skipped.append(videoURL.lastPathComponent)
-                }
-            } else {
-                // Sin themes.json: usar el nombre del archivo como clase
-                let wordFolder = stem.replacingOccurrences(
-                    of: "\\d+$", with: "", options: .regularExpression)
-                    .trimmingCharacters(in: .whitespaces)
-                found.append(VideoItem(
-                    categoryName: "Sin categoría",
-                    wordFolder:   wordFolder,
-                    fileName:     videoURL.lastPathComponent,
-                    inputURL:     videoURL
-                ))
-            }
+        if let existing = manifest, manifestURL != nil {
+            manifest = DatasetScanner.merge(existing: existing, scan: scan, outputRoot: outputPath)
+        } else {
+            manifest = scan.manifest
         }
 
-        videos = found
-        let cats = Set(found.map(\.categoryName)).count
-        appendLog("📂 \(found.count) videos en \(cats) categorías")
-        if !skipped.isEmpty {
-            appendLog("⚠ \(skipped.count) omitidos (sin match en themes.json):")
-            skipped.prefix(10).forEach { appendLog("   - \($0)") }
-            if skipped.count > 10 { appendLog("   ... y \(skipped.count - 10) más") }
-        }
-    }
+        videos = scan.videos
+        let cats = Set(scan.videos.map(\.categoryName)).count
+        appendLog("📂 \(scan.videos.count) videos en \(cats) categorías (estructura category/word/)")
 
-    /// Valida que el nombre sea {palabra}[N] — letras, espacios, guiones y número opcional al final.
-    private func isValidName(_ stem: String) -> Bool {
-        let pattern = "^[\\p{L}\\s\\-_\\(\\)]+\\d*$"
-        return stem.range(of: pattern, options: .regularExpression) != nil
+        if !scan.skippedPaths.isEmpty {
+            appendLog("⚠ \(scan.skippedPaths.count) videos fuera de category/word/:")
+            scan.skippedPaths.prefix(10).forEach { appendLog("   - \($0)") }
+            if scan.skippedPaths.count > 10 {
+                appendLog("   ... y \(scan.skippedPaths.count - 10) más")
+            }
+        }
     }
 
     // MARK: - Batch Processing
@@ -131,54 +77,86 @@ class BatchProcessor: ObservableObject {
     }
 
     private func runBatch() async {
-        guard let outputURL else { return }
+        guard let outputURL, var currentManifest = manifest else { return }
 
         isRunning = true
         isDone = false
         progress = 0
-        log = []
 
         let totalVideos = videos.count
         appendLog("🚀 Iniciando procesamiento de \(totalVideos) videos...")
-        appendLog("📁 Salida: \(outputURL.path)\n")
+        appendLog("📁 Salida: \(outputURL.path)")
+        appendLog(generateOverlay ? "🎬 Overlay: activado" : "⚡ Modo rápido: solo JSON\n")
 
         let startTime  = Date()
         var processed  = 0
         var errorCount = 0
-        var skipped    = 0
         var failedVideos: [FailedVideo] = []
+
+        currentManifest.outputRoot = outputURL.path
+        currentManifest.updatedAt = ISO8601DateFormatter().string(from: Date())
 
         for index in videos.indices {
             let item = videos[index]
 
             videos[index].status = .processing
-            appendLog("▶ [\(index + 1)/\(totalVideos)] \(item.categoryName)/\(item.wordFolder)/\(item.fileName)")
+            appendLog("▶ [\(index + 1)/\(totalVideos)] \(item.relativePath)/\(item.fileName)")
 
+            currentManifest.updateVideo(
+                relativePath: item.relativePath,
+                filename: item.fileName,
+                status: "processing",
+                frames: 0,
+                landmarksFile: nil,
+                overlayFile: nil,
+                error: nil
+            )
+
+            let overlayFlag = generateOverlay
             let result = await Task.detached(priority: .userInitiated) {
                 do {
-                    let frames = try await self.extractor.processVideo(
+                    let extraction = try await self.extractor.processVideo(
                         item: item,
                         outputDir: outputURL,
+                        generateOverlay: overlayFlag,
                         onProgress: { _ in }
                     )
-                    return Result<Int, Error>.success(frames)
+                    return Result<ExtractionResult, Error>.success(extraction)
                 } catch {
-                    return Result<Int, Error>.failure(error)
+                    return Result<ExtractionResult, Error>.failure(error)
                 }
             }.value
 
             switch result {
-            case .success(let frameCount):
+            case .success(let extraction):
                 processed += 1
                 videos[index].status = .done
-                videos[index].framesProcessed = frameCount
-                appendLog("  ✓ \(frameCount) frames → \(item.categoryName)/\(item.wordFolder)/")
+                videos[index].framesProcessed = extraction.frameCount
+                currentManifest.updateVideo(
+                    relativePath: item.relativePath,
+                    filename: item.fileName,
+                    status: "done",
+                    frames: extraction.frameCount,
+                    landmarksFile: extraction.landmarksFile,
+                    overlayFile: extraction.overlayFile,
+                    error: nil
+                )
+                appendLog("  ✓ \(extraction.frameCount) frames → \(item.relativePath)/")
 
             case .failure(let error):
                 errorCount += 1
                 let msg = error.localizedDescription
                 videos[index].status = .error
                 videos[index].errorMessage = msg
+                currentManifest.updateVideo(
+                    relativePath: item.relativePath,
+                    filename: item.fileName,
+                    status: "error",
+                    frames: 0,
+                    landmarksFile: nil,
+                    overlayFile: nil,
+                    error: msg
+                )
                 failedVideos.append(FailedVideo(
                     className: item.wordFolder,
                     fileName:  item.fileName,
@@ -191,6 +169,15 @@ class BatchProcessor: ObservableObject {
         }
 
         let elapsed = Date().timeIntervalSince(startTime)
+        manifest = currentManifest
+
+        let manifestDest = manifestURL ?? outputURL.appendingPathComponent("dataset_manifest.json")
+        do {
+            try DatasetScanner.saveManifest(currentManifest, to: manifestDest)
+            appendLog("   Manifiesto : \(manifestDest.path)")
+        } catch {
+            appendLog("   ⚠ Error guardando manifiesto: \(error.localizedDescription)")
+        }
 
         let batchReport = BatchReport(
             timestamp:    ISO8601DateFormatter().string(from: Date()),
@@ -198,7 +185,7 @@ class BatchProcessor: ObservableObject {
             outputDir:    outputURL.path,
             totalVideos:  totalVideos,
             processed:    processed,
-            skipped:      skipped,
+            skipped:      0,
             errors:       errorCount,
             elapsedSeconds: elapsed,
             failed:       failedVideos
