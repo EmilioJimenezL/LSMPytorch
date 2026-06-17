@@ -219,12 +219,16 @@ class LandmarkPipeline: ObservableObject {
     @Published var debug:        DebugInfo = DebugInfo()
     @Published var activeModel:  LSMModel? = nil
     @Published var loadError:    String? = nil
+    @Published var isLoadingModel = false
 
     private var frameBuffer: [[Float]] = []
     private var model:   MLModel?
     private var fingerprintMatcher: FingerprintMatcher?
     private var classes: [String] = []
     private var useFingerprint = false
+    private var loadTask: Task<Void, Never>?
+    private var inferenceTask: Task<Void, Never>?
+    private var inferenceInFlight = false
 
     private let inferenceStride = 15
 
@@ -242,8 +246,12 @@ class LandmarkPipeline: ObservableObject {
     // MARK: - Model switching
 
     func loadModel(_ descriptor: LSMModel) {
+        loadTask?.cancel()
+        inferenceTask?.cancel()
+        inferenceInFlight = false
         reset()
         loadError   = nil
+        isLoadingModel = false
         model       = nil
         fingerprintMatcher = nil
         classes     = []
@@ -251,16 +259,24 @@ class LandmarkPipeline: ObservableObject {
         activeModel = descriptor
 
         if descriptor.isFingerprint {
-            let matcher = FingerprintMatcher(bundleName: descriptor.bundleName)
-            if let err = matcher.loadError {
-                loadError = err
-                return
+            isLoadingModel = true
+            let bundleName = descriptor.bundleName
+            loadTask = Task { @MainActor in
+                let matcher = await Task.detached(priority: .userInitiated) {
+                    FingerprintMatcher(bundleName: bundleName)
+                }.value
+                guard !Task.isCancelled else { return }
+                isLoadingModel = false
+                if let err = matcher.loadError {
+                    loadError = err
+                    return
+                }
+                fingerprintMatcher = matcher
+                classes = matcher.classes
+                debug.modelName = descriptor.name
+                debug.nClasses  = classes.count
+                print("✓ Fingerprint DB: \(classes.count) clases, \(matcher.fingerprints.count) videos")
             }
-            fingerprintMatcher = matcher
-            classes = matcher.classes
-            debug.modelName = descriptor.name
-            debug.nClasses  = classes.count
-            print("✓ Fingerprint DB: \(classes.count) clases, \(matcher.fingerprints.count) videos")
             return
         }
 
@@ -466,26 +482,38 @@ class LandmarkPipeline: ObservableObject {
 
     private func runFingerprintInference(startTime t0: Date) {
         guard let matcher = fingerprintMatcher, matcher.isLoaded else {
-            loadError = fingerprintMatcher?.loadError ?? "Fingerprint matcher no cargado"
+            if !isLoadingModel {
+                loadError = fingerprintMatcher?.loadError ?? "Fingerprint matcher no cargado"
+            }
             return
         }
+        guard !inferenceInFlight else { return }
 
         guard let sequence = SequencePreprocessor.prepareSequence(from: frameBuffer) else {
             return
         }
 
-        let tMatch = Date()
-        let results = matcher.match(querySequence: sequence)
-        debug.inferenceMs = Date().timeIntervalSince(t0) * 1000
-        debug.dtwMs = Date().timeIntervalSince(tMatch) * 1000
+        inferenceInFlight = true
+        inferenceTask = Task.detached(priority: .userInitiated) { [weak self] in
+            let output = matcher.match(querySequence: sequence)
+            let totalMs = Date().timeIntervalSince(t0) * 1000
+            let top5 = output.results.prefix(5).map {
+                Prediction(label: $0.label, confidence: $0.confidence)
+            }
+            let topConf = top5.first?.confidence ?? 0
+            let detecting = topConf > LSMConstants.confidenceThreshold
 
-        let top5 = results.prefix(5).map {
-            Prediction(label: $0.label, confidence: $0.confidence)
+            await MainActor.run {
+                guard let self else { return }
+                self.inferenceInFlight = false
+                self.debug.inferenceMs = totalMs
+                self.debug.cosineMs = output.cosineMs
+                self.debug.dtwMs = output.dtwMs
+                self.debug.topConfidence = topConf
+                self.isDetecting = detecting
+                self.predictions = Array(top5)
+            }
         }
-
-        debug.topConfidence = top5.first?.confidence ?? 0
-        isDetecting = (top5.first?.confidence ?? 0) > LSMConstants.confidenceThreshold
-        predictions = Array(top5)
     }
 
     // MARK: - Reset

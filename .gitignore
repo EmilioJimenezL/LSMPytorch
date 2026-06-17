@@ -1,0 +1,31 @@
+# --- macOS / Xcode ---
+.DS_Store
+**/DerivedData/
+build/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+**/xcuserdata/
+
+# --- Signing & credentials (never commit) ---
+*.mobileprovision
+*.provisionprofile
+*.cer
+*.p12
+*.p8
+Secrets.xcconfig
+*.secrets.xcconfig
+.env
+
+# --- Distribution artifacts ---
+*.ipa
+*.dSYM.zip
+
+# --- Phase 1 artifacts (generated locally, do not commit) ---
+!**/fingerprints.bin
+!**/fingerprints.npz
+
+# --- Agent-generated docs — only README and AGENTS are tracked ---
+*.md
+!README.md
+!AGENTS.md

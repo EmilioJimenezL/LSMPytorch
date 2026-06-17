@@ -18,6 +18,7 @@ enum LSMConstants {
     static let topKFilter = 20
     static let topKDTW = 5
     static let confidenceThreshold: Float = 0.15
+    static let dtwRadius = 10
 
     static let binMagic: UInt32 = 0x4C534D46  // "LSMF"
     static let binVersion: UInt32 = 1

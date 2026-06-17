@@ -1,5 +1,7 @@
 # AppLSMTests
 
+> **For AI-assisted development:** see [AGENTS.md](./AGENTS.md) for architecture invariants, file index, commands, and doc-update protocol.
+
 Aplicaciones Swift para el proyecto **LSM (Lengua de Señas Mexicana)**. Este repositorio complementa el [TrainingPipeline](../TrainingPipeline/) de Python y cubre las dos etapas que faltaban en el flujo completo: **extracción de landmarks desde video** y **prueba de modelos en dispositivo móvil**.
 
 ## Resumen del ecosistema
@@ -153,10 +155,90 @@ El selector de modelos en la app permite alternar entre ambos backends.
 **Actualizar base de datos Fase 1:**
 
 ```bash
-cd ../TrainingPipeline/lsm_fingerprints
-python build_db.py --dataset ../output --output ./fingerprints.npz --export-bin ./fingerprints.bin
-# Copiar fingerprints.bin al target iOS en Xcode
+cp ../TrainingPipeline/lsm_fingerprints/fingerprints.bin \
+   LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin
 ```
+
+Regenerar desde LSMOutput si hace falta:
+
+```bash
+cd ../TrainingPipeline/lsm_fingerprints
+python build_db.py \
+  --dataset ../LSMOutput \
+  --output ./fingerprints.npz \
+  --export-bin ./fingerprints.bin \
+  --min-videos 2
+```
+
+El bin (~95 MB, 307 clases / 1934 videos) **no se commitea** — está en `.gitignore`. El proyecto Xcode usa `PBXFileSystemSynchronizedRootGroup`: basta copiar el archivo a `LSMMobileModelTesting/LSMMobileModelTesting/` y recompilar.
+
+## Validar Fase 1 en dispositivo (después del baseline Python)
+
+Requisitos previos (generados en TrainingPipeline, no commiteados):
+
+- `TrainingPipeline/lsm_fingerprints/fingerprints.bin` — base de producción (~307 clases)
+- Baseline LOO registrado en [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md#phase-1-baseline-lsmoutput)
+
+### Estado de integración (2026-06-06)
+
+| Paso | Estado | Notas |
+|---|---|---|
+| Bin en bundle local | Hecho | `fingerprints.bin` (~95 MB) copiado al target; gitignored |
+| Header / carga | Verificado offline | Magic `LSMF`, 307 clases, 1934 videos; parse ~0.1 s (Linux) |
+| Paridad huella | Verificado offline | `golden_sequence.json` max diff **0.0** (Python); Debug build debe imprimir `✓ Parity check passed` |
+| Carga async + UI | Hecho | `loadModel` parsea en background; spinner «Cargando fingerprints.bin…» |
+| DTW radius + inferencia async | Hecho | `dtwRadius=10` (Sakoe-Chiba); `match()` en cola de fondo |
+| Prueba en vivo | **Pendiente Mac/dispositivo** | Matriz abajo — requiere cámara |
+| Latencia en dispositivo | **Pendiente Mac/dispositivo** | Panel debug: Inferencia / Cosine / DTW ms |
+
+Referencia de latencia (Linux desktop, Python FastDTW radius=10): **~930 ms/ciclo** — por encima del objetivo de 200 ms. iOS con Accelerate + banda DTW debería ser más rápido; medir en el panel debug. Si sigue >200 ms, el código ya evita bloquear el hilo principal.
+
+### 1. Copiar bin al target iOS
+
+```bash
+cp ../TrainingPipeline/lsm_fingerprints/fingerprints.bin \
+   LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin
+```
+
+Abrir `LSMMobileModelTesting.xcodeproj` y compilar (el archivo sincronizado se incluye automáticamente en el bundle).
+
+### 2. Comprobar paridad Debug
+
+1. Compilar en **Debug** (dispositivo recomendado)
+2. Consola Xcode: `✓ Parity check passed (max diff …)` y `✓ Fingerprint DB: 307 clases, 1934 videos`
+3. Si falla paridad: regenerar fixture con `export_fixtures.py` y alinear `LSMConstants.swift` con `constants.py`
+
+### 3. Matriz de prueba en vivo (Fase 1)
+
+Priorizar categorías con mejor LOO. Registrar Top-1, confianza %, Inferencia/Cosine/DTW ms del panel debug.
+
+| # | Categoría | Señas de ejemplo | LOO Python |
+|---|---|---|---|
+| 1 | Festividades | Cualquier palabra indexada | 24.4% |
+| 2 | Personajes_Historicos | Gobernador, etc. | 17.3% |
+| 3 | Colores | 2 palabras | 8.3% |
+| 4 | Familia | Abuela, Madre | 4.0% |
+| 5 | Abecedario | Letras | 2.1% |
+
+Criterio por seña: Top-1 visible; confianza >15% → punto verde «Detectando»; pills L/R/P activas.
+
+### 4. Medir latencia
+
+Panel debug (botón ⓘ): **Inferencia**, **Cosine**, **DTW**. Objetivo total **<200 ms** (meta <100 ms).
+
+### 5. Release smoke
+
+Compilar **Release** una vez: paridad omitida (`#if DEBUG`); Fase 1 debe cargar y responder igual.
+
+### 6. Decisión según resultados
+
+| LOO Python | Comportamiento en vivo | Acción |
+|---|---|---|
+| <40% (actual: 6.57%) | Coincidencias pobres esperadas | Mejorar datos/preprocessing en TrainingPipeline antes de tuning iOS |
+| 40–60% | Coincidencias parciales | Iterar categorías débiles |
+| ≥60% | Coincidencias estables | Baseline Fase 1 cumplido; comparar con Fase 2 |
+
+Checklist para agentes: [AGENTS.md — Phase 1 iOS validation](./AGENTS.md#phase-1-ios-validation-checklist)
 
 **Agregar palabra nueva (Fase 1, sin reentrenar):**
 
@@ -387,9 +469,9 @@ Esquema simplificado:
 |---|---|
 | Extracción batch macOS | Funcional — procesa videos, genera JSON + overlay opcional |
 | Catálogo dataset_manifest.json | Funcional — descubrimiento por ruta, merge y persistencia |
-| Inferencia iOS en vivo | Funcional — Top-5, esqueleto, debug |
-| Modelo incluido | `coreml_models` — 187 clases, 85×135 input |
-| Multi-modelo | Soporte en código (`AVAILABLE_MODELS`); solo v1 incluido en bundle |
+| Inferencia iOS en vivo | Funcional — Top-5, esqueleto, debug; Fase 1 bundle local listo |
+| Fase 1 production bin | Copiado localmente (~95 MB, 307 clases); gitignored |
+| Multi-modelo | Fase 1 (default) + Fase 2 Core ML en selector |
 
 ## Relación con TrainingPipeline
 

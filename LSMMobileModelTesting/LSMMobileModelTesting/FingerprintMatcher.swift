@@ -90,23 +90,29 @@ final class FingerprintMatcher {
         }
     }
 
-    func match(querySequence: [[Float]]) -> [FingerprintMatchResult] {
-        guard isLoaded else { return [] }
+    func match(querySequence: [[Float]]) -> (results: [FingerprintMatchResult], cosineMs: Double, dtwMs: Double) {
+        guard isLoaded else { return ([], 0, 0) }
 
         let queryFP = FingerprintExtractor.extract(from: querySequence)
 
+        let tCosine = CFAbsoluteTimeGetCurrent()
         var candidates: [(index: Int, cosineDist: Float)] = []
+        candidates.reserveCapacity(fingerprints.count)
         for i in 0 ..< fingerprints.count {
             candidates.append((i, cosineDistance(queryFP, fingerprints[i])))
         }
         candidates.sort { $0.cosineDist < $1.cosineDist }
         let topFilter = Array(candidates.prefix(LSMConstants.topKFilter))
+        let cosineMs = (CFAbsoluteTimeGetCurrent() - tCosine) * 1000
 
+        let tDtw = CFAbsoluteTimeGetCurrent()
         var dtwResults: [(index: Int, dtwDist: Float)] = []
+        dtwResults.reserveCapacity(topFilter.count)
         for c in topFilter {
             dtwResults.append((c.index, dtwDistance(querySequence, sequences[c.index])))
         }
         dtwResults.sort { $0.dtwDist < $1.dtwDist }
+        let dtwMs = (CFAbsoluteTimeGetCurrent() - tDtw) * 1000
 
         var classScores: [Int: Float] = [:]
         for item in dtwResults.prefix(LSMConstants.topKDTW) {
@@ -125,7 +131,7 @@ final class FingerprintMatcher {
             let name = labelIdx < classes.count ? classes[labelIdx] : "clase_\(labelIdx)"
             results.append(FingerprintMatchResult(label: name, confidence: normScore, rank: rank + 1))
         }
-        return results
+        return (results, cosineMs, dtwMs)
     }
 
     private func cosineDistance(_ a: [Float], _ b: [Float]) -> Float {
@@ -137,13 +143,18 @@ final class FingerprintMatcher {
     private func dtwDistance(_ a: [[Float]], _ b: [[Float]]) -> Float {
         let n = a.count
         let m = b.count
+        guard n > 0, m > 0 else { return .infinity }
+        let radius = LSMConstants.dtwRadius
+
         var prev = [Float](repeating: .infinity, count: m + 1)
         var curr = [Float](repeating: .infinity, count: m + 1)
         prev[0] = 0
 
         for i in 1 ... n {
             curr[0] = .infinity
-            for j in 1 ... m {
+            let jStart = max(1, i - radius)
+            let jEnd = min(m, i + radius)
+            for j in jStart ... jEnd {
                 let cost = frameDistance(a[i - 1], b[j - 1])
                 curr[j] = cost + min(curr[j - 1], prev[j], prev[j - 1])
             }

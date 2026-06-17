@@ -130,6 +130,9 @@ struct ContentView: View {
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 3) {
                 debugRow("FPS",        String(format: "%.0f", pipeline.debug.fps))
                 debugRow("Inferencia", String(format: "%.1f ms", pipeline.debug.inferenceMs))
+                if pipeline.debug.cosineMs > 0 {
+                    debugRow("Cosine", String(format: "%.1f ms", pipeline.debug.cosineMs))
+                }
                 if pipeline.debug.dtwMs > 0 {
                     debugRow("DTW", String(format: "%.1f ms", pipeline.debug.dtwMs))
                 }
@@ -195,6 +198,15 @@ struct ContentView: View {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
                     Text(error).font(.caption).foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(14)
+            } else if pipeline.isLoadingModel {
+                HStack {
+                    ProgressView()
+                        .tint(.white)
+                    Text("Cargando fingerprints.bin…")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.8))
                 }
                 .padding(14)
             } else if pipeline.predictions.isEmpty {
