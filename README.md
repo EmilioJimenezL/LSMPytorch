@@ -1,12 +1,14 @@
 # LSM Training Pipeline
 
+> **For AI-assisted development:** see [AGENTS.md](./AGENTS.md) for architecture invariants, file index, commands, and doc-update protocol.
+
 Pipeline de entrenamiento para **reconocimiento de Lengua de Señas Mexicana (LSM)**. El proyecto clasifica gestos a partir de landmarks de manos y pose corporal extraídos de videos, entrena modelos de deep learning en PyTorch y los exporta a Core ML para despliegue en iOS/macOS.
 
 ## Resumen
 
 El flujo completo tiene dos fases:
 
-**Fase 1 (sin entrenamiento):** huella estadística + DTW — ver [lsm_fingerprints](./lsm_fingerprints/)
+**Fase 1 (sin entrenamiento):** huella estadística 810-dim + DTW en `lsm_fingerprints/` — ver [Fase 1](#fase-1--huella-estadística--dtw) más abajo
 
 **Fase 2 (red neuronal):**
 
@@ -140,7 +142,125 @@ pip install -r requirements.txt
 
 Con [direnv](https://direnv.net/), el proyecto usa `layout python3` automáticamente.
 
-## Uso
+### Dependencias Fase 1 (`lsm_fingerprints/`)
+
+Además de `requirements.txt`, instala las dependencias adicionales de Fase 1:
+
+```bash
+pip install -r lsm_fingerprints/requirements.txt   # fastdtw
+```
+
+(`scipy` ya viene en `requirements.txt` y lo reutiliza `preprocess.py` vía `dataset.py`.)
+
+## Fase 1 — Huella estadística + DTW
+
+Pipeline **sin entrenamiento** para reconocimiento de LSM. Indexa landmarks JSON, extrae una huella estadística de 810 dimensiones por video y clasifica con filtro coseno + FastDTW + votación.
+
+### Instalación Fase 1
+
+```bash
+cd lsm_fingerprints
+pip install -r requirements.txt
+pip install -r ../requirements.txt
+```
+
+### Construir base de datos
+
+Desde la carpeta de landmarks extraídos por LSMExtractorGUI (p. ej. `../LSMOutput`):
+
+```bash
+cd lsm_fingerprints
+python build_db.py \
+  --dataset ../LSMOutput \
+  --output ./fingerprints.npz \
+  --export-bin ./fingerprints.bin \
+  --min-videos 2
+```
+
+### Evaluar (leave-one-out)
+
+```bash
+cd lsm_fingerprints
+python evaluate.py --db ./fingerprints.npz
+```
+
+### Agregar clase nueva (sin reentrenar)
+
+```python
+from build_db import add_class
+from preprocess import prepare_sequence
+
+seq = prepare_sequence(json_path="nueva_seña_landmarks.json")
+add_class("./fingerprints.npz", "NuevaPalabra", [seq], category="Familia",
+          export_bin_path="./fingerprints.bin")
+```
+
+### Copiar a iOS
+
+Copia `fingerprints.bin` al target LSMMobileModelTesting en Xcode. Selecciona **Fase 1 — Fingerprint+DTW** en la app.
+
+Pasos detallados: [AppLSMTests/README.md — Validar Fase 1 en dispositivo](../AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python)
+
+### Probar con LSMOutput
+
+Dataset local extraído por LSMExtractorGUI (hermano de este repo):
+
+```bash
+export DATASET=/path/to/LSMOutput   # p. ej. ../LSMOutput
+cd lsm_fingerprints
+
+# Piloto rápido (Colores, 2 clases)
+python build_db.py --dataset "$DATASET/Colores" --output ./runs_pilot/colores.npz --min-videos 1
+python evaluate.py --db ./runs_pilot/colores.npz
+
+# Base completa
+python build_db.py --dataset "$DATASET" --output ./fingerprints.npz --export-bin ./fingerprints.bin --min-videos 2
+python evaluate.py --db ./fingerprints.npz 2>&1 | tee loo_report.log
+```
+
+### Baseline LSMOutput (2026-06-17)
+
+Evaluación leave-one-out sobre **307 clases**, **1,934 videos** (`--min-videos 2`, 3 saltados en build):
+
+| Ámbito | Top-1 | Top-5 |
+|---|---|---|
+| **Global** | **6.57%** (127/1934) | **16.18%** (313/1934) |
+| Piloto Colores (2 clases) | 25.00% | 100.00% |
+| Piloto Familia (21 clases) | 11.11% | 31.75% |
+
+Mejores categorías (Top-1 LOO): Festividades (24.4%), Personajes Históricos (17.3%), Frutas/Verduras (11.1%). Peores: Actividades Cotidianas (0%), Objetos (2%), Abecedario (2.1%).
+
+**Estado:** por debajo del mínimo (40% Top-1). Priorizar mejora de preprocessing o Fase 2 antes de validación iOS extensa. Siguiente paso: [validación en dispositivo](../AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python) con `fingerprints.bin` generado localmente.
+
+### Módulos Fase 1
+
+| Archivo | Descripción |
+|---|---|
+| `preprocess.py` | Normalización hombro, filtro valid, interpolación 85 frames |
+| `fingerprint.py` | Huella estadística 810-dim, L2-normalizada |
+| `build_db.py` | Indexa JSON → `fingerprints.npz` |
+| `export_bin.py` | Exporta `fingerprints.bin` para Swift |
+| `matcher.py` | Cosine filter + FastDTW + voting |
+| `evaluate.py` | Leave-one-out cross-validation |
+
+### Tests Fase 1
+
+```bash
+cd lsm_fingerprints
+python tests/test_all.py
+```
+
+### Criterios de éxito Fase 1
+
+| Métrica | Mínimo | Objetivo |
+|---|---|---|
+| Top-1 LOO | 40% | 60% |
+| Top-5 LOO | 70% | 85% |
+| Latencia iOS | < 200ms | < 100ms |
+
+El TCN de Fase 2 debe superar el baseline de Fase 1 (~60% top-1 LOO) para validar el entrenamiento neuronal.
+
+## Uso — Fase 2 (red neuronal)
 
 ### 1. Organizar videos
 
@@ -251,12 +371,13 @@ TrainingPipeline/
 ├── runs/                    # Salida de entrenamiento (checkpoints, classes.json)
 ├── runs_3dcnn_test/         # Runs de prueba 3D CNN
 ├── coreml_models.mlpackage/ # Modelo Core ML exportado
-├── LSM_Fase1_Architecture.md  # Especificación Fase 1
 └── lsm_fingerprints/        # Fase 1: huella estadística + DTW (sin entrenamiento)
     ├── build_db.py
     ├── evaluate.py
     ├── fingerprint.py
     ├── matcher.py
+    ├── preprocess.py
+    ├── export_bin.py
     └── tests/
 ```
 
@@ -275,12 +396,13 @@ El checkpoint incluye: pesos del modelo, optimizer, scheduler, historial, tipo d
 
 ## Estado actual
 
-- Vocabulario definido: **221 palabras** en 11 categorías temáticas
-- Último entrenamiento documentado en `runs/`: **187 clases** (clases con suficientes videos de entrenamiento)
+- Dataset LSMOutput extraído: **501 palabras**, **14 categorías**, **307 clases** indexables (Fase 1, `--min-videos 2`)
+- Baseline Fase 1 LSMOutput (2026-06-17): Top-1 LOO **6.57%**, Top-5 **16.18%** — ver [Baseline LSMOutput](#baseline-lsmoutput-2026-06-17)
+- Último entrenamiento Fase 2 documentado en `runs/`: **187 clases**
 - Tres arquitecturas implementadas y seleccionables desde `train.py`
 - Exportación a Core ML funcional para despliegue en dispositivos Apple
 - Extracción de landmarks: [AppLSMTests/LSMExtractorGUI](../AppLSMTests/LSMExtractorGUI/)
-- Baseline Fase 1: [lsm_fingerprints](./lsm_fingerprints/) — `python evaluate.py --db fingerprints.npz`
+- Validación iOS Fase 1 pendiente: [AppLSMTests/README.md](../AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python)
 - Inferencia móvil: [AppLSMTests/LSMMobileModelTesting](../AppLSMTests/LSMMobileModelTesting/)
 
 ## Dependencias principales

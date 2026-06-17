@@ -56,7 +56,7 @@ dataset/
 *.swo
 *~
 
-# --- Archivos de documentación del agente (no README) ---
+# --- Archivos de documentación del agente (no README o AGENTS.md) ---
+*.md
 !README.md
 !AGENTS.md
-*.md
