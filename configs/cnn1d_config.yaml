@@ -1,6 +1,6 @@
 model:
   type: 1d_cnn
-  num_classes: 330
+  num_classes: 307
   dropout: 0.3
 
 training:

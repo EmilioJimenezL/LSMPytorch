@@ -83,14 +83,103 @@ Solo se incluyen clases con al menos `--min-videos` secuencias válidas (por def
 
 Los tres modelos reciben tensores de forma `(batch, 85, 135)` y producen logits de clasificación.
 
-También existe un paquete modular en `models/` con un registro de fábrica (`create_model`) usado por los smoke tests.
+También existe un paquete modular en `models/` con un registro de fábrica (`create_model`) usado por **`train.py`** y **`convert_to_coreml.py`**. Los archivos `model.py`, `model_tcn.py`, `model_3dcnn.py` son re-exports de compatibilidad.
+
+## Entrenar todos los modelos en LSMOutput
+
+Dataset: **501 palabras** extraídas, **307 clases** entrenables con `--min_videos 2` (194 palabras con 1 solo video excluidas).
+
+```bash
+cd TrainingPipeline
+export PYTHONPATH=".venv/lib/python3.13/site-packages:."
+
+# Inventario del dataset
+python scripts/dataset_report.py --dataset ../LSMOutput --output ./reports
+
+# Entrenar los tres modelos (o usar train_all_lsmoutput.sh)
+python train.py --model cnn   --dataset ../LSMOutput --epochs 150 --batch 64  --output ./runs_lsmoutput_cnn   --min_videos 2
+python train.py --model tcn   --dataset ../LSMOutput --epochs 120 --batch 16  --output ./runs_lsmoutput_tcn   --min_videos 2
+python train.py --model 3dcnn --dataset ../LSMOutput --epochs 100 --batch 12  --output ./runs_lsmoutput_3dcnn --min_videos 2
+
+# Exportar a Core ML
+python convert_to_coreml.py --checkpoint ./runs_lsmoutput_tcn/best_model.pt --output ./exports/tcn_lsmoutput
+```
+
+Script todo-en-uno (entrena + exporta): `./train_all_lsmoutput.sh ../LSMOutput`
+
+Configs en `configs/*.yaml` documentan hiperparámetros (`num_classes: 307`). Campos no implementados en `train.py` aún: warmup, AMP, early stopping, `joint_dropout`.
+
+## Revisar y comparar resultados (Fase 1 vs Fase 2)
+
+Módulo `review/` — evaluación unificada y comparación head-to-head:
+
+```bash
+# Fase 1 LOO → JSON
+python lsm_fingerprints/evaluate.py --db lsm_fingerprints/fingerprints.npz --output reports/fase1_loo.json
+
+# Fase 2 eval por checkpoint
+python review/evaluate_nn.py --checkpoint runs_lsmoutput_tcn/best_model.pt --dataset ../LSMOutput \
+  --output reports/fase2_tcn.json
+
+# Comparación + análisis de errores
+python review/compare_models.py --fase1 reports/fase1_loo.json --fase2 reports/fase2_*.json \
+  --output reports/comparison.json
+python review/error_analysis.py --comparison reports/comparison.json --output reports/error_analysis.json
+
+# Pipeline completo
+./review/run_all.sh ../LSMOutput
+
+# Reporte consolidado (generado al final de run_all.sh)
+python3 review/generate_training_report.py --root . --reports ./reports
+```
+
+| Script | Salida |
+|---|---|
+| `scripts/dataset_report.py` | `reports/dataset_inventory.json`, `reports/class_overlap.json` |
+| `lsm_fingerprints/evaluate.py --output` | `reports/fase1_loo.json` (LOO) |
+| `review/evaluate_nn.py` | `reports/fase2_*.json` (val split + full-dataset) |
+| `review/compare_models.py` | `reports/comparison.json` (global, por categoría, por clase) |
+| `review/error_analysis.py` | Peores clases + acciones sugeridas |
+| `review/generate_training_report.py` | `reports/training_report.json`, `reports/training_report_summary.txt` |
+
+**Protocolo de evaluación:** Fase 1 usa LOO; Fase 2 usa split estratificado (val holdout) + inferencia full-dataset para comparación relativa entre modelos.
+
+## Training report (2026-06)
+
+Entrenamiento LSMOutput completado. Resumen ejecutivo (ver `reports/training_report_summary.txt`):
+
+| Backend | Val Top-1 | Val Top-5 | Full-dataset Top-1 | iOS bundle |
+|---|---|---|---|---|
+| Fase 1 — Fingerprint+DTW | 6.57% LOO | 16.18% | — | `fingerprints.bin` |
+| **1D CNN** | **47.16%** | 64.78% | 90.28% | `runs_lsmoutput_cnn_lsmoutput.mlpackage` |
+| TCN | 44.78% | **67.76%** | 89.87% | `runs_lsmoutput_tcn_lsmoutput.mlpackage` |
+| 3D CNN | 15.52% | 32.84% | 74.72% | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage` |
+| Legacy Core ML v1 | 9.68% | — | — | `coreml_models.mlpackage` (187 clases) |
+
+**Default recomendado para pruebas iOS:** CNN (mejor val Top-1).
+
+### Handoff a AppLSMTests
+
+```bash
+IOS=../AppLSMTests/LSMMobileModelTesting/LSMMobileModelTesting
+cp lsm_fingerprints/fingerprints.bin "$IOS/"
+cp -r exports/runs_lsmoutput_cnn_lsmoutput.mlpackage "$IOS/"
+cp -r exports/runs_lsmoutput_tcn_lsmoutput.mlpackage "$IOS/"
+cp -r exports/runs_lsmoutput_3dcnn_lsmoutput.mlpackage "$IOS/"
+cp runs_lsmoutput_cnn/classes.json "$IOS/runs_lsmoutput_cnn_classes.json"
+cp runs_lsmoutput_tcn/classes.json "$IOS/runs_lsmoutput_tcn_classes.json"
+cp runs_lsmoutput_3dcnn/classes.json "$IOS/runs_lsmoutput_3dcnn_classes.json"
+```
+
+Los `.mlpackage` y `fingerprints.bin` son **locales y gitignored** en AppLSMTests (~97 MB total). Validación en dispositivo: ver [AppLSMTests/README.md](../AppLSMTests/README.md#comparar-fase-1-vs-fase-2-en-dispositivo).
 
 ## Características actuales
 
 ### Preprocesamiento y augmentación
 
-- Interpolación temporal a longitud fija
-- Split train/val **antes** de augmentar (evita data leakage)
+- **Preprocesamiento unificado con Fase 1** (default): `dataset.py` llama a `lsm_fingerprints.preprocess.prepare_sequence()` — normalización hombro, filtro de frames válidos, interpolación a 85 frames. Flag `--no-shoulder-norm` en `train.py` para ablation legacy.
+- Split train/val **estratificado por clase** (2 videos → 1 train / 1 val; 3+ → ~15% val) **antes** de augmentar
+- Manifest reproducible: `{output}/split_manifest.json`
 - Augmentación configurable (por defecto 10×) sobre el conjunto de entrenamiento:
   - Escala alrededor del centroide (0.9–1.1)
   - Traslación (±0.05)
@@ -397,12 +486,12 @@ El checkpoint incluye: pesos del modelo, optimizer, scheduler, historial, tipo d
 ## Estado actual
 
 - Dataset LSMOutput extraído: **501 palabras**, **14 categorías**, **307 clases** indexables (Fase 1, `--min-videos 2`)
-- Baseline Fase 1 LSMOutput (2026-06-17): Top-1 LOO **6.57%**, Top-5 **16.18%** — ver [Baseline LSMOutput](#baseline-lsmoutput-2026-06-17)
-- Último entrenamiento Fase 2 documentado en `runs/`: **187 clases**
-- Tres arquitecturas implementadas y seleccionables desde `train.py`
-- Exportación a Core ML funcional para despliegue en dispositivos Apple
+- Baseline Fase 1 LSMOutput (2026-06-17): Top-1 LOO **6.57%**, Top-5 **16.18%**
+- **Fase 2 LSMOutput entrenamiento completo (2026-06):** CNN val **47.16%**, TCN val **44.78%**, 3D CNN val **15.52%** — ver [Training report](#training-report-2026-06)
+- Tres arquitecturas exportadas a Core ML bajo `exports/runs_lsmoutput_*_lsmoutput.mlpackage`
+- Reporte consolidado: `./review/run_all.sh` → `reports/training_report.json`
 - Extracción de landmarks: [AppLSMTests/LSMExtractorGUI](../AppLSMTests/LSMExtractorGUI/)
-- Validación iOS Fase 1 pendiente: [AppLSMTests/README.md](../AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python)
+- Validación iOS: artefactos copiados a AppLSMTests; pruebas en dispositivo pendientes (Mac)
 - Inferencia móvil: [AppLSMTests/LSMMobileModelTesting](../AppLSMTests/LSMMobileModelTesting/)
 
 ## Dependencias principales

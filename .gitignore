@@ -44,6 +44,9 @@ share/python-wheels/
 *.ckpt
 checkpoints/
 runs/           # directorio típico de TensorBoard
+runs_lsmoutput_*/
+exports/
+reports/
 data/
 datasets/
 outputs/

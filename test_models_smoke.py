@@ -46,7 +46,10 @@ def run_smoke_tests():
 
             if hasattr(model, 'receptive_field'):
                 rf = model.receptive_field()
-                print(f"  Receptive field: {rf} frames ({rf / num_frames * 100:.1f}%)")
+                if isinstance(rf, (int, float)):
+                    print(f"  Receptive field: {rf} frames ({rf / num_frames * 100:.1f}%)")
+                else:
+                    print(f"  Receptive field: {rf}")
 
             print(f"  {model_name} PASSED")
 

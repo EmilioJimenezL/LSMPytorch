@@ -75,7 +75,11 @@ flowchart LR
 | Task | Files |
 |---|---|
 | Load / augment landmarks | `dataset.py` |
-| Train model | `train.py`, `model.py`, `model_tcn.py`, `model_3dcnn.py` |
+| Train model | `train.py`, `split_utils.py`, `models/` |
+| Stratified split | `split_utils.py` → `{output}/split_manifest.json` |
+| Dataset inventory | `scripts/dataset_report.py` |
+| Review / compare | `review/evaluate_nn.py`, `review/compare_models.py`, `review/error_analysis.py`, `review/generate_training_report.py`, `review/run_all.sh` |
+| Train all models | `train_all_lsmoutput.sh` |
 | Modular models (smoke tests) | `models/` (`__init__.py`, `cnn1d.py`, `tcn.py`, `cnn3d.py`) |
 | Core ML export | `convert_to_coreml.py` |
 | Organize raw videos | `organize_from_json.py`, `themes.json` |
@@ -232,26 +236,70 @@ Measured **2026-06-17** on full LSMOutput extract.
 
 **Per-category Top-1 (full LOO):** Festividades 24.4%, Personajes_Historicos 17.3%, Frutas_Verduras_y_Plantas 11.1%, Personas 10.9%, Colores 8.3%, Profesiones 7.9%, Alimentos_y_Bebidas 6.9%, Familia 4.0%, Animales_e_Insectos 3.8%, Locaciones 2.3%, Abecedario 2.1%, Objetos 2.0%, Actividades_Cotidianas 0.0%.
 
-**Conclusion:** baseline not met; investigate preprocessing, class confusion (Abecedario), and Fase 2 as alternative before iOS field validation.
+**Conclusion:** baseline not met; Fase 2 neural training on LSMOutput is the next path to beat 6.57% Top-1.
+
+---
+
+## Phase 2 baseline (LSMOutput)
+
+Training **complete** on **307 classes**, **1934 videos**, Fase 1 preprocessing (shoulder norm). Artifacts gitignored under `runs_lsmoutput_*/`, `exports/`, `reports/`.
+
+| Model | Val Top-1 (stratified) | Val Top-5 | Full-dataset Top-1 | Export | iOS deployed |
+|---|---|---|---|---|---|
+| **1D CNN** | **47.16%** | 64.78% | 90.28% | `exports/runs_lsmoutput_cnn_lsmoutput.mlpackage` | Yes (local) |
+| TCN | 44.78% | **67.76%** | 89.87% | `exports/runs_lsmoutput_tcn_lsmoutput.mlpackage` | Yes (local) |
+| 3D CNN | 15.52% | 32.84% | 74.72% | `exports/runs_lsmoutput_3dcnn_lsmoutput.mlpackage` | Yes (local) |
+| Legacy v1 | 9.68% | — | — | `coreml_models.mlpackage` (187 cls) | Yes (bundled) |
+
+**Recommended iOS default:** CNN (best val Top-1). Regenerate reports: `./review/run_all.sh ../LSMOutput` → `reports/training_report.json`.
+
+Configs: `configs/*.yaml` with `num_classes: 307`. Linux export skips Core ML predict verification — smoke-test on Mac/Xcode.
+
+---
+
+## Model comparison results
+
+Generate with `review/compare_models.py` after Fase 1 LOO JSON + Fase 2 eval JSONs exist.
+
+| Report | Path |
+|---|---|
+| Dataset inventory | `reports/dataset_inventory.json` |
+| Class overlap (iOS A/B) | `reports/class_overlap.json` |
+| Fase 1 LOO | `reports/fase1_loo.json` |
+| Fase 2 per model | `reports/fase2_runs_lsmoutput_*.json` |
+| Head-to-head | `reports/comparison.json` |
+| Error drill-down | `reports/error_analysis.json` |
+| Consolidated report | `reports/training_report.json`, `reports/training_report_summary.txt` |
+| Live test log template | `review/live_test_log_template.csv` |
 
 ---
 
 ## iOS validation results
 
-Integration work in AppLSMTests (**2026-06-06**). Device camera tests still pending on Mac.
+Integration work in AppLSMTests (**2026-06-22**). Device camera tests still pending on Mac.
+
+| Backend | Artifacts copied | Load smoke (C2) | Live A/B | Notes |
+|---|---|---|---|---|
+| Fase 1 fingerprint | Pass | Pending device | Pending | ~95 MB bin, 307 classes |
+| CNN LSMOutput | Pass | Pending device | Pending | Recommended default; val 47.16% |
+| TCN LSMOutput | Pass | Pending device | Pending | val 44.78%, best val Top-5 |
+| 3D CNN LSMOutput | Pass | Pending device | Pending | val 15.52% |
+| Legacy Core ML v1 | Pass (pre-existing) | Pending device | Pending | 187 classes |
 
 | Check | Result | Notes |
 |---|---|---|
 | Bin bundled locally | Pass | ~95 MB, magic `LSMF`, 307 classes, 1934 videos |
 | Bin parse (offline) | Pass | ~0.1 s load on Linux |
 | Golden fingerprint parity | Pass | max diff 0.0 vs `golden_sequence.json` (Python); Swift Debug check pending Mac |
+| All 5 backends in model picker | Pass | `AVAILABLE_MODELS` updated 2026-06-22 |
 | Async bin load + loading UI | Implemented | `LandmarkPipeline.loadModel` |
 | Background inference + DTW radius | Implemented | `dtwRadius=10`; match on detached queue |
-| Live Top-1 / confidence | **Pending device** | Expect weak matches given 6.57% LOO |
-| Inference latency (device) | **Pending device** | Python desktop reference ~930 ms/cycle (FastDTW r=10) |
+| Live Top-1 / confidence | **Pending device** | Use `review/live_test_log_template.csv` |
+| Inference latency (device) | **Pending device** | Python desktop reference ~930 ms/cycle (Fase 1 FastDTW) |
 | Release build smoke | **Pending device** | Parity skipped in Release (`#if DEBUG`) |
+| Mac Core ML predict verify | **Pending device** | Linux export skips predict step |
 
-Full checklist: [AppLSMTests/AGENTS.md — Phase 1 iOS validation](../AppLSMTests/AGENTS.md#phase-1-ios-validation-checklist)
+Full checklist: [AppLSMTests/AGENTS.md — Phase 1/2 iOS validation](../AppLSMTests/AGENTS.md#phase-1-ios-validation-checklist)
 
 ---
 
@@ -270,12 +318,74 @@ Full checklist: [AppLSMTests/AGENTS.md — Phase 1 iOS validation](../AppLSMTest
 
 ## Next steps / backlog
 
-1. **Device validation (AppLSMTests):** Debug console parity, live matrix, latency, Release smoke — integration code ready
-2. Improve Fase 1 accuracy (preprocessing tuning, category-scoped DBs, Abecedario isolation) or proceed to Fase 2 TCN
-3. Validate Fase 2 TCN beats Fase 1 once Fase 1 baseline improves or Fase 2 is trained on LSMOutput
-4. Close vocab gap: 501 words extracted vs 307 classes with ≥2 valid videos
-5. Optional: `build_db.py --manifest`, manifest → `themes.json` converter
-6. Resolve dual model paths: root `model*.py` (used by `train.py`) vs `models/` package (smoke tests only)
+1. **Device validation (AppLSMTests):** B2–B5 (Fase 1) + C2–C5 (Fase 2) on Mac — use `review/live_test_log_template.csv`
+2. **Mac Core ML predict smoke** — first Xcode run per `.mlpackage` (Linux export skips predict)
+3. Improve weak categories (Abecedario, Actividades_Cotidianas) via data collection or category-scoped bins
+4. Wire YAML config loader into `train.py` (warmup, AMP, patience, joint_dropout)
+5. Close vocab gap: 501 words extracted vs 307 classes with ≥2 valid videos
+
+See [Live-testing roadmap](#live-testing-roadmap) for iterative accuracy improvement.
+
+---
+
+## Live-testing roadmap
+
+Structured loops to close the Python val → device accuracy gap. Log results in `live_test_log.csv` (copy from `review/live_test_log_template.csv`).
+
+### Loop A — Measure (weeks 1–2)
+
+- Run device A/B matrix across all 5 backends; fill `live_test_log.csv`
+- Compute **live Top-1 per backend** vs Python val (gap analysis)
+- Tag failure modes: wrong class, low confidence, no detection, latency timeout
+
+### Loop B — Diagnose (ongoing)
+
+- Merge live failures with `reports/error_analysis.json`
+- Prioritize categories: Abecedario, Actividades_Cotidianas, Familia (weakest in Fase 1)
+- Identify **systematic errors** (confusion pairs) vs **data gaps** (missing angles/lighting)
+
+### Loop C — Data collection (weeks 2–4)
+
+- Use [LSMExtractorGUI](../AppLSMTests/LSMExtractorGUI/) to record **live-failure signs** with multiple performers/angles
+- Target 194 single-video words (`--min_videos 2` exclusion list from inventory)
+- Re-run `build_db.py` + `train.py` on expanded LSMOutput
+
+### Loop D — Model iteration (weeks 4–8)
+
+| Experiment | Goal |
+|---|---|
+| Retrain CNN/TCN on expanded data | Close val/live gap |
+| Category-scoped Fase 1 bins | Boost weak categories without full retrain |
+| Early stopping + reduced augmentation | Reduce overfit (train ~99% vs val ~47%) |
+| TCN vs CNN on live Top-1 | Pick production default |
+| Optional: `--min_videos 1` pilot | Coverage vs accuracy tradeoff |
+
+### Loop E — Production hardening
+
+- Mac Core ML predict verification for all exports
+- Optional `Phase2ParityCheck.swift` (golden logits vs Python)
+- Default model selection in app (CNN unless live tests favor TCN)
+- Consider on-demand model download if bundle size blocks TestFlight
+
+### Success metrics (8-week targets)
+
+| Metric | Current (Python) | Live target |
+|---|---|---|
+| Fase 1 Top-1 | 6.57% LOO | Baseline reference only |
+| CNN val Top-1 | 47.16% | Live Top-1 > 35% |
+| CNN latency | ~0.2 ms/video (Python) | <200 ms on device |
+| Category Festividades | 24% Fase 1 LOO | Live > 40% with best backend |
+| Confusion pairs | From error_analysis | −50% on top-10 pairs after data pass |
+
+### Mac device A/B protocol
+
+1. **Load smoke (C2):** Each backend loads 307 classes (187 for legacy), no `loadError`
+2. **10-sign A/B:** Mix from `reports/class_overlap.json` — Festividades, Personajes, Colores, Familia, Abecedario
+3. **Same session:** Switch picker without restart; record Top-1 + confidence + ms
+4. **Latency:** Fase 1 (Inferencia/Cosine/DTW), Fase 2 (Inferencia only)
+5. **Release smoke:** One Release build with CNN default path
+
+CSV columns: `session_id, sign, category, backend, top1, confidence, inference_ms, correct_yes_no, notes`
 
 ---
 

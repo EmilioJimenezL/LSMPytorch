@@ -1,6 +1,6 @@
 model:
   type: tcn
-  num_classes: 330
+  num_classes: 307
   num_channels: [64, 128, 256, 256]
   kernel_size: 5
   num_layers: 4

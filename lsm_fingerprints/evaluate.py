@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 from collections import defaultdict
 
+import json
 import numpy as np
 
 from build_db import load_database
@@ -141,8 +142,16 @@ def evaluate_leave_one_out(db_path: str) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Evalúa fingerprints.npz (LOO)")
     parser.add_argument("--db", required=True, help="Ruta a fingerprints.npz")
+    parser.add_argument("--output", default=None, help="Ruta JSON de salida (opcional)")
     args = parser.parse_args()
-    evaluate_leave_one_out(args.db)
+    report = evaluate_leave_one_out(args.db)
+    if args.output:
+        from pathlib import Path
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with open(out, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        print(f"\n  Reporte JSON: {out}")
 
 
 if __name__ == "__main__":

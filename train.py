@@ -17,7 +17,8 @@ from torch.utils.data import Dataset, DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from dataset import load_raw_dataset, apply_augmentation, N_FRAMES, FEATURE_DIM
-from model import LSM_CNN, count_parameters as count_parameters_fn
+from models import create_model, TRAIN_MODEL_MAP, count_parameters
+from split_utils import stratified_split_indices, export_split_manifest
 
 
 # ── PyTorch Dataset ───────────────────────────────────────────────────────────
@@ -116,8 +117,13 @@ def main(args):
 
     # ── Carga de datos ────────────────────────────────────────────────────────
     print("\nCargando dataset...")
-    X_raw, y_raw, classes, meta = load_raw_dataset(args.dataset, min_videos=args.min_videos)
+    X_raw, y_raw, classes, meta = load_raw_dataset(
+        args.dataset,
+        min_videos=args.min_videos,
+        shoulder_norm=not args.no_shoulder_norm,
+    )
     n_classes = len(classes)
+    print(f"  Preprocesamiento: {'Fase 1 (hombro+valid)' if not args.no_shoulder_norm else 'legacy (solo interp)'}")
 
     # Guardar lista de clases (necesaria para Core ML)
     classes_path = os.path.join(args.output, "classes.json")
@@ -125,22 +131,17 @@ def main(args):
         json.dump(classes, f, ensure_ascii=False, indent=2)
     print(f"  Clases guardadas: {classes_path}")
 
-    # ── Split ANTES del augmentation ──────────────────────────────────────────
-    # Garantiza que ningún video original aparece en train y val a la vez
-    n_total  = len(X_raw)
-    n_val    = max(1, int(n_total * args.val_split))
-    n_train  = n_total - n_val
-
-    rng_split = np.random.default_rng(42)
-    idx_all   = rng_split.permutation(n_total)
-    idx_train = idx_all[:n_train]
-    idx_val   = idx_all[n_train:]
-
+    # ── Stratified split ANTES del augmentation ───────────────────────────────
+    idx_train, idx_val = stratified_split_indices(y_raw, meta, val_fraction=args.val_split, seed=42)
     X_train_raw, y_train_raw = X_raw[idx_train], y_raw[idx_train]
     X_val,       y_val       = X_raw[idx_val],   y_raw[idx_val]
 
+    manifest_path = os.path.join(args.output, "split_manifest.json")
+    export_split_manifest(meta, y_raw, classes, idx_train, idx_val, manifest_path)
+    print(f"  Split manifest : {manifest_path}")
+
     # Augmentation solo sobre train
-    print(f"\n  Split (sobre videos originales):")
+    print(f"\n  Split estratificado (sobre videos originales):")
     print(f"    Train originales : {len(X_train_raw)}")
     print(f"    Val originales   : {len(X_val)}  ← sin augmentation")
     X_train, y_train = apply_augmentation(X_train_raw, y_train_raw,
@@ -156,18 +157,13 @@ def main(args):
                               shuffle=False, num_workers=4, pin_memory=True)
 
     # ── Modelo ────────────────────────────────────────────────────────────────
-    if args.model == "cnn":
-        model = LSM_CNN(n_classes=n_classes, dropout=args.dropout)
-    elif args.model == "tcn":
-        from model_tcn import LSM_TCN
-        model = LSM_TCN(n_classes=n_classes, dropout=args.dropout)
-        print(f"  Campo recep.: {model.receptive_field()} frames")
-    elif args.model == "3dcnn":
-        from model_3dcnn import LSM_3DCNN
-        model = LSM_3DCNN(n_classes=n_classes, dropout=args.dropout)
-        print(f"  Campo recep.: {model.receptive_field()}")
+    registry_name = TRAIN_MODEL_MAP[args.model]
+    model = create_model(registry_name, num_classes=n_classes, dropout=args.dropout)
+    if hasattr(model, "receptive_field"):
+        rf = model.receptive_field()
+        print(f"  Campo recep.: {rf}")
     model = model.to(device)
-    print(f"\n  Parámetros: {count_parameters_fn(model):,}")
+    print(f"\n  Parámetros: {count_parameters(model):,}")
 
     criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
     optimizer = torch.optim.AdamW(model.parameters(),
@@ -309,6 +305,8 @@ if __name__ == "__main__":
     parser.add_argument("--val_split",  type=float, default=0.15, help="Fracción de validación")
     parser.add_argument("--augment",    type=int,   default=10,   help="Versiones augmentadas por video")
     parser.add_argument("--min_videos",  type=int,   default=2,    help="Mínimo de videos por clase para incluirla")
+    parser.add_argument("--no-shoulder-norm", action="store_true",
+                        help="Usar preprocesamiento legacy (solo interpolación, sin normalización hombro)")
     parser.add_argument("--resume",     default=None,             help="Checkpoint para continuar")
     args = parser.parse_args()
     main(args)

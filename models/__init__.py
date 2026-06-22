@@ -8,6 +8,17 @@ MODEL_REGISTRY = {
     '3d_cnn': create_3dcnn,
 }
 
+# CLI names in train.py → registry keys
+TRAIN_MODEL_MAP = {
+    'cnn':   '1d_cnn',
+    'tcn':   'tcn',
+    '3dcnn': '3d_cnn',
+}
+
+
+def count_parameters(model) -> int:
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 MODEL_INFO = {
     '1d_cnn': {
         'name': '1D CNN (Baseline)',
@@ -61,7 +72,9 @@ __all__ = [
     'create_model',
     'get_model_info',
     'MODEL_REGISTRY',
+    'TRAIN_MODEL_MAP',
     'MODEL_INFO',
+    'count_parameters',
     'CNN1D',
     'LSM_CNN',
     'TemporalConvNet',

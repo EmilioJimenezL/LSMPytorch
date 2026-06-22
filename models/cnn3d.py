@@ -71,43 +71,32 @@ class LSM3DCNNModel(nn.Module):
             nn.Sigmoid(),
         )
 
-        self.global_pool = nn.AdaptiveAvgPool3d((1, 1, 1))
-
-        self.fc_layers = nn.Sequential(
+        self.classifier = nn.Sequential(
             nn.Linear(128, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout_rate),
-            nn.Linear(256, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(inplace=True),
-            nn.Dropout(dropout_rate * 0.5),
+            nn.Linear(256, num_classes),
         )
-
-        self.classifier = nn.Linear(128, num_classes)
         self._init_weights()
 
     def forward(self, x):
-        # x: (batch, 85, 135)
-        batch_size = x.size(0)
+        # x: (batch, 85, 135) → (batch, 1, 85, 135, 1) — unsqueeze traces better for Core ML
+        x = x.unsqueeze(1).unsqueeze(-1)
 
-        # Reshape to 3D volume: (batch, C=1, D=frames, H=features, W=1)
-        x = x.view(batch_size, 1, self.num_frames, self.feature_dim, 1)
-        # → (batch, 1, 85, 135, 1)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
 
-        x = self.conv1(x)   # → (batch, 32,  85, 135, 1)
-        x = self.conv2(x)   # → (batch, 64,  43, 135, 1)
-        x = self.conv3(x)   # → (batch, 128, 22, 135, 1)
+        attn = self.temporal_attention(x)
+        x = x * attn
 
-        # Attention: broadcast (batch, 1, 22, 135, 1) over 128 channels
-        attn = self.temporal_attention(x)   # → (batch, 1, 22, 135, 1)
-        x = x * attn                        # → (batch, 128, 22, 135, 1)
+        # Mean pool over D,H,W — Core ML compatible (AdaptiveAvgPool3d not supported)
+        x = x.mean(dim=(2, 3, 4))
+        return self.classifier(x)
 
-        x = self.global_pool(x)             # → (batch, 128, 1, 1, 1)
-        x = x.view(batch_size, -1)          # → (batch, 128)
-
-        x = self.fc_layers(x)               # → (batch, 128)
-        return self.classifier(x)           # → (batch, num_classes)
+    def receptive_field(self) -> str:
+        return "~11 frames (temporal), full joints (spatial)"
 
     def _init_weights(self):
         for m in self.modules():

@@ -15,7 +15,7 @@ import torch
 import coremltools as ct
 
 from dataset import N_FRAMES, FEATURE_DIM
-from model import LSM_CNN
+from models import create_model, TRAIN_MODEL_MAP
 
 
 def convert(checkpoint_path: str, output_path: str):
@@ -34,18 +34,10 @@ def convert(checkpoint_path: str, output_path: str):
     model_type = ckpt.get("model_type", "cnn")
     print(f"  Arquitectura: {model_type}")
 
-    if model_type == "cnn":
-        model = LSM_CNN(n_classes=n_classes)
-    elif model_type == "tcn":
-        from model_tcn import LSM_TCN
-        model = LSM_TCN(n_classes=n_classes)
-        print(f"  Campo recep.: {model.receptive_field()} frames")
-    elif model_type == "3dcnn":
-        from model_3dcnn import LSM_3DCNN
-        model = LSM_3DCNN(n_classes=n_classes)
+    registry_name = TRAIN_MODEL_MAP.get(model_type, model_type)
+    model = create_model(registry_name, num_classes=n_classes)
+    if hasattr(model, "receptive_field"):
         print(f"  Campo recep.: {model.receptive_field()}")
-    else:
-        raise ValueError(f"model_type desconocido: '{model_type}'")
 
     model.load_state_dict(ckpt["model"])
     model.eval()
@@ -76,12 +68,12 @@ def convert(checkpoint_path: str, output_path: str):
     mlmodel.output_description["logits"] = \
         f"Logits sin normalizar para {n_classes} clases"
 
-    # Guardar lista de clases como metadata del modelo
     mlmodel.user_defined_metadata["classes"]     = json.dumps(classes, ensure_ascii=False)
     mlmodel.user_defined_metadata["n_frames"]    = str(N_FRAMES)
     mlmodel.user_defined_metadata["feature_dim"] = str(FEATURE_DIM)
     mlmodel.user_defined_metadata["n_classes"]   = str(n_classes)
     mlmodel.user_defined_metadata["val_acc"]     = str(round(ckpt.get("best_val_acc", 0), 4))
+    mlmodel.user_defined_metadata["model_type"]  = model_type
 
     # ── Guardar ───────────────────────────────────────────────────────────────
     output_path = output_path if output_path.endswith(".mlpackage") \
@@ -89,18 +81,21 @@ def convert(checkpoint_path: str, output_path: str):
     mlmodel.save(output_path)
     print(f"\n✅ Modelo guardado: {output_path}")
 
-    # ── Verificación rápida ───────────────────────────────────────────────────
+    # ── Verificación rápida (macOS only) ────────────────────────────────────────
     print("\nVerificando modelo...")
-    loaded = ct.models.MLModel(output_path)
-    dummy  = {"landmarks": np.random.randn(1, N_FRAMES, FEATURE_DIM).astype(np.float32)}
-    out    = loaded.predict(dummy)
-    logits = list(out.values())[0]
-    probs  = np.exp(logits) / np.exp(logits).sum()
-    top5_idx = np.argsort(probs[0])[::-1][:5]
+    try:
+        loaded = ct.models.MLModel(output_path)
+        dummy  = {"landmarks": np.random.randn(1, N_FRAMES, FEATURE_DIM).astype(np.float32)}
+        out    = loaded.predict(dummy)
+        logits = list(out.values())[0]
+        probs  = np.exp(logits) / np.exp(logits).sum()
+        top5_idx = np.argsort(probs[0])[::-1][:5]
 
-    print("  Top-5 predicciones (input aleatorio):")
-    for i, idx in enumerate(top5_idx):
-        print(f"    {i+1}. {classes[idx]:<40} {probs[0][idx]*100:5.2f}%")
+        print("  Top-5 predicciones (input aleatorio):")
+        for i, idx in enumerate(top5_idx):
+            print(f"    {i+1}. {classes[idx]:<40} {probs[0][idx]*100:5.2f}%")
+    except Exception as e:
+        print(f"  Skip predict verification (non-macOS or runtime unavailable): {e}")
 
     print(f"\n  Listo para arrastrar al proyecto Xcode → {output_path}")
 
