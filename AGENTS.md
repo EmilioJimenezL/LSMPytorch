@@ -62,6 +62,7 @@ flowchart LR
 | Manifest | `dataset_manifest.json` — schema in `Models.swift` (`DatasetManifest`) |
 | Fase 1 binary | `fingerprints.bin` magic `0x4C534D46`, version 1 — loaded by `FingerprintMatcher.swift` |
 | Fase 1 DTW | Sakoe-Chiba band `dtwRadius=10` — mirrors Python `DTW_RADIUS` |
+| Fase 2 preprocessing | `SequencePreprocessor` on both Fase 1 and Core ML inference paths |
 | Inference buffer | Circular buffer up to 170 frames; uses last 85; inference every 15 frames |
 
 ---
@@ -93,8 +94,8 @@ flowchart LR
 | Fase 1 matching | `LSMMobileModelTesting/FingerprintMatcher.swift` |
 | Shared constants | `LSMMobileModelTesting/LSMConstants.swift` |
 | DEBUG parity check | `LSMMobileModelTesting/Phase1ParityCheck.swift` |
-| Bundled model | `LSMMobileModelTesting/coreml_models.mlpackage/` |
-| Class labels | `LSMMobileModelTesting/classes.json` |
+| Bundled models | `LSMMobileModelTesting/` — 5 backends (gitignored locally) |
+| Live test template | `TrainingPipeline/review/live_test_log_template.csv` |
 | Golden fixture | `LSMMobileModelTesting/golden_sequence.json` |
 | Xcode project | `LSMMobileModelTesting/LSMMobileModelTesting.xcodeproj/` |
 
@@ -223,13 +224,99 @@ Human-friendly steps: [README — Validar Fase 1 en dispositivo](./README.md#val
 
 ---
 
+## Phase 2 iOS validation checklist
+
+After TrainingPipeline produces LSMOutput-trained `.mlpackage` (see [TrainingPipeline/README — Integrar modelos Fase 2](../TrainingPipeline/README.md#integrar-modelos-fase-2-entrenados-en-lsmoutput)).
+
+### C1 — Copy Core ML artifact
+
+- [x] Copy `exports/*_lsmoutput.mlpackage` + matching `classes.json` into `LSMMobileModelTesting/LSMMobileModelTesting/` (2026-06-22)
+- [x] Register in `AVAILABLE_MODELS` (`LandmarkPipeline.swift`) with val_acc in description
+- [x] Fase 1 `fingerprints.bin` refreshed from TrainingPipeline
+
+**Local-only artifacts policy:** `fingerprints.bin`, all `*.mlpackage/`, and `runs_lsmoutput_*_classes.json` are gitignored (~97 MB total). Acceptable for dev/testing; production may ship one default model + optional download.
+
+### C2 — Load smoke
+
+- [ ] Debug build: console shows correct class count (307 for LSMOutput models)
+- [ ] No `loadError` in predictions panel
+- [ ] Metadata `val_acc` matches TrainingPipeline log
+
+### C3 — Live smoke
+
+- [ ] Test 5–10 signs from `reports/class_overlap.json` intersection
+- [ ] Top-1 appears with confidence >15%
+
+### C4 — Latency
+
+- [ ] Read **Inferencia** ms from debug panel (Core ML path)
+- [ ] Target: <200 ms per cycle
+
+### C5 — Release smoke
+
+- [ ] One Release build; model loads and predicts
+
+### Head-to-head A/B (Fase 1 vs Fase 2)
+
+- [ ] Same session, switch model picker across all 5 backends
+- [ ] Log to CSV using [TrainingPipeline/review/live_test_log_template.csv](../TrainingPipeline/review/live_test_log_template.csv)
+- [ ] Minimum 10-sign matrix from `class_overlap.json` (Festividades, Personajes, Colores, Familia, Abecedario)
+- [ ] Report to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+
+**Preprocessing parity (2026-06-06):** Fase 2 Core ML inference now uses `SequencePreprocessor.prepareSequence()` — matches Fase 1 and Python training pipeline.
+
+---
+
+## Live-testing roadmap
+
+Mirrors [TrainingPipeline/AGENTS.md — Live-testing roadmap](../TrainingPipeline/AGENTS.md#live-testing-roadmap). Execute on Mac device; log in `live_test_log.csv`.
+
+### Loop A — Measure (weeks 1–2)
+
+- Run A/B matrix; fill CSV with Top-1, confidence, inference_ms per backend
+- Compare live Top-1 vs Python val per backend (gap analysis)
+- Tag failures: wrong class, low confidence, no detection, latency timeout
+
+### Loop B — Diagnose (ongoing)
+
+- Cross-reference live failures with `TrainingPipeline/reports/error_analysis.json`
+- Prioritize weak categories: Abecedario, Actividades_Cotidianas, Familia
+
+### Loop C — Data collection (weeks 2–4)
+
+- Record live-failure signs via LSMExtractorGUI (multiple performers/angles)
+- Feed expanded LSMOutput back to TrainingPipeline
+
+### Loop D — Model iteration (weeks 4–8)
+
+- Retrain CNN/TCN on expanded data; compare TCN vs CNN live Top-1 for production default
+- Category-scoped Fase 1 bins for weak categories
+
+### Loop E — Production hardening
+
+- Mac Core ML predict verification; optional `Phase2ParityCheck.swift`
+- Default model: CNN unless live tests favor TCN
+- On-demand model download if bundle size blocks TestFlight
+
+### Success metrics (8-week targets)
+
+| Metric | Python val | Live target |
+|---|---|---|
+| CNN Top-1 | 47.16% | >35% on device |
+| Inference latency | ~0.2 ms/video (Python) | <200 ms on device |
+| Festividades | 24% Fase 1 LOO | >40% with best backend |
+
+---
+
 ## Next steps / backlog
 
-1. **Complete B2–B5 on Mac/device** — Debug parity console, live matrix, latency, Release smoke
-2. Add additional Core ML models to `AVAILABLE_MODELS` (only `coreml_models` bundled today)
-3. Multi-model selector UX improvements
-4. Keep `golden_sequence.json` in sync when Fase 1 constants change (regenerate via `export_fixtures.py`)
-5. Report device latency + match quality to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+1. **Complete B2–B5 on Mac/device** — Fase 1 Debug parity, live matrix, latency, Release smoke
+2. **Complete C2–C5 on Mac/device** — load smoke per backend, live A/B, latency, Release smoke
+3. Keep `golden_sequence.json` in sync when Fase 1 constants change
+4. Optional: `Phase2ParityCheck.swift` — golden logits vs Python on fixed sequence
+5. Report device results to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+
+See [Live-testing roadmap](#live-testing-roadmap) for iterative accuracy improvement.
 
 See also [TrainingPipeline/AGENTS.md — Handoff to AppLSMTests](../TrainingPipeline/AGENTS.md#handoff-to-applsmtests) for Python-side workflow.
 

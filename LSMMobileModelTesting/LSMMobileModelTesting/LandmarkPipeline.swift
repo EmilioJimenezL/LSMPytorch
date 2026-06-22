@@ -86,13 +86,28 @@ let AVAILABLE_MODELS: [LSMModel] = [
     LSMModel(
         name:        "Fase 1 — Fingerprint+DTW",
         bundleName:  "fingerprints",
-        description: "Huella estadística + DTW (sin entrenamiento)",
+        description: "307 clases, LOO Top-1 6.57%",
         isFingerprint: true
     ),
     LSMModel(
-        name:        "Fase 2 — Core ML v1",
+        name:        "Fase 2 — CNN LSMOutput",
+        bundleName:  "runs_lsmoutput_cnn_lsmoutput",
+        description: "307 clases, val Top-1 47.16% (recomendado)"
+    ),
+    LSMModel(
+        name:        "Fase 2 — TCN LSMOutput",
+        bundleName:  "runs_lsmoutput_tcn_lsmoutput",
+        description: "307 clases, val Top-1 44.78%"
+    ),
+    LSMModel(
+        name:        "Fase 2 — 3D CNN LSMOutput",
+        bundleName:  "runs_lsmoutput_3dcnn_lsmoutput",
+        description: "307 clases, val Top-1 15.52%"
+    ),
+    LSMModel(
+        name:        "Fase 2 — Legacy v1",
         bundleName:  "coreml_models",
-        description: "Red neuronal entrenada"
+        description: "187 clases, pre-LSMOutput (val 9.68%)"
     ),
 ]
 
@@ -413,9 +428,11 @@ class LandmarkPipeline: ObservableObject {
             return
         }
 
-        let recent       = Array(frameBuffer.suffix(N_FRAMES))
-        let interpolated = interpolateSequence(recent, to: N_FRAMES)
-        let flat         = interpolated.flatMap { $0 }
+        let recent = Array(frameBuffer.suffix(N_FRAMES))
+        guard let sequence = SequencePreprocessor.prepareSequence(from: recent) else {
+            return
+        }
+        let flat = sequence.flatMap { $0 }
 
         guard let mlArray = try? MLMultiArray(
             shape: [1, N_FRAMES as NSNumber, FEATURE_DIM as NSNumber],

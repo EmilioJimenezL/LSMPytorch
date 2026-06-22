@@ -143,14 +143,56 @@ App de prueba en SwiftUI que ejecuta modelos Core ML en tiempo real usando la c�
 | Anillo de progreso | Indica cuántos frames hay en el buffer (0–85) |
 | Reset (↺) | Limpia buffer y predicciones |
 
-**Modelos incluidos:**
+**Modelos incluidos (2026-06):**
 
-| Modo | Archivo | Descripción |
-|---|---|---|
-| Fase 1 | `fingerprints.bin` | Huella estadística + DTW (sin entrenamiento) |
-| Fase 2 | `coreml_models.mlpackage` | Red neuronal (187 clases) + `classes.json` |
+| Modo | Archivo | Clases | Val Top-1 | Notas |
+|---|---|---|---|---|
+| Fase 1 (default) | `fingerprints.bin` | 307 | 6.57% LOO | Huella + DTW |
+| Fase 2 CNN | `runs_lsmoutput_cnn_lsmoutput.mlpackage` | 307 | **47.16%** | Recomendado para pruebas |
+| Fase 2 TCN | `runs_lsmoutput_tcn_lsmoutput.mlpackage` | 307 | 44.78% | Mejor val Top-5 |
+| Fase 2 3D CNN | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage` | 307 | 15.52% | |
+| Fase 2 legacy | `coreml_models.mlpackage` | 187 | 9.68% | Pre-LSMOutput |
 
-El selector de modelos en la app permite alternar entre ambos backends.
+Todos los artefactos son **locales y gitignored** (~97 MB). Copiar desde TrainingPipeline (ver abajo). El selector de modelos permite alternar entre los 5 backends. **Fase 1 y Fase 2 LSMOutput comparten `SequencePreprocessor`** (normalización hombro).
+
+## Integrar modelos Fase 2 entrenados en LSMOutput
+
+Tras `./train_all_lsmoutput.sh` en TrainingPipeline, copiar todos los backends para A/B:
+
+```bash
+IOS=LSMMobileModelTesting/LSMMobileModelTesting
+TP=../TrainingPipeline
+
+cp "$TP/lsm_fingerprints/fingerprints.bin" "$IOS/"
+cp -r "$TP/exports/runs_lsmoutput_cnn_lsmoutput.mlpackage" "$IOS/"
+cp -r "$TP/exports/runs_lsmoutput_tcn_lsmoutput.mlpackage" "$IOS/"
+cp -r "$TP/exports/runs_lsmoutput_3dcnn_lsmoutput.mlpackage" "$IOS/"
+cp "$TP/runs_lsmoutput_cnn/classes.json" "$IOS/runs_lsmoutput_cnn_classes.json"
+cp "$TP/runs_lsmoutput_tcn/classes.json" "$IOS/runs_lsmoutput_tcn_classes.json"
+cp "$TP/runs_lsmoutput_3dcnn/classes.json" "$IOS/runs_lsmoutput_3dcnn_classes.json"
+```
+
+`AVAILABLE_MODELS` en `LandmarkPipeline.swift` ya registra los 5 backends con métricas val actualizadas.
+
+Lista de señas compartidas para A/B: `TrainingPipeline/reports/class_overlap.json` (307 clases).
+
+## Comparar Fase 1 vs Fase 2 en dispositivo
+
+**Requisito:** Mac + Xcode + dispositivo físico.
+
+1. Usar señas de `TrainingPipeline/reports/class_overlap.json` (307 clases compartidas)
+2. Misma sesión: alternar selector entre los 5 backends sin reiniciar la app
+3. Registrar resultados en CSV — plantilla: `TrainingPipeline/review/live_test_log_template.csv`
+
+| session_id | sign | category | backend | top1 | confidence | inference_ms | correct_yes_no | notes |
+|---|---|---|---|---|---|---|---|---|
+| 2026-06-22-1 | Navidad | Festividades | fase2_cnn | Navidad | 0.82 | 45 | yes | |
+
+**Matriz mínima (10 señas):** mezcla de Festividades, Personajes, Colores, Familia, Abecedario.
+
+4. Reportar resultados en [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+
+Checklist detallado: [AGENTS.md — Phase 2 iOS validation](./AGENTS.md#phase-2-ios-validation-checklist)
 
 **Actualizar base de datos Fase 1:**
 
@@ -179,17 +221,20 @@ Requisitos previos (generados en TrainingPipeline, no commiteados):
 - `TrainingPipeline/lsm_fingerprints/fingerprints.bin` — base de producción (~307 clases)
 - Baseline LOO registrado en [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md#phase-1-baseline-lsmoutput)
 
-### Estado de integración (2026-06-06)
+### Estado de integración (2026-06-22)
 
 | Paso | Estado | Notas |
 |---|---|---|
 | Bin en bundle local | Hecho | `fingerprints.bin` (~95 MB) copiado al target; gitignored |
+| CNN/TCN/3DCNN mlpackages | Hecho | Copiados desde `TrainingPipeline/exports/`; gitignored |
+| `AVAILABLE_MODELS` (5 backends) | Hecho | Fase 1, CNN, TCN, 3DCNN, legacy |
 | Header / carga | Verificado offline | Magic `LSMF`, 307 clases, 1934 videos; parse ~0.1 s (Linux) |
 | Paridad huella | Verificado offline | `golden_sequence.json` max diff **0.0** (Python); Debug build debe imprimir `✓ Parity check passed` |
 | Carga async + UI | Hecho | `loadModel` parsea en background; spinner «Cargando fingerprints.bin…» |
 | DTW radius + inferencia async | Hecho | `dtwRadius=10` (Sakoe-Chiba); `match()` en cola de fondo |
-| Prueba en vivo | **Pendiente Mac/dispositivo** | Matriz abajo — requiere cámara |
-| Latencia en dispositivo | **Pendiente Mac/dispositivo** | Panel debug: Inferencia / Cosine / DTW ms |
+| Fase 2 preprocessing parity | Hecho | Core ML path uses `SequencePreprocessor` |
+| Phase 1 checklist B2–B5 | **Pending device** | Mac required |
+| Phase 2 checklist C2–C5 | **Pending device** | Mac required; use `live_test_log_template.csv` |
 
 Referencia de latencia (Linux desktop, Python FastDTW radius=10): **~930 ms/ciclo** — por encima del objetivo de 200 ms. iOS con Accelerate + banda DTW debería ser más rápido; medir en el panel debug. Si sigue >200 ms, el código ya evita bloquear el hilo principal.
 
@@ -469,9 +514,11 @@ Esquema simplificado:
 |---|---|
 | Extracción batch macOS | Funcional — procesa videos, genera JSON + overlay opcional |
 | Catálogo dataset_manifest.json | Funcional — descubrimiento por ruta, merge y persistencia |
-| Inferencia iOS en vivo | Funcional — Top-5, esqueleto, debug; Fase 1 bundle local listo |
+| Inferencia iOS en vivo | Funcional — Top-5, esqueleto, debug |
 | Fase 1 production bin | Copiado localmente (~95 MB, 307 clases); gitignored |
-| Multi-modelo | Fase 1 (default) + Fase 2 Core ML en selector |
+| Fase 2 LSMOutput models | CNN + TCN + 3DCNN copiados localmente; gitignored |
+| Multi-modelo | 5 backends en selector (Fase 1 default, CNN recomendado NN) |
+| Validación dispositivo | Pendiente Mac — B2–B5, C2–C5 |
 
 ## Relación con TrainingPipeline
 
