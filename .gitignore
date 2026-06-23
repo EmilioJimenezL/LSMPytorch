@@ -21,14 +21,6 @@ Secrets.xcconfig
 *.ipa
 *.dSYM.zip
 
-# --- Phase 1 artifacts (generated locally, do not commit) ---
-**/fingerprints.bin
-**/fingerprints.npz
-
-# --- Core ML bundles (large local artifacts, copy from TrainingPipeline) ---
-**/*.mlpackage/
-**/runs_lsmoutput_*_classes.json
-
 # --- Agent-generated docs — only README and AGENTS are tracked ---
 *.md
 !README.md

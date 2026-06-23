@@ -94,7 +94,7 @@ flowchart LR
 | Fase 1 matching | `LSMMobileModelTesting/FingerprintMatcher.swift` |
 | Shared constants | `LSMMobileModelTesting/LSMConstants.swift` |
 | DEBUG parity check | `LSMMobileModelTesting/Phase1ParityCheck.swift` |
-| Bundled models | `LSMMobileModelTesting/` — 5 backends (gitignored locally) |
+| Bundled models | `LSMMobileModelTesting/LSMMobileModelTesting/` — see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) |
 | Live test template | `TrainingPipeline/review/live_test_log_template.csv` |
 | Golden fixture | `LSMMobileModelTesting/golden_sequence.json` |
 | Xcode project | `LSMMobileModelTesting/LSMMobileModelTesting.xcodeproj/` |
@@ -134,15 +134,16 @@ cd ../TrainingPipeline/lsm_fingerprints
 python build_db.py --dataset ../LSMOutput --output ./fingerprints.npz --export-bin ./fingerprints.bin --min-videos 2
 ```
 
-Copy `fingerprints.bin` into LSMMobileModelTesting Xcode target. See [Phase 1 iOS validation checklist](#phase-1-ios-validation-checklist).
+Copy `fingerprints.bin` into LSMMobileModelTesting Xcode target and **commit** the updated bundle in AppLSMTests (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git)). See [Phase 1 iOS validation checklist](#phase-1-ios-validation-checklist).
 
 Baseline reference: [TrainingPipeline/AGENTS.md — Phase 1 baseline](../TrainingPipeline/AGENTS.md#phase-1-baseline-lsmoutput)
 
 ### Add Core ML model (Fase 2)
 
 1. Export from TrainingPipeline: `convert_to_coreml.py`
-2. Drag `.mlpackage` + `classes.json` into Xcode target
+2. Copy `.mlpackage` + `classes.json` into `LSMMobileModelTesting/LSMMobileModelTesting/`
 3. Register in `LandmarkPipeline.swift` → `AVAILABLE_MODELS`
+4. **Commit** the new or updated bundles in AppLSMTests (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git))
 
 ### Run Fase 1 parity check
 
@@ -172,7 +173,7 @@ Execute on **macOS + Xcode + physical device** (recommended for camera latency).
 
 | ID | Item | Status |
 |---|---|---|
-| B1 | Production `fingerprints.bin` in app folder | Done — local copy, gitignored |
+| B1 | Production `fingerprints.bin` in app folder | Done — tracked in git under `LSMMobileModelTesting/LSMMobileModelTesting/` |
 | B2 | Debug parity + load log | Offline OK — golden max diff 0.0; confirm `✓ Parity check passed` + `307 clases, 1934 videos` on Debug build |
 | B3 | Live test matrix | **Pending device** — procedure in README |
 | B4 | Latency from debug panel | **Pending device** — Cosine/DTW split wired; Python desktop ~930 ms reference |
@@ -189,7 +190,7 @@ Execute on **macOS + Xcode + physical device** (recommended for camera latency).
 
 - [x] Source: `../TrainingPipeline/lsm_fingerprints/fingerprints.bin` (from LSMOutput build)
 - [x] Copy to `LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin` (synchronized root group auto-bundles)
-- [x] `**/fingerprints.bin` in `.gitignore`; removed from git index
+- [x] **Commit** `fingerprints.bin` in AppLSMTests after copy or rebuild
 - [x] Load path: `FingerprintMatcher.init(bundleName:)`
 
 ### B2 — Debug parity check
@@ -233,8 +234,9 @@ After TrainingPipeline produces LSMOutput-trained `.mlpackage` (see [TrainingPip
 - [x] Copy `exports/*_lsmoutput.mlpackage` + matching `classes.json` into `LSMMobileModelTesting/LSMMobileModelTesting/` (2026-06-22)
 - [x] Register in `AVAILABLE_MODELS` (`LandmarkPipeline.swift`) with val_acc in description
 - [x] Fase 1 `fingerprints.bin` refreshed from TrainingPipeline
+- [x] **Commit** all bundled artifacts in AppLSMTests after copy or retrain
 
-**Local-only artifacts policy:** `fingerprints.bin`, all `*.mlpackage/`, and `runs_lsmoutput_*_classes.json` are gitignored (~97 MB total). Acceptable for dev/testing; production may ship one default model + optional download.
+See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the full file list and update workflow.
 
 ### C2 — Load smoke
 
@@ -308,6 +310,57 @@ Mirrors [TrainingPipeline/AGENTS.md — Live-testing roadmap](../TrainingPipelin
 
 ---
 
+## Bundled model artifacts (tracked in git)
+
+Inference bundles live in **`LSMMobileModelTesting/LSMMobileModelTesting/`** and are **committed to this repo** so clones and CI can run the app without retraining. Expected total ~97 MB.
+
+| File / folder | Backend |
+|---|---|
+| `fingerprints.bin` | Fase 1 — Fingerprint+DTW (307 classes) |
+| `runs_lsmoutput_cnn_lsmoutput.mlpackage/` | Fase 2 — CNN |
+| `runs_lsmoutput_tcn_lsmoutput.mlpackage/` | Fase 2 — TCN |
+| `runs_lsmoutput_3dcnn_lsmoutput.mlpackage/` | Fase 2 — 3D CNN |
+| `coreml_models.mlpackage/` | Fase 2 — Legacy v1 (187 classes) |
+| `runs_lsmoutput_*_classes.json` | Class label fallbacks for LSMOutput models |
+| `classes.json` | Legacy Core ML class labels |
+
+### When to update and commit
+
+After retraining or rebuilding in TrainingPipeline:
+
+```bash
+IOS=LSMMobileModelTesting/LSMMobileModelTesting
+TP=../TrainingPipeline
+
+cp "$TP/lsm_fingerprints/fingerprints.bin" "$IOS/"
+cp -r "$TP/exports/runs_lsmoutput_cnn_lsmoutput.mlpackage" "$IOS/"
+cp -r "$TP/exports/runs_lsmoutput_tcn_lsmoutput.mlpackage" "$IOS/"
+cp -r "$TP/exports/runs_lsmoutput_3dcnn_lsmoutput.mlpackage" "$IOS/"
+cp "$TP/runs_lsmoutput_cnn/classes.json" "$IOS/runs_lsmoutput_cnn_classes.json"
+cp "$TP/runs_lsmoutput_tcn/classes.json" "$IOS/runs_lsmoutput_tcn_classes.json"
+cp "$TP/runs_lsmoutput_3dcnn/classes.json" "$IOS/runs_lsmoutput_3dcnn_classes.json"
+```
+
+Then in **AppLSMTests**:
+
+```bash
+git add LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin
+git add LSMMobileModelTesting/LSMMobileModelTesting/*.mlpackage
+git add LSMMobileModelTesting/LSMMobileModelTesting/runs_lsmoutput_*_classes.json
+git commit -m "Update bundled inference artifacts from TrainingPipeline"
+```
+
+Also update `AVAILABLE_MODELS` descriptions in `LandmarkPipeline.swift` if val metrics changed.
+
+### Agent rules
+
+- **Do** commit updated `fingerprints.bin`, `.mlpackage/` directories, and matching `*_classes.json` when TrainingPipeline produces new exports
+- **Do** keep TrainingPipeline intermediate artifacts (`fingerprints.npz`, `runs_lsmoutput_*/`, `exports/`) gitignored there — only the **AppLSMTests copy** is tracked
+- **Don't** use Git LFS unless the team explicitly adopts it; plain git is the current policy
+- **Don't** commit Xcode build output (`DerivedData/`, `*.ipa`) — see `.gitignore`
+
+---
+
 ## Next steps / backlog
 
 1. **Complete B2–B5 on Mac/device** — Fase 1 Debug parity, live matrix, latency, Release smoke
@@ -328,12 +381,13 @@ See also [TrainingPipeline/AGENTS.md — Handoff to AppLSMTests](../TrainingPipe
 
 - Match existing Swift naming, SwiftUI patterns, and minimal diff scope
 - Preserve landmark JSON format compatibility with `TrainingPipeline/dataset.py`
+- **Commit** updated `fingerprints.bin`, `.mlpackage/`, and `*_classes.json` after TrainingPipeline handoff (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git))
 - Update AGENTS.md and README.md when changing contracts, UI workflows, or manifest schema
 - Check sibling [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md) for cross-repo changes
 
 ### Don't
 
-- Commit build artifacts, `fingerprints.bin`, or local Xcode state (see `.gitignore`)
+- Commit Xcode user state, signing credentials, or build artifacts (see `.gitignore`)
 - Reintroduce `themes.json` matching in the extractor
 - Create new `.md` files — only `README.md` and `AGENTS.md` are tracked
 
