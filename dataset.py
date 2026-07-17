@@ -153,7 +153,19 @@ def augment_sequence(seq: np.ndarray, rng: np.random.Generator) -> np.ndarray:
 
 # ── Carga del dataset completo ────────────────────────────────────────────────
 
-def load_raw_dataset(dataset_dir: str, min_videos: int = 2):
+def _load_sequence_from_json(json_path: str, shoulder_norm: bool = True) -> np.ndarray | None:
+    """Load one video as (N_FRAMES, 135). Uses Fase 1 pipeline when shoulder_norm=True."""
+    if shoulder_norm:
+        from lsm_fingerprints.preprocess import prepare_sequence
+
+        return prepare_sequence(json_path=str(json_path))
+    seq = json_to_sequence(str(json_path))
+    if len(seq) < 10:
+        return None
+    return interpolate_sequence(seq, N_FRAMES)
+
+
+def load_raw_dataset(dataset_dir: str, min_videos: int = 2, shoulder_norm: bool = True):
     """
     Carga todos los _landmarks.json SIN augmentation.
     Soporta dos estructuras:
@@ -161,6 +173,10 @@ def load_raw_dataset(dataset_dir: str, min_videos: int = 2):
         - Anidada : dataset/categoria/palabra/video_landmarks.json
 
     Solo incluye clases con al menos min_videos secuencias válidas.
+
+    Args:
+        shoulder_norm: If True (default), use lsm_fingerprints.preprocess.prepare_sequence
+                       (shoulder anchor + valid-frame filter + interpolate). Matches Fase 1/iOS.
 
     Returns:
         X       : np.ndarray (N_videos, N_FRAMES, 135)
@@ -228,11 +244,11 @@ def load_raw_dataset(dataset_dir: str, min_videos: int = 2):
         for cat, jf in word_entries[word]:
             total_files += 1
             try:
-                seq = json_to_sequence(str(jf))
-                if len(seq) < 10:
+                seq = _load_sequence_from_json(str(jf), shoulder_norm=shoulder_norm)
+                if seq is None:
                     skipped_files += 1
                     continue
-                X_list.append(interpolate_sequence(seq, N_FRAMES))
+                X_list.append(seq)
                 y_list.append(class_to_idx[word])
                 meta_list.append({
                     "clase":     word,

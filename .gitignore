@@ -44,6 +44,9 @@ share/python-wheels/
 *.ckpt
 checkpoints/
 runs/           # directorio típico de TensorBoard
+runs_lsmoutput_*/
+exports/
+reports/
 data/
 datasets/
 outputs/
@@ -55,3 +58,8 @@ dataset/
 *.swp
 *.swo
 *~
+
+# --- Archivos de documentación del agente (no README o AGENTS.md) ---
+*.md
+!README.md
+!AGENTS.md
