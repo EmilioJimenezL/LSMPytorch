@@ -45,7 +45,7 @@ flowchart LR
   Extractor -->|"*_landmarks.json"| Fase1
   Extractor -->|"*_landmarks.json"| Fase2
   Fase1 -->|"fingerprints.bin"| Mobile
-  Fase2 -->|"coreml_models.mlpackage"| Mobile
+  Fase2 -->|"*.mlpackage + *_classes.json"| Mobile
 ```
 
 ---
@@ -64,6 +64,12 @@ flowchart LR
 | Fase 1 DTW | Sakoe-Chiba band `dtwRadius=10` — mirrors Python `DTW_RADIUS` |
 | Fase 2 preprocessing | `SequencePreprocessor` on both Fase 1 and Core ML inference paths |
 | Inference buffer | Circular buffer up to 170 frames; uses last 85; inference every 15 frames |
+| Fase 2 class labels | Index `i` in model logits → `classes[i]`; label count must match output dimension (307 LSMOutput, 187 legacy) |
+| Class label sources | Fase 1: embedded in `fingerprints.bin`; Fase 2: Core ML metadata `classes`, then `{classesBundleName}.json` from `AVAILABLE_MODELS` |
+| Label JSON naming | `.mlpackage` stem may end in `_lsmoutput`; JSON fallback uses run stem: `runs_lsmoutput_cnn_classes.json` (not `runs_lsmoutput_cnn_lsmoutput_classes.json`) |
+| Grading log file | `Documents/live_test_log.csv` on device — append-only; export via share sheet; **not** committed to git |
+| Grading `session_id` | Persisted in `UserDefaults` key `grading_session_id`; stable across app launches until app reinstall |
+| Model switch | Previous model stays active until new load succeeds; failed load shows overlay error and keeps prior model |
 
 ---
 
@@ -87,7 +93,10 @@ flowchart LR
 |---|---|
 | App entry | `LSMMobileModelTesting/LSMInferenceApp.swift` |
 | UI (camera + predictions) | `LSMMobileModelTesting/ContentView.swift` |
-| Inference pipeline | `LSMMobileModelTesting/LandmarkPipeline.swift` (`AVAILABLE_MODELS`) |
+| Inference pipeline | `LSMMobileModelTesting/LandmarkPipeline.swift` (`AVAILABLE_MODELS`, `loadClassLabels`, `ModelLoadPhase`, `pendingGrading`) |
+| Live grading / CSV log | `LSMMobileModelTesting/GradingLog.swift` (`GradingSessionStore`) |
+| Grading UI (Otra search, share) | `LSMMobileModelTesting/GradingViews.swift` |
+| Camera + grading shell UI | `LSMMobileModelTesting/ContentView.swift` (`ModelLoadingOverlay`, grading panel) |
 | Camera | `LSMMobileModelTesting/CameraManager.swift` |
 | Fase 1 preprocessing | `LSMMobileModelTesting/SequencePreprocessor.swift` |
 | Fase 1 fingerprint | `LSMMobileModelTesting/FingerprintExtractor.swift` |
@@ -141,13 +150,18 @@ Baseline reference: [TrainingPipeline/AGENTS.md — Phase 1 baseline](../Trainin
 ### Add Core ML model (Fase 2)
 
 1. Export from TrainingPipeline: `convert_to_coreml.py`
-2. Copy `.mlpackage` + `classes.json` into `LSMMobileModelTesting/LSMMobileModelTesting/`
-3. Register in `LandmarkPipeline.swift` → `AVAILABLE_MODELS`
-4. **Commit** the new or updated bundles in AppLSMTests (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git))
+2. Copy `.mlpackage` into `LSMMobileModelTesting/LSMMobileModelTesting/`
+3. Copy `classes.json` from the training run, renaming to `{run_stem}_classes.json` (e.g. `runs_lsmoutput_cnn/classes.json` → `runs_lsmoutput_cnn_classes.json`) — see [Class labels (iOS)](#class-labels-ios)
+4. Register in `LandmarkPipeline.swift` → `AVAILABLE_MODELS`: set `bundleName` (`.mlpackage` stem) and `classesBundleName` (JSON stem without `.json`)
+5. **Commit** the new or updated bundles in AppLSMTests (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git))
 
 ### Run Fase 1 parity check
 
 Build LSMMobileModelTesting in **Debug** on device/simulator — `Phase1ParityCheck` runs automatically against `golden_sequence.json`.
+
+### Live grading on device (iOS)
+
+In-app workflow for A/B model testing — see [Live grading / test logging (iOS)](#live-grading--test-logging-ios). Export `live_test_log.csv` via share sheet (↑) after a session.
 
 ---
 
@@ -186,6 +200,18 @@ Execute on **macOS + Xcode + physical device** (recommended for camera latency).
 - `LSMConstants.dtwRadius = 10` (Sakoe-Chiba band in `FingerprintMatcher.dtwDistance`)
 - Debug panel: Cosine ms + DTW ms columns
 
+**Code changes applied (class labels, 2026-06-22):**
+
+- `LSMModel.classesBundleName` maps each Fase 2 backend to its bundled `*_classes.json`
+- `loadClassLabels()` in `LandmarkPipeline.swift`: metadata key `classes` (not `n_classes`), then explicit JSON fallback
+- Fixes live predictions showing `clase_N` when label count is below model output dimension (e.g. legacy 187-class JSON loaded for a 307-class model)
+
+**Code changes applied (model loading UI, grading, 2026-06-22):**
+
+- `ModelLoadPhase` overlay: progress bar, success checkmark, error + revert to previous model on failure
+- `pendingGrading` / `GradingSessionStore`: Top-5 selectable grading, **Otra** search with confirm step, CSV append to `Documents/live_test_log.csv`
+- `GradingLog.swift` requires `import Combine` — `GradingSessionStore` uses `ObservableObject` / `@Published` (build fails without it)
+
 ### B1 — Copy production bin
 
 - [x] Source: `../TrainingPipeline/lsm_fingerprints/fingerprints.bin` (from LSMOutput build)
@@ -196,9 +222,9 @@ Execute on **macOS + Xcode + physical device** (recommended for camera latency).
 ### B2 — Debug parity check
 
 - [x] Offline: `golden_sequence.json` fingerprint max diff **0.0** (Python reference)
-- [ ] Build **Debug** on Mac — confirm console: `✓ Parity check passed (max diff …)`
-- [ ] Console: `✓ Fingerprint DB: 307 clases, 1934 videos`
-- [ ] If fail: regenerate fixture via `export_fixtures.py`; sync `LSMConstants.swift` ↔ `constants.py`
+- [x] Build **Debug** on Mac — confirm console: `✓ Parity check passed (max diff …)`
+- [x] Console: `✓ Fingerprint DB: 307 clases, 1934 videos`
+- [x] If fail: regenerate fixture via `export_fixtures.py`; sync `LSMConstants.swift` ↔ `constants.py`
 
 ### B3 — Live Fase 1 smoke test
 
@@ -232,21 +258,25 @@ After TrainingPipeline produces LSMOutput-trained `.mlpackage` (see [TrainingPip
 ### C1 — Copy Core ML artifact
 
 - [x] Copy `exports/*_lsmoutput.mlpackage` + matching `classes.json` into `LSMMobileModelTesting/LSMMobileModelTesting/` (2026-06-22)
-- [x] Register in `AVAILABLE_MODELS` (`LandmarkPipeline.swift`) with val_acc in description
+- [x] Register in `AVAILABLE_MODELS` (`LandmarkPipeline.swift`) with val_acc in description and `classesBundleName`
 - [x] Fase 1 `fingerprints.bin` refreshed from TrainingPipeline
+- [x] Class label mapping wired (`classesBundleName` per backend; verified live on device)
 - [x] **Commit** all bundled artifacts in AppLSMTests after copy or retrain
 
 See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the full file list and update workflow.
 
 ### C2 — Load smoke
 
-- [ ] Debug build: console shows correct class count (307 for LSMOutput models)
-- [ ] No `loadError` in predictions panel
+- [ ] Debug build: console shows correct class count (307 for LSMOutput models, 187 for legacy)
+- [ ] Debug panel **Clases** matches expected count when switching models
+- [ ] Console: `✓ Clases desde metadata 'classes': 307` or `✓ Clases desde runs_lsmoutput_*_classes.json: 307`
+- [ ] No `loadError` in predictions panel; no `clase_N` placeholders in Top-5
 - [ ] Metadata `val_acc` matches TrainingPipeline log
 
 ### C3 — Live smoke
 
 - [ ] Test 5–10 signs from `reports/class_overlap.json` intersection
+- [ ] Top-1 shows human-readable sign names (not `clase_N`)
 - [ ] Top-1 appears with confidence >15%
 
 ### C4 — Latency
@@ -261,7 +291,8 @@ See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the f
 ### Head-to-head A/B (Fase 1 vs Fase 2)
 
 - [ ] Same session, switch model picker across all 5 backends
-- [ ] Log to CSV using [TrainingPipeline/review/live_test_log_template.csv](../TrainingPipeline/review/live_test_log_template.csv)
+- [ ] Use in-app **grading panel** (Top-5 + **Otra**) — logs append to `Documents/live_test_log.csv`; export via share sheet (↑)
+- [ ] Optional cross-check: [TrainingPipeline/review/live_test_log_template.csv](../TrainingPipeline/review/live_test_log_template.csv) column layout (app CSV is a superset with all Top-5 guesses)
 - [ ] Minimum 10-sign matrix from `class_overlap.json` (Festividades, Personajes, Colores, Familia, Abecedario)
 - [ ] Report to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
 
@@ -271,12 +302,12 @@ See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the f
 
 ## Live-testing roadmap
 
-Mirrors [TrainingPipeline/AGENTS.md — Live-testing roadmap](../TrainingPipeline/AGENTS.md#live-testing-roadmap). Execute on Mac device; log in `live_test_log.csv`.
+Mirrors [TrainingPipeline/AGENTS.md — Live-testing roadmap](../TrainingPipeline/AGENTS.md#live-testing-roadmap). Execute on Mac device; primary log file: **`Documents/live_test_log.csv`** (export from app).
 
 ### Loop A — Measure (weeks 1–2)
 
-- Run A/B matrix; fill CSV with Top-1, confidence, inference_ms per backend
-- Compare live Top-1 vs Python val per backend (gap analysis)
+- Run A/B matrix using in-app grading UI; export CSV per session
+- Compare live Top-1 vs Python val per backend (gap analysis); derive `correct_yes_no` offline from `selected_sign` vs ground-truth sign performed
 - Tag failures: wrong class, low confidence, no detection, latency timeout
 
 ### Loop B — Diagnose (ongoing)
@@ -310,6 +341,126 @@ Mirrors [TrainingPipeline/AGENTS.md — Live-testing roadmap](../TrainingPipelin
 
 ---
 
+## Model switching overlay (iOS)
+
+When the user picks a different backend in `ContentView`, `LandmarkPipeline.loadModel` loads asynchronously **without** tearing down the active model until the new one succeeds.
+
+| `ModelLoadPhase` | UI |
+|---|---|
+| `.loading(name, progress)` | Full-screen overlay, progress bar 0–100%, model name |
+| `.succeeded(name, warning?)` | Green checkmark, «Modelo cargado correctamente», optional warning (e.g. label count mismatch) |
+| `.failed(name, message, keptModelName?)` | Error text; prior model remains active (`keptModelName`) |
+| `.idle` | Overlay hidden |
+
+**Progress sources:** Fase 1 — staged `FingerprintMatcher` parse (`progress` callback); Fase 2 — locate bundle → `MLModel` load on background queue → resolve class labels.
+
+**Implementation:** `ModelLoadPhase` + `ModelLoadingOverlay` in `ContentView.swift`; `loadModel` / `commitLoadedState` in `LandmarkPipeline.swift`.
+
+---
+
+## Live grading / test logging (iOS)
+
+On-device workflow to score model predictions during live testing. Replaces manual CSV entry for the fields the app captures automatically.
+
+### User flow
+
+1. Buffer fills → inference runs → **Top-5** frozen in `pendingGrading` (one prompt per inference; no overwrite until user acts or resets).
+2. User taps a guess **or** **Otra** → searchable list of all `availableClassLabels` for the active model → **confirm** screen → log.
+3. Row appended to CSV; `pendingGrading` cleared; wait for next inference.
+4. **Reset (↺)** clears buffer **and** pending grading options.
+5. **Share (↑)** exports `live_test_log.csv`; **Trash** deletes all rows (alert shows count; **No** is cancel/default).
+
+### CSV location and schema
+
+| Property | Value |
+|---|---|
+| Path | `Documents/live_test_log.csv` (device sandbox; export via share sheet) |
+| `session_id` | `UserDefaults` key `grading_session_id` — format `YYYY-MM-DD-xxxxxxxx`, stable until app reinstall |
+| Git | **Do not commit** — generated on device per tester |
+
+**Columns** (header written on first create):
+
+```
+session_id, timestamp, model_name, inference_ms,
+guess1, conf1_pct, guess2, conf2_pct, guess3, conf3_pct, guess4, conf4_pct, guess5, conf5_pct,
+selected_sign, selection_source
+```
+
+| `selection_source` | Meaning |
+|---|---|
+| `top_pick` | User tapped one of the Top-5 buttons |
+| `otra_search` | User picked via **Otra** search + confirm |
+
+**Relation to TrainingPipeline template:** [live_test_log_template.csv](../TrainingPipeline/review/live_test_log_template.csv) uses fewer columns (`sign`, `category`, `backend`, `correct_yes_no`, …). App CSV is richer (all Top-5 + confidences). Join or post-process offline for `correct_yes_no` by comparing `selected_sign` to the sign performed on camera.
+
+### Implementation files
+
+| File | Role |
+|---|---|
+| `GradingLog.swift` | `GradingRound`, `GradingSelectionSource`, `GradingSessionStore` |
+| `GradingViews.swift` | `OtraSignSearchSheet`, `GradingOptionButton`, `ShareSheet` |
+| `LandmarkPipeline.swift` | `pendingGrading`, `offerGradingRound`, `acknowledgeGradingRound` |
+| `ContentView.swift` | Grading panel, export/delete, wires `submitGradingSelection` |
+
+### Build note (`GradingLog.swift`)
+
+`GradingSessionStore` conforms to `ObservableObject` and uses `@Published`. The file **must** include `import Combine` (in addition to `Foundation`). Without it, Xcode reports errors on `@Published` / `ObservableObject`. This was fixed via Xcode coding assistant (2026-06-22).
+
+---
+
+## Class labels (iOS)
+
+Prediction text in **LSMMobileModelTesting** maps model output index `i` to `classes[i]`. If the label list is shorter than the model output, the UI shows a placeholder `clase_N` (implemented in `LandmarkPipeline.swift` and `FingerprintMatcher.swift`).
+
+### Sources by backend
+
+| Backend | Label source | Expected count |
+|---|---|---|
+| Fase 1 — Fingerprint+DTW | Class names appended to `fingerprints.bin` after sequences | 307 |
+| Fase 2 — CNN / TCN / 3D CNN | Core ML user metadata `classes` (JSON array), else bundled `runs_lsmoutput_*_classes.json` | 307 |
+| Fase 2 — Legacy v1 | Core ML metadata `classes`, else `classes.json` | 187 |
+
+### `AVAILABLE_MODELS` registration
+
+Each `LSMModel` entry uses:
+
+| Field | Meaning |
+|---|---|
+| `bundleName` | Resource stem for `.mlpackage` / `.bin` (e.g. `runs_lsmoutput_cnn_lsmoutput`) |
+| `classesBundleName` | Resource stem for fallback JSON **without** extension (e.g. `runs_lsmoutput_cnn_classes` → `runs_lsmoutput_cnn_classes.json`). Omit / `nil` for Fase 1 (labels in bin). |
+
+Current mapping:
+
+| `bundleName` | `classesBundleName` | Bundled JSON |
+|---|---|---|
+| `fingerprints` | — | (embedded in bin) |
+| `runs_lsmoutput_cnn_lsmoutput` | `runs_lsmoutput_cnn_classes` | `runs_lsmoutput_cnn_classes.json` |
+| `runs_lsmoutput_tcn_lsmoutput` | `runs_lsmoutput_tcn_classes` | `runs_lsmoutput_tcn_classes.json` |
+| `runs_lsmoutput_3dcnn_lsmoutput` | `runs_lsmoutput_3dcnn_classes` | `runs_lsmoutput_3dcnn_classes.json` |
+| `coreml_models` | `classes` | `classes.json` |
+
+**Naming rule:** TrainingPipeline exports `.mlpackage` with suffix `_lsmoutput` (export name), but `classes.json` is copied from the **run folder** (`runs_lsmoutput_cnn/`, etc.) and renamed `{run_stem}_classes.json`. Do **not** name the JSON after the full `.mlpackage` stem unless you also set `classesBundleName` accordingly.
+
+### Load order (`loadClassLabels` in `LandmarkPipeline.swift`)
+
+1. Core ML metadata — key exactly `classes` or ending in `.classes` (excludes `n_classes`)
+2. Bundle JSON — `classesBundleName` from `AVAILABLE_MODELS`
+3. Derived fallback — strip trailing `_lsmoutput` from `bundleName` → `{base}_classes.json`
+4. Last resort — `{bundleName}_classes.json`
+
+Fase 1 bypasses this path; `FingerprintMatcher` reads class names from the binary header.
+
+### Troubleshooting `clase_N` in live tests
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `clase_187`+ on CNN/TCN/3DCNN | Wrong JSON loaded (e.g. legacy `classes.json` with 187 entries for a 307-class model) | Set `classesBundleName` in `AVAILABLE_MODELS`; confirm `runs_lsmoutput_*_classes.json` is in the app bundle |
+| Debug **Clases** shows 187 on LSMOutput model | Same as above | Rebuild after copying correct JSON; check Xcode console for which file loaded |
+| All predictions `clase_N` | Empty or truncated label list | Verify metadata parse log; confirm JSON is a `[String]` array |
+| Wrong sign name but not `clase_N` | Label index order differs from training | Regenerate `classes.json` from the same TrainingPipeline run as the `.mlpackage` |
+
+---
+
 ## Bundled model artifacts (tracked in git)
 
 Inference bundles live in **`LSMMobileModelTesting/LSMMobileModelTesting/`** and are **committed to this repo** so clones and CI can run the app without retraining. Expected total ~97 MB.
@@ -321,12 +472,12 @@ Inference bundles live in **`LSMMobileModelTesting/LSMMobileModelTesting/`** and
 | `runs_lsmoutput_tcn_lsmoutput.mlpackage/` | Fase 2 — TCN |
 | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage/` | Fase 2 — 3D CNN |
 | `coreml_models.mlpackage/` | Fase 2 — Legacy v1 (187 classes) |
-| `runs_lsmoutput_*_classes.json` | Class label fallbacks for LSMOutput models |
-| `classes.json` | Legacy Core ML class labels |
+| `runs_lsmoutput_*_classes.json` | Class label fallbacks for LSMOutput models (307 labels each) |
+| `classes.json` | Legacy Core ML class labels (187) |
+
+See [Class labels (iOS)](#class-labels-ios) for the full `bundleName` ↔ JSON mapping and load order.
 
 ### When to update and commit
-
-After retraining or rebuilding in TrainingPipeline:
 
 ```bash
 IOS=LSMMobileModelTesting/LSMMobileModelTesting
@@ -350,10 +501,11 @@ git add LSMMobileModelTesting/LSMMobileModelTesting/runs_lsmoutput_*_classes.jso
 git commit -m "Update bundled inference artifacts from TrainingPipeline"
 ```
 
-Also update `AVAILABLE_MODELS` descriptions in `LandmarkPipeline.swift` if val metrics changed.
+Also update `AVAILABLE_MODELS` (`bundleName`, `classesBundleName`, description) in `LandmarkPipeline.swift` if val metrics or export names changed.
 
 ### Agent rules
 
+- **Do** set `classesBundleName` when registering a new Fase 2 backend — must match the copied `*_classes.json` stem
 - **Do** commit updated `fingerprints.bin`, `.mlpackage/` directories, and matching `*_classes.json` when TrainingPipeline produces new exports
 - **Do** keep TrainingPipeline intermediate artifacts (`fingerprints.npz`, `runs_lsmoutput_*/`, `exports/`) gitignored there — only the **AppLSMTests copy** is tracked
 - **Don't** use Git LFS unless the team explicitly adopts it; plain git is the current policy
@@ -363,11 +515,12 @@ Also update `AVAILABLE_MODELS` descriptions in `LandmarkPipeline.swift` if val m
 
 ## Next steps / backlog
 
-1. **Complete B2–B5 on Mac/device** — Fase 1 Debug parity, live matrix, latency, Release smoke
-2. **Complete C2–C5 on Mac/device** — load smoke per backend, live A/B, latency, Release smoke
+1. **Complete B3–B5 on Mac/device** — Fase 1 live matrix, latency, Release smoke
+2. **Complete C2–C5 on Mac/device** — load smoke per backend, live A/B via grading UI, latency, Release smoke
 3. Keep `golden_sequence.json` in sync when Fase 1 constants change
 4. Optional: `Phase2ParityCheck.swift` — golden logits vs Python on fixed sequence
-5. Report device results to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+5. Optional: add `category` / `correct_yes_no` columns to app CSV or post-export script
+6. Report device results to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
 
 See [Live-testing roadmap](#live-testing-roadmap) for iterative accuracy improvement.
 
@@ -423,6 +576,7 @@ After completing a task that changes architecture, contracts, workflows, or back
 |---|---|
 | New Swift file / renamed module | File index here; structure in README |
 | Extractor or manifest schema change | Invariants in both AGENTS.md; examples in both READMEs |
-| iOS inference behavior | File index + README usage section here |
+| iOS inference behavior | File index + README usage section; [Class labels (iOS)](#class-labels-ios), [Live grading](#live-grading--test-logging-ios), [Model switching overlay](#model-switching-overlay-ios) as needed |
+| Grading CSV schema change | [Live grading](#live-grading--test-logging-ios) + README grading section |
 | Completed backlog item | Remove or mark done in both AGENTS.md |
 | Cross-repo integration | Ecosystem diagram + sibling cross-link in both files |

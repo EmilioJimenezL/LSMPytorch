@@ -112,10 +112,12 @@ App de prueba en SwiftUI que ejecuta modelos Core ML en tiempo real usando la c�
 - Captura video de la cámara frontal o trasera (720p)
 - Extrae landmarks por frame con Vision (misma lógica que el extractor)
 - Acumula un buffer temporal de hasta 85 frames
-- Interpola la secuencia y ejecuta inferencia Core ML cada 15 frames
-- Muestra las **Top-5 predicciones** con barras de confianza
+- Interpola la secuencia y ejecuta inferencia cada 15 frames
+- **Calificación en vivo:** tras cada inferencia muestra Top-5 como opciones seleccionables + **Otra** (búsqueda con confirmación)
+- Registra cada selección en `live_test_log.csv` (exportable por share sheet)
+- Overlay de **carga de modelo** al cambiar backend (barra de progreso, éxito/error, revierte si falla)
 - Dibuja esqueleto de manos y pose sobre la vista de cámara
-- Panel de debug con FPS, latencia de inferencia, estado de detección y progreso del buffer
+- Panel de debug con FPS, latencia de inferencia, estado de detección, progreso del buffer y **conteo de clases** cargadas
 
 **Requisitos:**
 
@@ -130,30 +132,78 @@ App de prueba en SwiftUI que ejecuta modelos Core ML en tiempo real usando la c�
 3. Compilar y ejecutar (⌘R)
 4. Conceder permiso de cámara cuando se solicite
 5. Apuntar la cámara hacia alguien realizando una seña
-6. Esperar a que el anillo de buffer llegue al 100% (85 frames) para ver predicciones
+6. Esperar a que el anillo de buffer llegue al 100% (85 frames)
+7. Cuando aparezcan las **opciones de calificación**, seleccionar la seña correcta (o **Otra** si no está en el Top-5)
+8. Exportar el log con **↑** cuando termines la sesión
 
 **Controles de la UI:**
 
 | Control | Función |
 |---|---|
-| Selector de modelo | Cambia entre **Fase 1 (Fingerprint+DTW)** y **Fase 2 (Core ML)** |
+| Selector de modelo | Cambia entre los 5 backends; muestra overlay de carga con progreso |
+| Exportar (↑) | Comparte `live_test_log.csv` (share sheet); deshabilitado si no hay registros |
+| Eliminar (🗑) | Borra todos los registros CSV; alerta con conteo; **No** es la opción segura por defecto |
 | Esqueleto (figura) | Muestra/oculta overlay de manos y pose |
-| Info (ⓘ) | Muestra panel de debug |
+| Info (ⓘ) | Panel de debug (FPS, **Clases**, latencia) |
 | Rotar cámara | Alterna cámara frontal / trasera (reinicia el buffer) |
-| Anillo de progreso | Indica cuántos frames hay en el buffer (0–85) |
-| Reset (↺) | Limpia buffer y predicciones |
+| Anillo de progreso | Frames en buffer (0–85) |
+| Reset (↺) | Limpia buffer **y** opciones de calificación pendientes |
 
 **Modelos incluidos (2026-06):**
 
-| Modo | Archivo | Clases | Val Top-1 | Notas |
-|---|---|---|---|---|
-| Fase 1 (default) | `fingerprints.bin` | 307 | 6.57% LOO | Huella + DTW |
-| Fase 2 CNN | `runs_lsmoutput_cnn_lsmoutput.mlpackage` | 307 | **47.16%** | Recomendado para pruebas |
-| Fase 2 TCN | `runs_lsmoutput_tcn_lsmoutput.mlpackage` | 307 | 44.78% | Mejor val Top-5 |
-| Fase 2 3D CNN | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage` | 307 | 15.52% | |
-| Fase 2 legacy | `coreml_models.mlpackage` | 187 | 9.68% | Pre-LSMOutput |
+| Modo | Modelo (`.mlpackage` / `.bin`) | Etiquetas (`*_classes.json`) | Clases | Val Top-1 | Notas |
+|---|---|---|---|---|---|
+| Fase 1 (default) | `fingerprints.bin` | (en el bin) | 307 | 6.57% LOO | Huella + DTW |
+| Fase 2 CNN | `runs_lsmoutput_cnn_lsmoutput.mlpackage` | `runs_lsmoutput_cnn_classes.json` | 307 | **47.16%** | Recomendado para pruebas |
+| Fase 2 TCN | `runs_lsmoutput_tcn_lsmoutput.mlpackage` | `runs_lsmoutput_tcn_classes.json` | 307 | 44.78% | Mejor val Top-5 |
+| Fase 2 3D CNN | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage` | `runs_lsmoutput_3dcnn_classes.json` | 307 | 15.52% | |
+| Fase 2 legacy | `coreml_models.mlpackage` | `classes.json` | 187 | 9.68% | Pre-LSMOutput |
 
-Todos los artefactos son **locales y gitignored** (~97 MB). Copiar desde TrainingPipeline (ver abajo). El selector de modelos permite alternar entre los 5 backends. **Fase 1 y Fase 2 LSMOutput comparten `SequencePreprocessor`** (normalización hombro).
+Todos los artefactos de inferencia (~97 MB) están **versionados en este repositorio** bajo `LSMMobileModelTesting/LSMMobileModelTesting/` para que un clone compile sin copiar desde TrainingPipeline. Tras reentrenar, actualizar desde TrainingPipeline y **commitear** (ver [AGENTS.md — Bundled model artifacts](./AGENTS.md#bundled-model-artifacts-tracked-in-git)).
+
+El selector de modelos permite alternar entre los 5 backends. **Fase 1 y Fase 2 LSMOutput comparten `SequencePreprocessor`** (normalización hombro).
+
+### Etiquetas de clase (nombres en predicciones)
+
+Cada índice de salida del modelo se muestra como `classes[i]`. La app resuelve las etiquetas así:
+
+1. **Fase 1:** nombres embebidos en `fingerprints.bin`
+2. **Fase 2:** metadata Core ML `classes` (si está disponible), o el JSON indicado por `classesBundleName` en `AVAILABLE_MODELS`
+
+**Importante:** el `.mlpackage` exportado termina en `_lsmoutput` (p. ej. `runs_lsmoutput_cnn_lsmoutput`), pero el JSON de etiquetas se copia desde la carpeta del run y se renombra sin ese sufijo: `runs_lsmoutput_cnn_classes.json`. Cada entrada en `AVAILABLE_MODELS` declara explícitamente `bundleName` y `classesBundleName`.
+
+Si el conteo de etiquetas es menor que la salida del modelo, la UI muestra placeholders `clase_N` (p. ej. `clase_187` en un modelo de 307 clases con solo 187 etiquetas). En el panel debug, **Clases** debe ser **307** para Fase 1 y backends LSMOutput, **187** para legacy.
+
+Detalle técnico y troubleshooting: [AGENTS.md — Class labels (iOS)](./AGENTS.md#class-labels-ios)
+
+### Calificación en vivo (grading)
+
+Flujo para probar y puntuar modelos sin anotar CSV a mano:
+
+1. Realiza una seña frente a la cámara hasta que aparezca **Calificar predicción** con hasta 5 opciones.
+2. Toca la seña que realmente hiciste si está en la lista, o **Otra** para buscar entre todas las clases del modelo activo.
+3. En **Otra**, busca → selecciona → **Confirmar** (paso extra para evitar toques accidentales).
+4. El badge numérico en el panel indica cuántos registros llevas en la sesión.
+5. Pulsa **↑** para exportar el CSV (AirDrop, Archivos, email, etc.).
+
+**Archivo:** `Documents/live_test_log.csv` en el dispositivo (no se commitea al repo).
+
+**`session_id`:** se genera una vez y persiste en el dispositivo (`UserDefaults`) para agrupar filas de varias ejecuciones de la app.
+
+**Columnas principales:** `session_id`, `timestamp`, `model_name`, `inference_ms`, `guess1`…`guess5` + confianzas %, `selected_sign`, `selection_source` (`top_pick` | `otra_search`).
+
+Detalle técnico: [AGENTS.md — Live grading](./AGENTS.md#live-grading--test-logging-ios)
+
+### Cambio de modelo (overlay de carga)
+
+Al elegir otro backend en el selector:
+
+- Overlay con barra de progreso y nombre del modelo
+- Éxito: ✓ «Modelo cargado correctamente» (y advertencia si aplica)
+- Error: mensaje de fallo; **se mantiene el modelo que ya funcionaba**
+- El modelo anterior sigue activo hasta que el nuevo carga correctamente
+
+Detalle: [AGENTS.md — Model switching overlay](./AGENTS.md#model-switching-overlay-ios)
 
 ## Integrar modelos Fase 2 entrenados en LSMOutput
 
@@ -172,7 +222,18 @@ cp "$TP/runs_lsmoutput_tcn/classes.json" "$IOS/runs_lsmoutput_tcn_classes.json"
 cp "$TP/runs_lsmoutput_3dcnn/classes.json" "$IOS/runs_lsmoutput_3dcnn_classes.json"
 ```
 
-`AVAILABLE_MODELS` en `LandmarkPipeline.swift` ya registra los 5 backends con métricas val actualizadas.
+Registrar en `AVAILABLE_MODELS` (`LandmarkPipeline.swift`) con `bundleName`, `classesBundleName` y descripción con métricas val. Ejemplo:
+
+```swift
+LSMModel(
+    name: "Fase 2 — CNN LSMOutput",
+    bundleName: "runs_lsmoutput_cnn_lsmoutput",
+    classesBundleName: "runs_lsmoutput_cnn_classes",
+    description: "307 clases, val Top-1 47.16% (recomendado)"
+)
+```
+
+Commitear artefactos actualizados en AppLSMTests (ver [AGENTS.md](./AGENTS.md#bundled-model-artifacts-tracked-in-git)).
 
 Lista de señas compartidas para A/B: `TrainingPipeline/reports/class_overlap.json` (307 clases).
 
@@ -181,16 +242,15 @@ Lista de señas compartidas para A/B: `TrainingPipeline/reports/class_overlap.js
 **Requisito:** Mac + Xcode + dispositivo físico.
 
 1. Usar señas de `TrainingPipeline/reports/class_overlap.json` (307 clases compartidas)
-2. Misma sesión: alternar selector entre los 5 backends sin reiniciar la app
-3. Registrar resultados en CSV — plantilla: `TrainingPipeline/review/live_test_log_template.csv`
+2. Misma sesión: alternar selector entre los 5 backends (esperar overlay de carga entre cambios)
+3. Por cada seña: seleccionar la etiqueta correcta en el panel de **calificación** (Top-5 u **Otra**)
+4. Al terminar, exportar CSV con **↑** y analizar offline
 
-| session_id | sign | category | backend | top1 | confidence | inference_ms | correct_yes_no | notes |
-|---|---|---|---|---|---|---|---|---|
-| 2026-06-22-1 | Navidad | Festividades | fase2_cnn | Navidad | 0.82 | 45 | yes | |
+El CSV de la app incluye Top-5 completo + seña seleccionada. Para comparar con el template de TrainingPipeline (`session_id`, `sign`, `backend`, `correct_yes_no`, …), post-procesar o cruzar con la seña que performaste en cámara.
 
 **Matriz mínima (10 señas):** mezcla de Festividades, Personajes, Colores, Familia, Abecedario.
 
-4. Reportar resultados en [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+5. Reportar resultados en [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
 
 Checklist detallado: [AGENTS.md — Phase 2 iOS validation](./AGENTS.md#phase-2-ios-validation-checklist)
 
@@ -212,29 +272,32 @@ python build_db.py \
   --min-videos 2
 ```
 
-El bin (~95 MB, 307 clases / 1934 videos) **no se commitea** — está en `.gitignore`. El proyecto Xcode usa `PBXFileSystemSynchronizedRootGroup`: basta copiar el archivo a `LSMMobileModelTesting/LSMMobileModelTesting/` y recompilar.
+El bin (~95 MB, 307 clases / 1934 videos) está en el bundle de la app y **se commitea** en AppLSMTests. El proyecto Xcode usa `PBXFileSystemSynchronizedRootGroup`: basta copiar o actualizar archivos en `LSMMobileModelTesting/LSMMobileModelTesting/` y recompilar (luego `git add` + commit si cambiaron artefactos).
 
 ## Validar Fase 1 en dispositivo (después del baseline Python)
 
-Requisitos previos (generados en TrainingPipeline, no commiteados):
+Requisitos previos en TrainingPipeline (referencia de baseline):
 
-- `TrainingPipeline/lsm_fingerprints/fingerprints.bin` — base de producción (~307 clases)
+- `TrainingPipeline/lsm_fingerprints/fingerprints.bin` — misma base que el bundle iOS (307 clases)
 - Baseline LOO registrado en [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md#phase-1-baseline-lsmoutput)
 
 ### Estado de integración (2026-06-22)
 
 | Paso | Estado | Notas |
 |---|---|---|
-| Bin en bundle local | Hecho | `fingerprints.bin` (~95 MB) copiado al target; gitignored |
-| CNN/TCN/3DCNN mlpackages | Hecho | Copiados desde `TrainingPipeline/exports/`; gitignored |
-| `AVAILABLE_MODELS` (5 backends) | Hecho | Fase 1, CNN, TCN, 3DCNN, legacy |
+| Bin en bundle | Hecho | `fingerprints.bin` (~95 MB) en target; versionado en git |
+| CNN/TCN/3DCNN mlpackages + `*_classes.json` | Hecho | Copiados desde TrainingPipeline; versionados en git |
+| `AVAILABLE_MODELS` (5 backends) | Hecho | `bundleName` + `classesBundleName` por backend |
+| Etiquetas de clase en vivo | Hecho | Mapeo explícito; sin `clase_N` si **Clases** = 307 en panel debug |
+| Calificación en vivo + CSV | Hecho | Top-5 + Otra; export ↑; `GradingLog.swift` requiere `import Combine` |
+| Overlay carga de modelo | Hecho | Progreso, éxito/error, revierte al modelo previo si falla |
 | Header / carga | Verificado offline | Magic `LSMF`, 307 clases, 1934 videos; parse ~0.1 s (Linux) |
 | Paridad huella | Verificado offline | `golden_sequence.json` max diff **0.0** (Python); Debug build debe imprimir `✓ Parity check passed` |
-| Carga async + UI | Hecho | `loadModel` parsea en background; spinner «Cargando fingerprints.bin…» |
+| Carga async + UI | Hecho | Overlay full-screen con barra de progreso al cambiar modelo |
 | DTW radius + inferencia async | Hecho | `dtwRadius=10` (Sakoe-Chiba); `match()` en cola de fondo |
 | Fase 2 preprocessing parity | Hecho | Core ML path uses `SequencePreprocessor` |
 | Phase 1 checklist B2–B5 | **Pending device** | Mac required |
-| Phase 2 checklist C2–C5 | **Pending device** | Mac required; use `live_test_log_template.csv` |
+| Phase 2 checklist C2–C5 | **Pending device** | Mac required; use in-app grading + CSV export |
 
 Referencia de latencia (Linux desktop, Python FastDTW radius=10): **~930 ms/ciclo** — por encima del objetivo de 200 ms. iOS con Accelerate + banda DTW debería ser más rápido; medir en el panel debug. Si sigue >200 ms, el código ya evita bloquear el hilo principal.
 
@@ -298,31 +361,40 @@ add_class("./fingerprints.npz", "NuevaPalabra", [prepare_sequence("video_landmar
 
 1. Exportar desde Python:
    ```bash
-   python convert_to_coreml.py --checkpoint ./runs/best_model.pt --output ./mi_modelo
+   python convert_to_coreml.py --checkpoint ./runs/best_model.pt --output ./mi_modelo_lsmoutput
    ```
-2. Arrastrar `mi_modelo.mlpackage` al target en Xcode (copiar al bundle)
-3. Copiar `classes.json` del run de entrenamiento al bundle
-4. Registrar el modelo en `LandmarkPipeline.swift`:
+2. Copiar `mi_modelo_lsmoutput.mlpackage` a `LSMMobileModelTesting/LSMMobileModelTesting/`
+3. Copiar `classes.json` del run de entrenamiento, renombrando a `{run_stem}_classes.json` (p. ej. `mi_run_classes.json`)
+4. Registrar en `LandmarkPipeline.swift`:
    ```swift
-   let AVAILABLE_MODELS: [LSMModel] = [
-       LSMModel(name: "v1 — baseline", bundleName: "coreml_models", description: "Primer entrenamiento"),
-       LSMModel(name: "v2 — TCN",      bundleName: "mi_modelo",     description: "Modelo TCN"),
-   ]
+   LSMModel(
+       name: "v2 — TCN",
+       bundleName: "mi_modelo_lsmoutput",
+       classesBundleName: "mi_run_classes",
+       description: "307 clases, val Top-1 …%"
+   )
    ```
+5. Commitear `.mlpackage`, JSON de etiquetas y cambio en `LandmarkPipeline.swift`
+
+Ver [AGENTS.md — Class labels (iOS)](./AGENTS.md#class-labels-ios) para la convención de nombres.
 
 **Archivos principales:**
 
 | Archivo | Responsabilidad |
 |---|---|
-| `LandmarkPipeline.swift` | Extracción Vision, buffer, inferencia (Core ML o fingerprint) |
-| `SequencePreprocessor.swift` | Normalización hombro + filtro valid (Fase 1) |
+| `LandmarkPipeline.swift` | Vision, buffer, inferencia, `AVAILABLE_MODELS`, `ModelLoadPhase`, `pendingGrading` |
+| `GradingLog.swift` | `GradingSessionStore`, CSV append, `session_id` (`import Combine` requerido) |
+| `GradingViews.swift` | Búsqueda **Otra**, botones de opción, share sheet |
+| `SequencePreprocessor.swift` | Normalización hombro + filtro valid (Fase 1 y Fase 2) |
 | `FingerprintExtractor.swift` | Huella 810-dim (Fase 1) |
 | `FingerprintMatcher.swift` | Carga `fingerprints.bin`, cosine + DTW + voting |
 | `CameraManager.swift` | Sesión AVCapture, permisos, cambio de cámara |
-| `ContentView.swift` | UI: cámara, esqueleto, predicciones, debug |
-| `fingerprints.bin` | Base de datos Fase 1 para inferencia |
-| `classes.json` | Lista de clases Core ML (fallback) |
-| `coreml_models.mlpackage` | Modelo Core ML Fase 2 |
+| `ContentView.swift` | UI: cámara, esqueleto, calificación, overlay de carga, export/delete |
+| `fingerprints.bin` | Base Fase 1 (307 clases embebidas) |
+| `runs_lsmoutput_*_classes.json` | Etiquetas fallback Fase 2 LSMOutput (307 c/u) |
+| `classes.json` | Etiquetas legacy Fase 2 (187) |
+| `runs_lsmoutput_*_lsmoutput.mlpackage/` | Modelos Core ML LSMOutput (CNN, TCN, 3D CNN) |
+| `coreml_models.mlpackage` | Modelo Core ML legacy |
 
 ---
 
@@ -390,9 +462,10 @@ python convert_to_coreml.py --checkpoint ./runs/best_model.pt --output ./lsm_mod
 
 ### 4. Probar en dispositivo (iOS)
 
-1. Copiar `lsm_model.mlpackage` y `runs/classes.json` al proyecto iOS
-2. Registrar el modelo en `AVAILABLE_MODELS`
-3. Compilar en dispositivo y probar señas en vivo
+1. Copiar `*.mlpackage`, `fingerprints.bin` y `{run}_classes.json` al proyecto iOS (o usar los ya versionados en el repo)
+2. Registrar en `AVAILABLE_MODELS` con `bundleName` y `classesBundleName`
+3. Compilar en dispositivo; confirmar **Clases** en panel debug (307 o 187 según modelo)
+4. Probar señas en vivo — Top-1 debe mostrar nombres legibles, no `clase_N`
 
 ---
 
@@ -416,11 +489,21 @@ AppLSMTests/
     ├── LSMMobileModelTesting.xcodeproj
     └── LSMMobileModelTesting/
         ├── LSMInferenceApp.swift       # Entry point
-        ├── ContentView.swift           # UI: cámara + predicciones
+        ├── ContentView.swift           # UI: cámara, calificación, overlay carga
+        ├── GradingLog.swift            # CSV + session_id (import Combine)
+        ├── GradingViews.swift          # Otra search, share sheet
         ├── CameraManager.swift         # AVCaptureSession
-        ├── LandmarkPipeline.swift      # Vision + Core ML
-        ├── classes.json                # 187 clases del modelo baseline
-        └── coreml_models.mlpackage/      # Modelo Core ML incluido
+        ├── LandmarkPipeline.swift      # Vision, Core ML, ModelLoadPhase
+        ├── FingerprintMatcher.swift    # Fase 1 bin + DTW
+        ├── fingerprints.bin            # Fase 1 (307 clases)
+        ├── runs_lsmoutput_cnn_lsmoutput.mlpackage/
+        ├── runs_lsmoutput_tcn_lsmoutput.mlpackage/
+        ├── runs_lsmoutput_3dcnn_lsmoutput.mlpackage/
+        ├── runs_lsmoutput_cnn_classes.json
+        ├── runs_lsmoutput_tcn_classes.json
+        ├── runs_lsmoutput_3dcnn_classes.json
+        ├── classes.json                # 187 clases (legacy)
+        └── coreml_models.mlpackage/
 ```
 
 ---
@@ -443,13 +526,16 @@ Frame de cámara
     → Vision (manos + pose)
     → Vector 135D
     → Buffer circular (hasta 170 frames, usa últimos 85)
-    → Interpolación lineal a 85 frames
-    → MLMultiArray (1, 85, 135)
-    → Core ML prediction
-    → Softmax → Top-5 clases
+    → SequencePreprocessor (Fase 1 y Fase 2)
+    → MLMultiArray (1, 85, 135)  [Fase 2]  /  fingerprint + DTW [Fase 1]
+    → Core ML prediction o FingerprintMatcher
+    → Softmax / voting → Top-5 → panel de calificación (usuario elige seña correcta)
+    → Append row → Documents/live_test_log.csv
 ```
 
-La inferencia se ejecuta cada **15 frames** cuando el buffer tiene al menos 85 frames. Una seña se considera detectada cuando la confianza del top-1 supera **15%**.
+La inferencia se ejecuta cada **15 frames** cuando el buffer tiene al menos 85 frames. Tras cada ciclo se ofrece **una** ronda de calificación (congelada hasta que el usuario responde o pulsa reset). Una seña en el panel de estado aparece como **Calificar predicción** cuando hay opciones pendientes.
+
+**Etiquetas:** el índice de la predicción se resuelve contra la lista cargada al cambiar de modelo (metadata Core ML o `*_classes.json`). Si ves `clase_N`, el conteo de etiquetas no coincide con la salida del modelo — revisar **Clases** en el panel debug.
 
 ### dataset_manifest.json
 
@@ -514,11 +600,14 @@ Esquema simplificado:
 |---|---|
 | Extracción batch macOS | Funcional — procesa videos, genera JSON + overlay opcional |
 | Catálogo dataset_manifest.json | Funcional — descubrimiento por ruta, merge y persistencia |
-| Inferencia iOS en vivo | Funcional — Top-5, esqueleto, debug |
-| Fase 1 production bin | Copiado localmente (~95 MB, 307 clases); gitignored |
-| Fase 2 LSMOutput models | CNN + TCN + 3DCNN copiados localmente; gitignored |
+| Inferencia iOS en vivo | Funcional — calificación Top-5 + Otra, export CSV |
+| Fase 1 production bin | Versionado en git (307 clases embebidas) |
+| Fase 2 LSMOutput models | CNN + TCN + 3DCNN + JSON de etiquetas versionados en git |
+| Etiquetas de clase (mapeo modelo ↔ JSON) | Funcional — `classesBundleName` en `AVAILABLE_MODELS` |
+| Overlay carga de modelo | Funcional — progreso, éxito/error, revierte si falla |
+| Calificación / CSV en dispositivo | Funcional — `live_test_log.csv` en Documents; export ↑ |
 | Multi-modelo | 5 backends en selector (Fase 1 default, CNN recomendado NN) |
-| Validación dispositivo | Pendiente Mac — B2–B5, C2–C5 |
+| Validación dispositivo | Fase 2 etiquetas + grading verificados; resto B3–B5, C2–C5 pendiente Mac |
 
 ## Relación con TrainingPipeline
 

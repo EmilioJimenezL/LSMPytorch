@@ -66,18 +66,25 @@ struct LSMModel: Identifiable, Equatable {
     let id          = UUID()
     let name:        String
     let bundleName:  String
+    /// Bundle resource base name for `{classesBundleName}.json` (without extension).
+    /// Fase 1 embeds labels in `fingerprints.bin`; leave nil for fingerprint models.
+    let classesBundleName: String?
     let description: String
     let isFingerprint: Bool
 
-    init(name: String, bundleName: String, description: String, isFingerprint: Bool = false) {
+    init(name: String, bundleName: String, classesBundleName: String? = nil,
+         description: String, isFingerprint: Bool = false) {
         self.name = name
         self.bundleName = bundleName
+        self.classesBundleName = classesBundleName
         self.description = description
         self.isFingerprint = isFingerprint
     }
 
     static func == (lhs: LSMModel, rhs: LSMModel) -> Bool {
-        lhs.bundleName == rhs.bundleName && lhs.isFingerprint == rhs.isFingerprint
+        lhs.bundleName == rhs.bundleName
+            && lhs.classesBundleName == rhs.classesBundleName
+            && lhs.isFingerprint == rhs.isFingerprint
     }
 }
 
@@ -92,24 +99,92 @@ let AVAILABLE_MODELS: [LSMModel] = [
     LSMModel(
         name:        "Fase 2 — CNN LSMOutput",
         bundleName:  "runs_lsmoutput_cnn_lsmoutput",
+        classesBundleName: "runs_lsmoutput_cnn_classes",
         description: "307 clases, val Top-1 47.16% (recomendado)"
     ),
     LSMModel(
         name:        "Fase 2 — TCN LSMOutput",
         bundleName:  "runs_lsmoutput_tcn_lsmoutput",
+        classesBundleName: "runs_lsmoutput_tcn_classes",
         description: "307 clases, val Top-1 44.78%"
     ),
     LSMModel(
         name:        "Fase 2 — 3D CNN LSMOutput",
         bundleName:  "runs_lsmoutput_3dcnn_lsmoutput",
+        classesBundleName: "runs_lsmoutput_3dcnn_classes",
         description: "307 clases, val Top-1 15.52%"
     ),
     LSMModel(
         name:        "Fase 2 — Legacy v1",
         bundleName:  "coreml_models",
+        classesBundleName: "classes",
         description: "187 clases, pre-LSMOutput (val 9.68%)"
     ),
 ]
+
+// MARK: - Class label loading
+
+private func isClassesMetadataKey(_ key: String) -> Bool {
+    key == "classes" || key.hasSuffix(".classes")
+}
+
+private func classesFromMetadata(_ metadata: [AnyHashable: Any]) -> [String]? {
+    for (key, value) in metadata {
+        let keyStr = "\(key)"
+        guard isClassesMetadataKey(keyStr) else { continue }
+        let valStr: String?
+        if let s = value as? String {
+            valStr = s
+        } else if let s = value as? NSString {
+            valStr = s as String
+        } else {
+            valStr = "\(value)"
+        }
+        guard let valStr,
+              let data = valStr.data(using: .utf8),
+              let decoded = try? JSONDecoder().decode([String].self, from: data) else { continue }
+        print("✓ Clases desde metadata '\(keyStr)': \(decoded.count)")
+        return decoded
+    }
+    return nil
+}
+
+private func classesFromBundle(_ resourceName: String) -> [String]? {
+    guard let jsonURL = Bundle.main.url(forResource: resourceName, withExtension: "json"),
+          let data = try? Data(contentsOf: jsonURL),
+          let decoded = try? JSONDecoder().decode([String].self, from: data) else { return nil }
+    print("✓ Clases desde \(resourceName).json: \(decoded.count)")
+    return decoded
+}
+
+private func classLabelCandidates(for descriptor: LSMModel) -> [String] {
+    var names: [String] = []
+    if let explicit = descriptor.classesBundleName {
+        names.append(explicit)
+    }
+    // e.g. runs_lsmoutput_cnn_lsmoutput → runs_lsmoutput_cnn_classes
+    if descriptor.bundleName.hasSuffix("_lsmoutput") {
+        let base = String(descriptor.bundleName.dropLast("_lsmoutput".count))
+        names.append(base + "_classes")
+    }
+    names.append(descriptor.bundleName + "_classes")
+    var seen = Set<String>()
+    return names.filter { seen.insert($0).inserted }
+}
+
+private func loadClassLabels(for descriptor: LSMModel,
+                             modelDescription: MLModelDescription?) -> [String] {
+    if let metadata = modelDescription?.metadata,
+       let fromMetadata = classesFromMetadata(metadata) {
+        return fromMetadata
+    }
+    for name in classLabelCandidates(for: descriptor) {
+        if let fromBundle = classesFromBundle(name) {
+            return fromBundle
+        }
+    }
+    return []
+}
 
 // ── Landmark extraction ───────────────────────────────────────────────────────
 
@@ -201,10 +276,32 @@ func softmax(_ logits: [Float]) -> [Float] {
 
 // ── Prediction ────────────────────────────────────────────────────────────────
 
-struct Prediction: Identifiable {
+struct Prediction: Identifiable, Equatable {
     let id         = UUID()
     let label:      String
     let confidence: Float
+}
+
+// ── Model load state ──────────────────────────────────────────────────────────
+
+enum ModelLoadPhase: Equatable {
+    case idle
+    case loading(modelName: String, progress: Double)
+    case succeeded(modelName: String, warning: String?)
+    case failed(modelName: String, message: String, keptModelName: String?)
+
+    var isLoading: Bool {
+        if case .loading = self { return true }
+        return false
+    }
+}
+
+private struct LoadedModelState {
+    let model: MLModel?
+    let fingerprintMatcher: FingerprintMatcher?
+    let classes: [String]
+    let useFingerprint: Bool
+    let warning: String?
 }
 
 // ── Debug info ────────────────────────────────────────────────────────────────
@@ -229,12 +326,18 @@ struct DebugInfo {
 class LandmarkPipeline: ObservableObject {
 
     @Published var predictions:  [Prediction] = []
+    @Published var pendingGrading: GradingRound?
     @Published var isDetecting:  Bool = false
     @Published var skeleton:     SkeletonData = SkeletonData()
     @Published var debug:        DebugInfo = DebugInfo()
     @Published var activeModel:  LSMModel? = nil
     @Published var loadError:    String? = nil
-    @Published var isLoadingModel = false
+    @Published var modelLoadPhase: ModelLoadPhase = .idle
+    @Published private(set) var isBufferRecording = false
+
+    var isLoadingModel: Bool { modelLoadPhase.isLoading }
+
+    var availableClassLabels: [String] { classes }
 
     private var frameBuffer: [[Float]] = []
     private var model:   MLModel?
@@ -244,6 +347,7 @@ class LandmarkPipeline: ObservableObject {
     private var loadTask: Task<Void, Never>?
     private var inferenceTask: Task<Void, Never>?
     private var inferenceInFlight = false
+    private var overlayDismissTask: Task<Void, Never>?
 
     private let inferenceStride = 15
 
@@ -261,114 +365,176 @@ class LandmarkPipeline: ObservableObject {
     // MARK: - Model switching
 
     func loadModel(_ descriptor: LSMModel) {
+        if activeModel == descriptor, case .idle = modelLoadPhase { return }
+
         loadTask?.cancel()
+        overlayDismissTask?.cancel()
         inferenceTask?.cancel()
         inferenceInFlight = false
-        reset()
-        loadError   = nil
-        isLoadingModel = false
-        model       = nil
-        fingerprintMatcher = nil
-        classes     = []
-        useFingerprint = descriptor.isFingerprint
-        activeModel = descriptor
+        loadError = nil
 
-        if descriptor.isFingerprint {
-            isLoadingModel = true
-            let bundleName = descriptor.bundleName
-            loadTask = Task { @MainActor in
-                let matcher = await Task.detached(priority: .userInitiated) {
-                    FingerprintMatcher(bundleName: bundleName)
-                }.value
-                guard !Task.isCancelled else { return }
-                isLoadingModel = false
-                if let err = matcher.loadError {
-                    loadError = err
-                    return
+        let keptName = activeModel?.name
+        modelLoadPhase = .loading(modelName: descriptor.name, progress: 0)
+
+        loadTask = Task { @MainActor in
+            let outcome = await fetchModelState(descriptor: descriptor) { [weak self] progress in
+                Task { @MainActor in
+                    guard let self, !Task.isCancelled else { return }
+                    self.modelLoadPhase = .loading(modelName: descriptor.name, progress: progress)
                 }
-                fingerprintMatcher = matcher
-                classes = matcher.classes
-                debug.modelName = descriptor.name
-                debug.nClasses  = classes.count
-                print("✓ Fingerprint DB: \(classes.count) clases, \(matcher.fingerprints.count) videos")
             }
-            return
+
+            guard !Task.isCancelled else { return }
+
+            switch outcome {
+            case .success(let state):
+                commitLoadedState(state, descriptor: descriptor)
+                modelLoadPhase = .succeeded(modelName: descriptor.name, warning: state.warning)
+                scheduleOverlayDismiss(after: 1.8)
+            case .failure(let message):
+                loadError = message
+                modelLoadPhase = .failed(
+                    modelName: descriptor.name,
+                    message: message,
+                    keptModelName: keptName
+                )
+                scheduleOverlayDismiss(after: 3.0)
+            }
+        }
+    }
+
+    func dismissModelLoadOverlay() {
+        overlayDismissTask?.cancel()
+        modelLoadPhase = .idle
+    }
+
+    private func scheduleOverlayDismiss(after seconds: Double) {
+        overlayDismissTask?.cancel()
+        overlayDismissTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            if case .idle = modelLoadPhase { return }
+            modelLoadPhase = .idle
+        }
+    }
+
+    private enum ModelFetchOutcome {
+        case success(LoadedModelState)
+        case failure(String)
+    }
+
+    private func fetchModelState(
+        descriptor: LSMModel,
+        progress: @escaping (Double) -> Void
+    ) async -> ModelFetchOutcome {
+        if descriptor.isFingerprint {
+            return await fetchFingerprintState(descriptor: descriptor, progress: progress)
+        }
+        return await fetchCoreMLState(descriptor: descriptor, progress: progress)
+    }
+
+    private func fetchFingerprintState(
+        descriptor: LSMModel,
+        progress: @escaping (Double) -> Void
+    ) async -> ModelFetchOutcome {
+        let bundleName = descriptor.bundleName
+        let matcher = await Task.detached(priority: .userInitiated) {
+            FingerprintMatcher(bundleName: bundleName, progress: progress)
+        }.value
+
+        if let err = matcher.loadError {
+            return .failure(err)
+        }
+        guard matcher.isLoaded else {
+            return .failure("No se pudo cargar la base de fingerprints")
+        }
+        if matcher.classes.isEmpty {
+            return .failure("La base de fingerprints no contiene etiquetas de clase")
         }
 
-        let url = Bundle.main.url(forResource: descriptor.bundleName,
-                                  withExtension: "mlpackage")
-               ?? Bundle.main.url(forResource: descriptor.bundleName,
-                                  withExtension: "mlmodelc")
+        print("✓ Fingerprint DB: \(matcher.classes.count) clases, \(matcher.fingerprints.count) videos")
+        return .success(LoadedModelState(
+            model: nil,
+            fingerprintMatcher: matcher,
+            classes: matcher.classes,
+            useFingerprint: true,
+            warning: nil
+        ))
+    }
 
-        guard let modelURL = url else {
-            loadError = "No se encontró \(descriptor.bundleName).mlpackage"
-            return
+    private func fetchCoreMLState(
+        descriptor: LSMModel,
+        progress: @escaping (Double) -> Void
+    ) async -> ModelFetchOutcome {
+        progress(0.08)
+
+        let modelURL = Bundle.main.url(forResource: descriptor.bundleName, withExtension: "mlpackage")
+            ?? Bundle.main.url(forResource: descriptor.bundleName, withExtension: "mlmodelc")
+
+        guard let modelURL else {
+            return .failure("No se encontró \(descriptor.bundleName).mlpackage en el bundle")
         }
 
+        progress(0.18)
+
+        let loadedModel: MLModel
         do {
             let config = MLModelConfiguration()
             config.computeUnits = .all
-            model = try MLModel(contentsOf: modelURL, configuration: config)
-
-            // Print ALL metadata for diagnosis
-            let desc = model!.modelDescription
-            print("📐 Inputs:")
-            for (name, feat) in desc.inputDescriptionsByName {
-                print("   '\(name)': \(feat.type)")
-            }
-            print("📐 Outputs:")
-            for (name, feat) in desc.outputDescriptionsByName {
-                print("   '\(name)': \(feat.type)")
-            }
-            print("📐 Metadata keys:")
-            for (key, val) in desc.metadata {
-                let valStr = "\(val)".prefix(120)
-                print("   '\(key)' → \(valStr)")
-            }
-
-            // coremltools guarda user_defined_metadata con prefijo en iOS
-            // Iterar todas las claves para encontrar "classes"
-            var found = false
-            for (key, value) in desc.metadata {
-                let keyStr = "\(key)"
-                if keyStr.hasSuffix("classes") || keyStr == "classes" {
-                    let valStr = "\(value)"
-                    if let data = valStr.data(using: .utf8),
-                       let decoded = try? JSONDecoder().decode([String].self, from: data) {
-                        classes = decoded
-                        print("✓ Clases desde metadata '\(keyStr)': \(classes.count)")
-                        found = true
-                        break
-                    }
-                }
-            }
-
-            // Fallback: classes.json en el bundle
-            if !found {
-                let jsonNames = [descriptor.bundleName + "_classes", "classes"]
-                for jsonName in jsonNames {
-                    if let jsonURL = Bundle.main.url(forResource: jsonName,
-                                                    withExtension: "json"),
-                       let data = try? Data(contentsOf: jsonURL),
-                       let decoded = try? JSONDecoder().decode([String].self, from: data) {
-                        classes = decoded
-                        print("✓ Clases desde \(jsonName).json: \(classes.count)")
-                        found = true
-                        break
-                    }
-                }
-            }
-
-            if !found {
-                print("⚠ No se encontraron clases — agrega classes.json al bundle")
-            }
-
-            debug.modelName = descriptor.name
-            debug.nClasses  = classes.count
-            print("✓ Modelo: \(descriptor.name) — \(classes.count) clases")
+            loadedModel = try await Task.detached(priority: .userInitiated) {
+                try MLModel(contentsOf: modelURL, configuration: config)
+            }.value
         } catch {
-            loadError = error.localizedDescription
+            return .failure(error.localizedDescription)
         }
+
+        progress(0.72)
+
+        let desc = loadedModel.modelDescription
+        let loadedClasses = loadClassLabels(for: descriptor, modelDescription: desc)
+        var warning: String?
+
+        if loadedClasses.isEmpty {
+            let tried = classLabelCandidates(for: descriptor).joined(separator: ", ")
+            return .failure("No se encontraron etiquetas de clase (probado: \(tried).json)")
+        }
+
+        if let expected = expectedLogitCount(from: desc), loadedClasses.count != expected {
+            warning = "Etiquetas (\(loadedClasses.count)) no coinciden con salida del modelo (\(expected))"
+            print("⚠ \(warning!)")
+        }
+
+        progress(1.0)
+        print("✓ Modelo: \(descriptor.name) — \(loadedClasses.count) clases")
+
+        return .success(LoadedModelState(
+            model: loadedModel,
+            fingerprintMatcher: nil,
+            classes: loadedClasses,
+            useFingerprint: false,
+            warning: warning
+        ))
+    }
+
+    private func expectedLogitCount(from desc: MLModelDescription) -> Int? {
+        for (_, feat) in desc.outputDescriptionsByName {
+            guard let constraint = feat.multiArrayConstraint else { continue }
+            let shape = constraint.shape.map(\.intValue)
+            if let last = shape.last, last > 1 { return last }
+        }
+        return nil
+    }
+
+    private func commitLoadedState(_ state: LoadedModelState, descriptor: LSMModel) {
+        model = state.model
+        fingerprintMatcher = state.fingerprintMatcher
+        classes = state.classes
+        useFingerprint = state.useFingerprint
+        activeModel = descriptor
+        loadError = nil
+        debug.modelName = descriptor.name
+        debug.nClasses = state.classes.count
+        reset()
     }
 
     // MARK: - Frame processing
@@ -385,6 +551,11 @@ class LandmarkPipeline: ObservableObject {
         debug.handRight    = !frameData.skeleton.rightHand.isEmpty &&
                               frameData.skeleton.rightHand.contains { $0 != .zero }
         debug.poseDetected = frameData.skeleton.pose.contains { $0 != .zero }
+
+        guard isBufferRecording else {
+            debug.framesInBuffer = 0
+            return
+        }
 
         // Buffer
         frameBuffer.append(frameData.vector)
@@ -474,10 +645,7 @@ class LandmarkPipeline: ObservableObject {
                     .map { i, p in Prediction(
                         label:      i < classes.count ? classes[i] : "clase_\(i)",
                         confidence: p) }
-                debug.inferenceMs   = Date().timeIntervalSince(t0) * 1000
-                debug.topConfidence = top5.first?.confidence ?? 0
-                isDetecting = (top5.first?.confidence ?? 0) > 0.15
-                predictions = top5
+                applyInferenceResults(Array(top5), inferenceMs: Date().timeIntervalSince(t0) * 1000)
             }
             return
         }
@@ -491,10 +659,33 @@ class LandmarkPipeline: ObservableObject {
                 label:      i < classes.count ? classes[i] : "clase_\(i)",
                 confidence: p) }
 
-        debug.inferenceMs  = Date().timeIntervalSince(t0) * 1000
-        debug.topConfidence = top5.first?.confidence ?? 0
-        isDetecting = (top5.first?.confidence ?? 0) > 0.15
-        predictions = top5
+        applyInferenceResults(Array(top5), inferenceMs: Date().timeIntervalSince(t0) * 1000)
+    }
+
+    private func applyInferenceResults(_ top5: [Prediction], inferenceMs: Double) {
+        let results = Array(top5.prefix(5))
+        debug.inferenceMs = inferenceMs
+        debug.topConfidence = results.first?.confidence ?? 0
+        isDetecting = (results.first?.confidence ?? 0) > 0.15
+        predictions = results
+        offerGradingRound(predictions: results, inferenceMs: inferenceMs)
+    }
+
+    private func offerGradingRound(predictions: [Prediction], inferenceMs: Double) {
+        guard pendingGrading == nil, !predictions.isEmpty, activeModel != nil else { return }
+        pendingGrading = GradingRound(
+            predictions: predictions,
+            modelName: debug.modelName,
+            inferenceMs: inferenceMs,
+            capturedAt: Date()
+        )
+    }
+
+    func acknowledgeGradingRound() {
+        pendingGrading = nil
+        predictions = []
+        isDetecting = false
+        debug.topConfidence = 0
     }
 
     private func runFingerprintInference(startTime t0: Date) {
@@ -517,27 +708,29 @@ class LandmarkPipeline: ObservableObject {
             let top5 = output.results.prefix(5).map {
                 Prediction(label: $0.label, confidence: $0.confidence)
             }
-            let topConf = top5.first?.confidence ?? 0
-            let detecting = topConf > LSMConstants.confidenceThreshold
 
             await MainActor.run {
                 guard let self else { return }
                 self.inferenceInFlight = false
-                self.debug.inferenceMs = totalMs
                 self.debug.cosineMs = output.cosineMs
                 self.debug.dtwMs = output.dtwMs
-                self.debug.topConfidence = topConf
-                self.isDetecting = detecting
-                self.predictions = Array(top5)
+                self.applyInferenceResults(Array(top5), inferenceMs: totalMs)
             }
         }
     }
 
     // MARK: - Reset
 
+    func commenceBufferRecording() {
+        guard activeModel != nil else { return }
+        isBufferRecording = true
+        reset()
+    }
+
     func reset() {
         frameBuffer  = []
         predictions  = []
+        pendingGrading = nil
         isDetecting  = false
         skeleton     = SkeletonData()
         debug.framesInBuffer = 0

@@ -18,10 +18,16 @@ final class FingerprintMatcher {
 
     var isLoaded: Bool { loadError == nil && !fingerprints.isEmpty }
 
-    init(bundleName: String = "fingerprints") {
+    typealias ProgressHandler = (Double) -> Void
+
+    init(bundleName: String = "fingerprints", progress: ProgressHandler? = nil) {
+        progress?(0.05)
         if let url = Bundle.main.url(forResource: bundleName, withExtension: "bin") {
             do {
-                parse(data: try Data(contentsOf: url))
+                progress?(0.12)
+                let data = try Data(contentsOf: url)
+                progress?(0.18)
+                parse(data: data, progress: progress)
             } catch {
                 loadError = error.localizedDescription
             }
@@ -30,11 +36,11 @@ final class FingerprintMatcher {
         }
     }
 
-    init(data: Data) {
-        parse(data: data)
+    init(data: Data, progress: ProgressHandler? = nil) {
+        parse(data: data, progress: progress)
     }
 
-    private func parse(data: Data) {
+    private func parse(data: Data, progress: ProgressHandler? = nil) {
         guard data.count >= LSMConstants.binHeaderSize else {
             loadError = "Archivo demasiado pequeño"
             return
@@ -58,22 +64,30 @@ final class FingerprintMatcher {
         }
 
         var offset = LSMConstants.binHeaderSize
+        progress?(0.25)
 
         do {
             fingerprints = try data.readFloatMatrix(at: &offset, rows: nVideos, cols: fpDim)
+            progress?(0.42)
 
             labels = (0 ..< nVideos).map { _ in
                 let v = data.readLEUInt32(at: offset)
                 offset += 4
                 return v
             }
+            progress?(0.48)
 
-            sequences = try (0 ..< nVideos).map { _ in
-                try data.readFloatMatrix(at: &offset, rows: nFrames, cols: featDim)
+            sequences = try (0 ..< nVideos).map { idx in
+                if idx % 150 == 0 || idx == nVideos - 1 {
+                    let frac = Double(idx + 1) / Double(max(nVideos, 1))
+                    progress?(0.48 + 0.40 * frac)
+                }
+                return try data.readFloatMatrix(at: &offset, rows: nFrames, cols: featDim)
             }
+            progress?(0.90)
 
             classes = []
-            for _ in 0 ..< nClasses {
+            for i in 0 ..< nClasses {
                 guard offset + 2 <= data.count else { break }
                 let length = Int(data.readLEUInt16(at: offset))
                 offset += 2
@@ -82,9 +96,14 @@ final class FingerprintMatcher {
                     classes.append(name)
                 }
                 offset += length
+                if i % 40 == 0 || i == nClasses - 1 {
+                    let frac = Double(i + 1) / Double(max(nClasses, 1))
+                    progress?(0.90 + 0.10 * frac)
+                }
             }
 
             loadError = nil
+            progress?(1.0)
         } catch {
             loadError = error.localizedDescription
         }
