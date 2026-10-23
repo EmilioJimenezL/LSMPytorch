@@ -1,0 +1,18 @@
+{
+  "Inputs" : {
+    "landmarks" : {
+      "MLFeatureShortDescription" : "Secuencia de 85 frames × 135 valores [left_hand(42), right_hand(42), pose(51)]"
+    }
+  },
+  "Outputs" : {
+    "logits" : {
+      "MLFeatureShortDescription" : "Logits sin normalizar para 187 clases"
+    }
+  },
+  "TrainingInputs" : {
+
+  },
+  "States" : {
+
+  }
+}
