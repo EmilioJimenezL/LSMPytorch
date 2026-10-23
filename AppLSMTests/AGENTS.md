@@ -2,7 +2,7 @@
 
 > **Audience:** AI-assisted and agentic development. For human onboarding, see [README.md](./README.md).
 >
-> **Sibling repo:** [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md) — Python Fase 1 + Fase 2 training pipeline.
+> **Sibling repo:** [TrainingPipeline/AGENTS.md](../AGENTS.md) — Python Fase 1 + Fase 2 training pipeline.
 
 This repo contains **Swift apps** for LSM (Lengua de Señas Mexicana):
 
@@ -139,13 +139,13 @@ flowchart LR
 Production bin from LSMOutput (not the tiny sample from `generate_sample_bin.py`):
 
 ```bash
-cd ../TrainingPipeline/lsm_fingerprints
+cd ../lsm_fingerprints
 python build_db.py --dataset ../LSMOutput --output ./fingerprints.npz --export-bin ./fingerprints.bin --min-videos 2
 ```
 
 Copy `fingerprints.bin` into LSMMobileModelTesting Xcode target and **commit** the updated bundle in AppLSMTests (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git)). See [Phase 1 iOS validation checklist](#phase-1-ios-validation-checklist).
 
-Baseline reference: [TrainingPipeline/AGENTS.md — Phase 1 baseline](../TrainingPipeline/AGENTS.md#phase-1-baseline-lsmoutput)
+Baseline reference: [TrainingPipeline/AGENTS.md — Phase 1 baseline](../AGENTS.md#phase-1-baseline-lsmoutput)
 
 ### Add Core ML model (Fase 2)
 
@@ -172,7 +172,7 @@ Before iOS Fase 1 validation, confirm TrainingPipeline Part A is complete:
 | Artifact | Path | Status (2026-06-17) |
 |---|---|---|
 | Production `fingerprints.bin` | `TrainingPipeline/lsm_fingerprints/fingerprints.bin` | Built (307 classes, 1934 videos) |
-| LOO baseline logged | [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md#phase-1-baseline-lsmoutput) | Top-1 6.57%, Top-5 16.18% |
+| LOO baseline logged | [TrainingPipeline/AGENTS.md](../AGENTS.md#phase-1-baseline-lsmoutput) | Top-1 6.57%, Top-5 16.18% |
 | Unit tests | `lsm_fingerprints/tests/test_all.py` | 8/8 passed |
 
 Do **not** use `generate_sample_bin.py` for device validation — it only contains 2 dummy classes.
@@ -214,7 +214,7 @@ Execute on **macOS + Xcode + physical device** (recommended for camera latency).
 
 ### B1 — Copy production bin
 
-- [x] Source: `../TrainingPipeline/lsm_fingerprints/fingerprints.bin` (from LSMOutput build)
+- [x] Source: `../lsm_fingerprints/fingerprints.bin` (from LSMOutput build)
 - [x] Copy to `LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin` (synchronized root group auto-bundles)
 - [x] **Commit** `fingerprints.bin` in AppLSMTests after copy or rebuild
 - [x] Load path: `FingerprintMatcher.init(bundleName:)`
@@ -253,7 +253,7 @@ Human-friendly steps: [README — Validar Fase 1 en dispositivo](./README.md#val
 
 ## Phase 2 iOS validation checklist
 
-After TrainingPipeline produces LSMOutput-trained `.mlpackage` (see [TrainingPipeline/README — Integrar modelos Fase 2](../TrainingPipeline/README.md#integrar-modelos-fase-2-entrenados-en-lsmoutput)).
+After TrainingPipeline produces LSMOutput-trained `.mlpackage` (see [TrainingPipeline/README — Integrar modelos Fase 2](../README.md#integrar-modelos-fase-2-entrenados-en-lsmoutput)).
 
 ### C1 — Copy Core ML artifact
 
@@ -292,9 +292,9 @@ See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the f
 
 - [ ] Same session, switch model picker across all 5 backends
 - [ ] Use in-app **grading panel** (Top-5 + **Otra**) — logs append to `Documents/live_test_log.csv`; export via share sheet (↑)
-- [ ] Optional cross-check: [TrainingPipeline/review/live_test_log_template.csv](../TrainingPipeline/review/live_test_log_template.csv) column layout (app CSV is a superset with all Top-5 guesses)
+- [ ] Optional cross-check: [TrainingPipeline/review/live_test_log_template.csv](../review/live_test_log_template.csv) column layout (app CSV is a superset with all Top-5 guesses)
 - [ ] Minimum 10-sign matrix from `class_overlap.json` (Festividades, Personajes, Colores, Familia, Abecedario)
-- [ ] Report to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+- [ ] Report to [TrainingPipeline/AGENTS.md — iOS validation](../AGENTS.md#ios-validation-results)
 
 **Preprocessing parity (2026-06-06):** Fase 2 Core ML inference now uses `SequencePreprocessor.prepareSequence()` — matches Fase 1 and Python training pipeline.
 
@@ -302,7 +302,7 @@ See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the f
 
 ## Live-testing roadmap
 
-Mirrors [TrainingPipeline/AGENTS.md — Live-testing roadmap](../TrainingPipeline/AGENTS.md#live-testing-roadmap). Execute on Mac device; primary log file: **`Documents/live_test_log.csv`** (export from app).
+Mirrors [TrainingPipeline/AGENTS.md — Live-testing roadmap](../AGENTS.md#live-testing-roadmap). Execute on Mac device; primary log file: **`Documents/live_test_log.csv`** (export from app).
 
 ### Loop A — Measure (weeks 1–2)
 
@@ -391,7 +391,7 @@ selected_sign, selection_source
 | `top_pick` | User tapped one of the Top-5 buttons |
 | `otra_search` | User picked via **Otra** search + confirm |
 
-**Relation to TrainingPipeline template:** [live_test_log_template.csv](../TrainingPipeline/review/live_test_log_template.csv) uses fewer columns (`sign`, `category`, `backend`, `correct_yes_no`, …). App CSV is richer (all Top-5 + confidences). Join or post-process offline for `correct_yes_no` by comparing `selected_sign` to the sign performed on camera.
+**Relation to TrainingPipeline template:** [live_test_log_template.csv](../review/live_test_log_template.csv) uses fewer columns (`sign`, `category`, `backend`, `correct_yes_no`, …). App CSV is richer (all Top-5 + confidences). Join or post-process offline for `correct_yes_no` by comparing `selected_sign` to the sign performed on camera.
 
 ### Implementation files
 
@@ -481,7 +481,7 @@ See [Class labels (iOS)](#class-labels-ios) for the full `bundleName` ↔ JSON m
 
 ```bash
 IOS=LSMMobileModelTesting/LSMMobileModelTesting
-TP=../TrainingPipeline
+TP=..
 
 cp "$TP/lsm_fingerprints/fingerprints.bin" "$IOS/"
 cp -r "$TP/exports/runs_lsmoutput_cnn_lsmoutput.mlpackage" "$IOS/"
@@ -520,11 +520,11 @@ Also update `AVAILABLE_MODELS` (`bundleName`, `classesBundleName`, description) 
 3. Keep `golden_sequence.json` in sync when Fase 1 constants change
 4. Optional: `Phase2ParityCheck.swift` — golden logits vs Python on fixed sequence
 5. Optional: add `category` / `correct_yes_no` columns to app CSV or post-export script
-6. Report device results to [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+6. Report device results to [TrainingPipeline/AGENTS.md — iOS validation](../AGENTS.md#ios-validation-results)
 
 See [Live-testing roadmap](#live-testing-roadmap) for iterative accuracy improvement.
 
-See also [TrainingPipeline/AGENTS.md — Handoff to AppLSMTests](../TrainingPipeline/AGENTS.md#handoff-to-applsmtests) for Python-side workflow.
+See also [TrainingPipeline/AGENTS.md — Handoff to AppLSMTests](../AGENTS.md#handoff-to-applsmtests) for Python-side workflow.
 
 ---
 
@@ -536,7 +536,7 @@ See also [TrainingPipeline/AGENTS.md — Handoff to AppLSMTests](../TrainingPipe
 - Preserve landmark JSON format compatibility with `TrainingPipeline/dataset.py`
 - **Commit** updated `fingerprints.bin`, `.mlpackage/`, and `*_classes.json` after TrainingPipeline handoff (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git))
 - Update AGENTS.md and README.md when changing contracts, UI workflows, or manifest schema
-- Check sibling [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md) for cross-repo changes
+- Check sibling [TrainingPipeline/AGENTS.md](../AGENTS.md) for cross-repo changes
 
 ### Don't
 
@@ -569,7 +569,7 @@ After completing a task that changes architecture, contracts, workflows, or back
 
 1. Update **this repo's** `AGENTS.md`
 2. Update **this repo's** `README.md` if human-facing behavior changed
-3. Check whether [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md) needs the same invariant or cross-link update
+3. Check whether [TrainingPipeline/AGENTS.md](../AGENTS.md) needs the same invariant or cross-link update
 4. Do **not** add other markdown files
 
 | Change type | Update |

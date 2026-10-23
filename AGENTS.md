@@ -2,7 +2,7 @@
 
 > **Audience:** AI-assisted and agentic development. For human onboarding, see [README.md](./README.md).
 >
-> **Sibling repo:** [AppLSMTests/AGENTS.md](../AppLSMTests/AGENTS.md) — macOS extractor + iOS inference (includes Xcode signing conventions).
+> **Sibling repo:** [AppLSMTests/AGENTS.md](AppLSMTests/AGENTS.md) — macOS extractor + iOS inference (includes Xcode signing conventions).
 
 This repo is the **Python side** of LSM (Lengua de Señas Mexicana): Fase 1 statistical fingerprint + DTW (`lsm_fingerprints/`) and Fase 2 neural training + Core ML export.
 
@@ -299,7 +299,7 @@ Integration work in AppLSMTests (**2026-06-22**). Device camera tests still pend
 | Release build smoke | **Pending device** | Parity skipped in Release (`#if DEBUG`) |
 | Mac Core ML predict verify | **Pending device** | Linux export skips predict step |
 
-Full checklist: [AppLSMTests/AGENTS.md — Phase 1/2 iOS validation](../AppLSMTests/AGENTS.md#phase-1-ios-validation-checklist)
+Full checklist: [AppLSMTests/AGENTS.md — Phase 1/2 iOS validation](AppLSMTests/AGENTS.md#phase-1-ios-validation-checklist)
 
 ---
 
@@ -312,7 +312,7 @@ After `fingerprints.bin` is built locally, iOS validation is owned by AppLSMTest
 3. Live Fase 1 smoke test (5–10 known signs from 307-class DB)
 4. Latency check via debug panel (<200ms target)
 
-Full checklist: [AppLSMTests/AGENTS.md — Phase 1 iOS validation](../AppLSMTests/AGENTS.md#phase-1-ios-validation-checklist)
+Full checklist: [AppLSMTests/AGENTS.md — Phase 1 iOS validation](AppLSMTests/AGENTS.md#phase-1-ios-validation-checklist)
 
 ---
 
@@ -346,7 +346,7 @@ Structured loops to close the Python val → device accuracy gap. Log results in
 
 ### Loop C — Data collection (weeks 2–4)
 
-- Use [LSMExtractorGUI](../AppLSMTests/LSMExtractorGUI/) to record **live-failure signs** with multiple performers/angles
+- Use [LSMExtractorGUI](AppLSMTests/LSMExtractorGUI/) to record **live-failure signs** with multiple performers/angles
 - Target 194 single-video words (`--min_videos 2` exclusion list from inventory)
 - Re-run `build_db.py` + `train.py` on expanded LSMOutput
 
@@ -396,7 +396,7 @@ CSV columns: `session_id, sign, category, backend, top1, confidence, inference_m
 - Match existing naming and conventions; keep diffs minimal and focused
 - Reuse `dataset.py` vector layout; keep Fase 1 Python/Swift constants in sync
 - Update AGENTS.md and README.md when changing contracts, workflows, or backlog
-- Check sibling [AppLSMTests/AGENTS.md](../AppLSMTests/AGENTS.md) for cross-repo changes
+- Check sibling [AppLSMTests/AGENTS.md](AppLSMTests/AGENTS.md) for cross-repo changes
 
 ### Don't
 
@@ -413,7 +413,7 @@ After completing a task that changes architecture, contracts, workflows, or back
 
 1. Update **this repo's** `AGENTS.md`
 2. Update **this repo's** `README.md` if human-facing behavior changed
-3. Check whether [AppLSMTests/AGENTS.md](../AppLSMTests/AGENTS.md) needs the same invariant or cross-link update
+3. Check whether [AppLSMTests/AGENTS.md](AppLSMTests/AGENTS.md) needs the same invariant or cross-link update
 4. Do **not** add other markdown files
 
 | Change type | Update |

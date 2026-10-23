@@ -2,7 +2,7 @@
 
 > **For AI-assisted development:** see [AGENTS.md](./AGENTS.md) for architecture invariants, file index, commands, and doc-update protocol.
 
-Aplicaciones Swift para el proyecto **LSM (Lengua de Señas Mexicana)**. Este repositorio complementa el [TrainingPipeline](../TrainingPipeline/) de Python y cubre las dos etapas que faltaban en el flujo completo: **extracción de landmarks desde video** y **prueba de modelos en dispositivo móvil**.
+Aplicaciones Swift para el proyecto **LSM (Lengua de Señas Mexicana)**. Este repositorio complementa el [TrainingPipeline](../) de Python y cubre las dos etapas que faltaban en el flujo completo: **extracción de landmarks desde video** y **prueba de modelos en dispositivo móvil**.
 
 ## Resumen del ecosistema
 
@@ -211,7 +211,7 @@ Tras `./train_all_lsmoutput.sh` en TrainingPipeline, copiar todos los backends p
 
 ```bash
 IOS=LSMMobileModelTesting/LSMMobileModelTesting
-TP=../TrainingPipeline
+TP=..
 
 cp "$TP/lsm_fingerprints/fingerprints.bin" "$IOS/"
 cp -r "$TP/exports/runs_lsmoutput_cnn_lsmoutput.mlpackage" "$IOS/"
@@ -250,21 +250,21 @@ El CSV de la app incluye Top-5 completo + seña seleccionada. Para comparar con 
 
 **Matriz mínima (10 señas):** mezcla de Festividades, Personajes, Colores, Familia, Abecedario.
 
-5. Reportar resultados en [TrainingPipeline/AGENTS.md — iOS validation](../TrainingPipeline/AGENTS.md#ios-validation-results)
+5. Reportar resultados en [TrainingPipeline/AGENTS.md — iOS validation](../AGENTS.md#ios-validation-results)
 
 Checklist detallado: [AGENTS.md — Phase 2 iOS validation](./AGENTS.md#phase-2-ios-validation-checklist)
 
 **Actualizar base de datos Fase 1:**
 
 ```bash
-cp ../TrainingPipeline/lsm_fingerprints/fingerprints.bin \
+cp ../lsm_fingerprints/fingerprints.bin \
    LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin
 ```
 
 Regenerar desde LSMOutput si hace falta:
 
 ```bash
-cd ../TrainingPipeline/lsm_fingerprints
+cd ../lsm_fingerprints
 python build_db.py \
   --dataset ../LSMOutput \
   --output ./fingerprints.npz \
@@ -279,7 +279,7 @@ El bin (~95 MB, 307 clases / 1934 videos) está en el bundle de la app y **se co
 Requisitos previos en TrainingPipeline (referencia de baseline):
 
 - `TrainingPipeline/lsm_fingerprints/fingerprints.bin` — misma base que el bundle iOS (307 clases)
-- Baseline LOO registrado en [TrainingPipeline/AGENTS.md](../TrainingPipeline/AGENTS.md#phase-1-baseline-lsmoutput)
+- Baseline LOO registrado en [TrainingPipeline/AGENTS.md](../AGENTS.md#phase-1-baseline-lsmoutput)
 
 ### Estado de integración (2026-06-22)
 
@@ -304,7 +304,7 @@ Referencia de latencia (Linux desktop, Python FastDTW radius=10): **~930 ms/cicl
 ### 1. Copiar bin al target iOS
 
 ```bash
-cp ../TrainingPipeline/lsm_fingerprints/fingerprints.bin \
+cp ../lsm_fingerprints/fingerprints.bin \
    LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin
 ```
 
@@ -439,7 +439,7 @@ Puntos no detectados se omiten (`null`) o se rellenan con `0.0` en el vector de 
 Organizar videos con el script de Python (opcional, si vienen desordenados):
 
 ```bash
-cd ../TrainingPipeline
+cd ..
 python organize_from_json.py --json themes.json --input ./videos --output ./dataset
 ```
 
@@ -455,7 +455,7 @@ La carpeta `./LSMVideosOutput` resultante es el `--dataset` de `train.py`.
 ### 3. Entrenar modelo (Python)
 
 ```bash
-cd ../TrainingPipeline
+cd ..
 python train.py --dataset ./output --epochs 100 --batch 64 --output ./runs
 python convert_to_coreml.py --checkpoint ./runs/best_model.pt --output ./lsm_model
 ```
@@ -618,4 +618,4 @@ Este repositorio cierra el ciclo que antes quedaba fuera del repo de Python:
 | "Extracción de landmarks no incluida" | **LSMExtractorGUI** genera `*_landmarks.json` |
 | "Listo para arrastrar al proyecto Xcode" | **LSMMobileModelTesting** ya incluye el modelo y la app de prueba |
 
-Para documentación del entrenamiento, vocabulario y exportación Core ML, ver [TrainingPipeline/README.md](../TrainingPipeline/README.md).
+Para documentación del entrenamiento, vocabulario y exportación Core ML, ver [TrainingPipeline/README.md](../README.md).

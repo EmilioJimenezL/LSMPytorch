@@ -161,7 +161,7 @@ Entrenamiento LSMOutput completado. Resumen ejecutivo (ver `reports/training_rep
 ### Handoff a AppLSMTests
 
 ```bash
-IOS=../AppLSMTests/LSMMobileModelTesting/LSMMobileModelTesting
+IOS=AppLSMTests/LSMMobileModelTesting/LSMMobileModelTesting
 cp lsm_fingerprints/fingerprints.bin "$IOS/"
 cp -r exports/runs_lsmoutput_cnn_lsmoutput.mlpackage "$IOS/"
 cp -r exports/runs_lsmoutput_tcn_lsmoutput.mlpackage "$IOS/"
@@ -171,7 +171,7 @@ cp runs_lsmoutput_tcn/classes.json "$IOS/runs_lsmoutput_tcn_classes.json"
 cp runs_lsmoutput_3dcnn/classes.json "$IOS/runs_lsmoutput_3dcnn_classes.json"
 ```
 
-Los `.mlpackage` y `fingerprints.bin` son **locales y gitignored** en AppLSMTests (~97 MB total). Validación en dispositivo: ver [AppLSMTests/README.md](../AppLSMTests/README.md#comparar-fase-1-vs-fase-2-en-dispositivo).
+Los `.mlpackage` y `fingerprints.bin` son **locales y gitignored** en AppLSMTests (~97 MB total). Validación en dispositivo: ver [AppLSMTests/README.md](AppLSMTests/README.md#comparar-fase-1-vs-fase-2-en-dispositivo).
 
 ## Características actuales
 
@@ -288,7 +288,7 @@ add_class("./fingerprints.npz", "NuevaPalabra", [seq], category="Familia",
 
 Copia `fingerprints.bin` al target LSMMobileModelTesting en Xcode. Selecciona **Fase 1 — Fingerprint+DTW** en la app.
 
-Pasos detallados: [AppLSMTests/README.md — Validar Fase 1 en dispositivo](../AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python)
+Pasos detallados: [AppLSMTests/README.md — Validar Fase 1 en dispositivo](AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python)
 
 ### Probar con LSMOutput
 
@@ -319,7 +319,7 @@ Evaluación leave-one-out sobre **307 clases**, **1,934 videos** (`--min-videos 
 
 Mejores categorías (Top-1 LOO): Festividades (24.4%), Personajes Históricos (17.3%), Frutas/Verduras (11.1%). Peores: Actividades Cotidianas (0%), Objetos (2%), Abecedario (2.1%).
 
-**Estado:** por debajo del mínimo (40% Top-1). Priorizar mejora de preprocessing o Fase 2 antes de validación iOS extensa. Siguiente paso: [validación en dispositivo](../AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python) con `fingerprints.bin` generado localmente.
+**Estado:** por debajo del mínimo (40% Top-1). Priorizar mejora de preprocessing o Fase 2 antes de validación iOS extensa. Siguiente paso: [validación en dispositivo](AppLSMTests/README.md#validar-fase-1-en-dispositivo-después-del-baseline-python) con `fingerprints.bin` generado localmente.
 
 ### Módulos Fase 1
 
@@ -490,9 +490,9 @@ El checkpoint incluye: pesos del modelo, optimizer, scheduler, historial, tipo d
 - **Fase 2 LSMOutput entrenamiento completo (2026-06):** CNN val **47.16%**, TCN val **44.78%**, 3D CNN val **15.52%** — ver [Training report](#training-report-2026-06)
 - Tres arquitecturas exportadas a Core ML bajo `exports/runs_lsmoutput_*_lsmoutput.mlpackage`
 - Reporte consolidado: `./review/run_all.sh` → `reports/training_report.json`
-- Extracción de landmarks: [AppLSMTests/LSMExtractorGUI](../AppLSMTests/LSMExtractorGUI/)
+- Extracción de landmarks: [AppLSMTests/LSMExtractorGUI](AppLSMTests/LSMExtractorGUI/)
 - Validación iOS: artefactos copiados a AppLSMTests; pruebas en dispositivo pendientes (Mac)
-- Inferencia móvil: [AppLSMTests/LSMMobileModelTesting](../AppLSMTests/LSMMobileModelTesting/)
+- Inferencia móvil: [AppLSMTests/LSMMobileModelTesting](AppLSMTests/LSMMobileModelTesting/)
 
 ## Dependencias principales
 
