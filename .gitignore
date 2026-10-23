@@ -43,7 +43,10 @@ share/python-wheels/
 *.pth
 *.ckpt
 checkpoints/
-runs/           # directorio típico de TensorBoard
+# directorio típico de TensorBoard, y restos de pruebas locales
+runs/
+runs_3dcnn_test/
+runs_3dcnn_test2/
 runs_lsmoutput_*/
 exports/
 reports/
@@ -51,6 +54,14 @@ data/
 datasets/
 outputs/
 dataset/
+
+# --- Regenerated locally (see README, Puesta en marcha) ---
+fingerprints.bin
+lsm_fingerprints/runs_pilot/
+
+# --- Xcode user state ---
+**/xcuserdata/
+*.xcuserstate
 
 # --- Archivos temporales ---
 *.tmp

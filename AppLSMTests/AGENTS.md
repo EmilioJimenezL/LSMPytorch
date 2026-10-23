@@ -143,7 +143,7 @@ cd ../lsm_fingerprints
 python build_db.py --dataset ../LSMOutput --output ./fingerprints.npz --export-bin ./fingerprints.bin --min-videos 2
 ```
 
-Copy `fingerprints.bin` into LSMMobileModelTesting Xcode target and **commit** the updated bundle in AppLSMTests (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git)). See [Phase 1 iOS validation checklist](#phase-1-ios-validation-checklist).
+Copy `fingerprints.bin` into LSMMobileModelTesting Xcode target. Do **not** commit it — it is gitignored and regenerated locally (see the repo README, Puesta en marcha). See [Phase 1 iOS validation checklist](#phase-1-ios-validation-checklist).
 
 Baseline reference: [TrainingPipeline/AGENTS.md — Phase 1 baseline](../AGENTS.md#phase-1-baseline-lsmoutput)
 
@@ -187,7 +187,7 @@ Execute on **macOS + Xcode + physical device** (recommended for camera latency).
 
 | ID | Item | Status |
 |---|---|---|
-| B1 | Production `fingerprints.bin` in app folder | Done — tracked in git under `LSMMobileModelTesting/LSMMobileModelTesting/` |
+| B1 | Production `fingerprints.bin` in app folder | Local only — gitignored; generate with `build_db.py` or `generate_sample_bin.py` |
 | B2 | Debug parity + load log | Offline OK — golden max diff 0.0; confirm `✓ Parity check passed` + `307 clases, 1934 videos` on Debug build |
 | B3 | Live test matrix | **Pending device** — procedure in README |
 | B4 | Latency from debug panel | **Pending device** — Cosine/DTW split wired; Python desktop ~930 ms reference |
@@ -216,7 +216,7 @@ Execute on **macOS + Xcode + physical device** (recommended for camera latency).
 
 - [x] Source: `../lsm_fingerprints/fingerprints.bin` (from LSMOutput build)
 - [x] Copy to `LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin` (synchronized root group auto-bundles)
-- [x] **Commit** `fingerprints.bin` in AppLSMTests after copy or rebuild
+- [x] Leave `fingerprints.bin` untracked (gitignored) after copy or rebuild
 - [x] Load path: `FingerprintMatcher.init(bundleName:)`
 
 ### B2 — Debug parity check
@@ -261,7 +261,7 @@ After TrainingPipeline produces LSMOutput-trained `.mlpackage` (see [TrainingPip
 - [x] Register in `AVAILABLE_MODELS` (`LandmarkPipeline.swift`) with val_acc in description and `classesBundleName`
 - [x] Fase 1 `fingerprints.bin` refreshed from TrainingPipeline
 - [x] Class label mapping wired (`classesBundleName` per backend; verified live on device)
-- [x] **Commit** all bundled artifacts in AppLSMTests after copy or retrain
+- [x] **Commit** `.mlpackage/` and matching `*_classes.json` after copy or retrain (`fingerprints.bin` stays local)
 
 See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the full file list and update workflow.
 
@@ -495,7 +495,6 @@ cp "$TP/runs_lsmoutput_3dcnn/classes.json" "$IOS/runs_lsmoutput_3dcnn_classes.js
 Then in **AppLSMTests**:
 
 ```bash
-git add LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin
 git add LSMMobileModelTesting/LSMMobileModelTesting/*.mlpackage
 git add LSMMobileModelTesting/LSMMobileModelTesting/runs_lsmoutput_*_classes.json
 git commit -m "Update bundled inference artifacts from TrainingPipeline"
@@ -506,8 +505,9 @@ Also update `AVAILABLE_MODELS` (`bundleName`, `classesBundleName`, description) 
 ### Agent rules
 
 - **Do** set `classesBundleName` when registering a new Fase 2 backend — must match the copied `*_classes.json` stem
-- **Do** commit updated `fingerprints.bin`, `.mlpackage/` directories, and matching `*_classes.json` when TrainingPipeline produces new exports
-- **Do** keep TrainingPipeline intermediate artifacts (`fingerprints.npz`, `runs_lsmoutput_*/`, `exports/`) gitignored there — only the **AppLSMTests copy** is tracked
+- **Do** commit updated `.mlpackage/` directories and matching `*_classes.json` when TrainingPipeline produces new exports
+- **Don't** commit `fingerprints.bin` — generate it locally (`generate_sample_bin.py` or `build_db.py`)
+- **Do** keep TrainingPipeline intermediate artifacts (`fingerprints.npz`, `runs_lsmoutput_*/`, `exports/`) gitignored — the iOS `.mlpackage` copy is what gets tracked
 - **Don't** use Git LFS unless the team explicitly adopts it; plain git is the current policy
 - **Don't** commit Xcode build output (`DerivedData/`, `*.ipa`) — see `.gitignore`
 
@@ -534,7 +534,7 @@ See also [TrainingPipeline/AGENTS.md — Handoff to AppLSMTests](../AGENTS.md#ha
 
 - Match existing Swift naming, SwiftUI patterns, and minimal diff scope
 - Preserve landmark JSON format compatibility with `TrainingPipeline/dataset.py`
-- **Commit** updated `fingerprints.bin`, `.mlpackage/`, and `*_classes.json` after TrainingPipeline handoff (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git))
+- **Commit** updated `.mlpackage/` and `*_classes.json` after TrainingPipeline handoff; leave `fingerprints.bin` untracked (see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git))
 - Update AGENTS.md and README.md when changing contracts, UI workflows, or manifest schema
 - Check sibling [TrainingPipeline/AGENTS.md](../AGENTS.md) for cross-repo changes
 

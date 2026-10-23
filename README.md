@@ -4,6 +4,39 @@
 
 Pipeline de entrenamiento para **reconocimiento de Lengua de Señas Mexicana (LSM)**. El proyecto clasifica gestos a partir de landmarks de manos y pose corporal extraídos de videos, entrena modelos de deep learning en PyTorch y los exporta a Core ML para despliegue en iOS/macOS.
 
+## Puesta en marcha
+
+Requisitos: Python 3.11 o posterior. Para las apps Swift, Xcode. `setup_env.sh` instala PyTorch con CUDA y no es el camino por defecto en Mac.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r lsm_fingerprints/requirements.txt
+python lsm_fingerprints/generate_sample_bin.py
+```
+
+`generate_sample_bin.py` escribe un `fingerprints.bin` de desarrollo en `AppLSMTests/LSMMobileModelTesting/LSMMobileModelTesting/`. Sirve para abrir Fase 1; no es la base de 307 clases.
+
+Si tienes un dataset local de landmarks (no está en el repositorio):
+
+```bash
+python lsm_fingerprints/build_db.py \
+  --dataset /ruta/a/LSMOutput \
+  --output lsm_fingerprints/fingerprints.npz \
+  --export-bin AppLSMTests/LSMMobileModelTesting/LSMMobileModelTesting/fingerprints.bin \
+  --min-videos 2
+```
+
+Abre `AppLSMTests/LSMMobileModelTesting/LSMMobileModelTesting.xcodeproj`. Los `.mlpackage` de Fase 2 y los `*_classes.json` ya vienen en el clone.
+
+Estos archivos no se suben. El setup o Xcode los vuelve a crear:
+
+- `fingerprints.bin` — el de desarrollo lo genera el comando de arriba; el de producción (~90 MB) sale de `build_db.py` con el dataset local
+- `lsm_fingerprints/runs_pilot/` — salida del piloto; se reconstruye con `build_db.py` si ese dataset está en disco
+- `.venv`, checkpoints (`*.pt`), datasets, `exports/` y `reports/` — entorno y artefactos de entrenamiento
+- `xcuserdata` — estado local de Xcode
+
 ## Resumen
 
 El flujo completo tiene dos fases:
@@ -171,7 +204,7 @@ cp runs_lsmoutput_tcn/classes.json "$IOS/runs_lsmoutput_tcn_classes.json"
 cp runs_lsmoutput_3dcnn/classes.json "$IOS/runs_lsmoutput_3dcnn_classes.json"
 ```
 
-Los `.mlpackage` y `fingerprints.bin` son **locales y gitignored** en AppLSMTests (~97 MB total). Validación en dispositivo: ver [AppLSMTests/README.md](AppLSMTests/README.md#comparar-fase-1-vs-fase-2-en-dispositivo).
+Los `.mlpackage` y los `*_classes.json` están en el repositorio. `fingerprints.bin` es local y está en `.gitignore`; generarlo está en [Puesta en marcha](#puesta-en-marcha). Validación en dispositivo: ver [AppLSMTests/README.md](AppLSMTests/README.md#comparar-fase-1-vs-fase-2-en-dispositivo).
 
 ## Características actuales
 

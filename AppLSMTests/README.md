@@ -159,7 +159,7 @@ App de prueba en SwiftUI que ejecuta modelos Core ML en tiempo real usando la c�
 | Fase 2 3D CNN | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage` | `runs_lsmoutput_3dcnn_classes.json` | 307 | 15.52% | |
 | Fase 2 legacy | `coreml_models.mlpackage` | `classes.json` | 187 | 9.68% | Pre-LSMOutput |
 
-Todos los artefactos de inferencia (~97 MB) están **versionados en este repositorio** bajo `LSMMobileModelTesting/LSMMobileModelTesting/` para que un clone compile sin copiar desde TrainingPipeline. Tras reentrenar, actualizar desde TrainingPipeline y **commitear** (ver [AGENTS.md — Bundled model artifacts](./AGENTS.md#bundled-model-artifacts-tracked-in-git)).
+Los `.mlpackage` y los `*_classes.json` están versionados bajo `LSMMobileModelTesting/LSMMobileModelTesting/` para que un clone abra Fase 2 sin copiar desde el pipeline. `fingerprints.bin` no se sube: se genera en local (ver el README del pipeline, Puesta en marcha). Tras reentrenar, actualizar los `.mlpackage` y **commitearlos** (ver [AGENTS.md — Bundled model artifacts](./AGENTS.md#bundled-model-artifacts-tracked-in-git)).
 
 El selector de modelos permite alternar entre los 5 backends. **Fase 1 y Fase 2 LSMOutput comparten `SequencePreprocessor`** (normalización hombro).
 
@@ -285,7 +285,7 @@ Requisitos previos en TrainingPipeline (referencia de baseline):
 
 | Paso | Estado | Notas |
 |---|---|---|
-| Bin en bundle | Hecho | `fingerprints.bin` (~95 MB) en target; versionado en git |
+| Bin en bundle | Local | `fingerprints.bin` se genera en el setup; no se sube a git |
 | CNN/TCN/3DCNN mlpackages + `*_classes.json` | Hecho | Copiados desde TrainingPipeline; versionados en git |
 | `AVAILABLE_MODELS` (5 backends) | Hecho | `bundleName` + `classesBundleName` por backend |
 | Etiquetas de clase en vivo | Hecho | Mapeo explícito; sin `clase_N` si **Clases** = 307 en panel debug |
@@ -462,7 +462,7 @@ python convert_to_coreml.py --checkpoint ./runs/best_model.pt --output ./lsm_mod
 
 ### 4. Probar en dispositivo (iOS)
 
-1. Copiar `*.mlpackage`, `fingerprints.bin` y `{run}_classes.json` al proyecto iOS (o usar los ya versionados en el repo)
+1. Copiar `*.mlpackage` y `{run}_classes.json` al proyecto iOS (o usar los ya versionados). `fingerprints.bin` se genera en local y no se commitea
 2. Registrar en `AVAILABLE_MODELS` con `bundleName` y `classesBundleName`
 3. Compilar en dispositivo; confirmar **Clases** en panel debug (307 o 187 según modelo)
 4. Probar señas en vivo — Top-1 debe mostrar nombres legibles, no `clase_N`

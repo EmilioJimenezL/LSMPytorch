@@ -19,6 +19,8 @@ class CameraManager: NSObject, ObservableObject {
     @Published var isRunning    = false
     @Published var isAuthorized = false
     @Published var isFrontCamera = true
+    /// Bumps after each session configuration so the preview can reapply mirroring.
+    @Published private(set) var configurationToken = 0
 
     override init() {
         super.init()
@@ -80,16 +82,21 @@ class CameraManager: NSObject, ObservableObject {
                 }
             }
 
-            // Orientation + mirror for front camera
+            // Portrait buffers for Vision. Do not mirror this connection:
+            // training landmarks come from unmirrored video files, and a
+            // mirrored front-camera buffer swaps hand chirality.
             if let connection = self.videoOutput.connection(with: .video) {
                 if connection.isVideoRotationAngleSupported(90) {
                     connection.videoRotationAngle = 90
                 }
-                connection.isVideoMirrored = (position == .front) &&
-                                              connection.isVideoMirroringSupported
+                if connection.isVideoMirroringSupported {
+                    connection.automaticallyAdjustsVideoMirroring = false
+                    connection.isVideoMirrored = false
+                }
             }
 
             self.session.commitConfiguration()
+            DispatchQueue.main.async { self.configurationToken += 1 }
         }
     }
 

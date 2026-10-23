@@ -34,7 +34,7 @@ def _make_sequence(n: int = 25, offset: float = 0.0) -> np.ndarray:
 
 
 def main():
-    _repo = Path(__file__).resolve().parent.parent.parent
+    _repo = Path(__file__).resolve().parent.parent
     out = _repo / "AppLSMTests" / "LSMMobileModelTesting" / "LSMMobileModelTesting" / "fingerprints.bin"
 
     extractor = FingerprintExtractor()

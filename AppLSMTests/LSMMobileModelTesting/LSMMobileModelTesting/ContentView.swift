@@ -17,12 +17,15 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             // ── Camera ────────────────────────────────────────────────────
-            CameraPreview(camera: camera)
+            CameraPreview(camera: camera,
+                          isFrontCamera: camera.isFrontCamera,
+                          configurationToken: camera.configurationToken)
                 .ignoresSafeArea()
 
             // ── Skeleton overlay ──────────────────────────────────────────
             if showSkeleton {
-                SkeletonOverlay(skeleton: pipeline.skeleton)
+                SkeletonOverlay(skeleton: pipeline.skeleton,
+                                mirrorX: camera.isFrontCamera)
                     .ignoresSafeArea()
             }
 
@@ -588,6 +591,9 @@ struct ModelLoadingOverlay: View {
 
 struct SkeletonOverlay: View {
     let skeleton: SkeletonData
+    /// Front-camera preview is mirrored; Vision coords are not. Flip X so the
+    /// skeleton sits on the hands the user sees.
+    var mirrorX: Bool = false
 
     var body: some View {
         GeometryReader { geo in
@@ -595,12 +601,10 @@ struct SkeletonOverlay: View {
             let h = geo.size.height
 
             Canvas { ctx, size in
-                // Vision coords: x=0 left, y=0 bottom
-                // AVCaptureVideoPreviewLayer already mirrors front camera
-                // so we just flip Y here, no X mirror needed
+                // Vision coords: x=0 left, y=0 bottom, unmirrored (same as training).
                 func toScreen(_ p: CGPoint) -> CGPoint {
                     guard p != .zero else { return .zero }
-                    let x = p.x * w
+                    let x = (mirrorX ? (1.0 - p.x) : p.x) * w
                     let y = (1.0 - p.y) * h
                     return CGPoint(x: x, y: y)
                 }
@@ -725,6 +729,8 @@ struct BufferRing: View {
 
 struct CameraPreview: UIViewRepresentable {
     let camera: CameraManager
+    let isFrontCamera: Bool
+    let configurationToken: Int
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
@@ -734,12 +740,16 @@ struct CameraPreview: UIViewRepresentable {
         layer.frame = UIScreen.main.bounds
         view.layer.addSublayer(layer)
         context.coordinator.previewLayer = layer
+        context.coordinator.applyMirroring(isFrontCamera: isFrontCamera)
         return view
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
+        let front = isFrontCamera
+        _ = configurationToken
         DispatchQueue.main.async {
             context.coordinator.previewLayer?.frame = uiView.bounds
+            context.coordinator.applyMirroring(isFrontCamera: front)
         }
     }
 
@@ -747,6 +757,13 @@ struct CameraPreview: UIViewRepresentable {
 
     class Coordinator {
         var previewLayer: AVCaptureVideoPreviewLayer?
+
+        func applyMirroring(isFrontCamera: Bool) {
+            guard let connection = previewLayer?.connection,
+                  connection.isVideoMirroringSupported else { return }
+            connection.automaticallyAdjustsVideoMirroring = false
+            connection.isVideoMirrored = isFrontCamera
+        }
     }
 }
 
