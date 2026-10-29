@@ -1,16 +1,171 @@
 
 ──────────────────────────────────────────────────
-  Alimentos y Bebidas  (40 palabras)
+  Abecedario  (29 palabras)
+──────────────────────────────────────────────────
+  A                                              carpeta: A
+  B                                              carpeta: B
+  C                                              carpeta: C
+  D                                              carpeta: D
+  E                                              carpeta: E
+  F                                              carpeta: F
+  G                                              carpeta: G
+  H                                              carpeta: H
+  I                                              carpeta: I
+  J                                              carpeta: J
+  K                                              carpeta: K
+  L                                              carpeta: L
+  LL                                             carpeta: LL
+  M                                              carpeta: M
+  N                                              carpeta: N
+  Ñ                                             carpeta: Ñ
+  O                                              carpeta: O
+  P                                              carpeta: P
+  Q                                              carpeta: Q
+  R                                              carpeta: R
+  RR                                             carpeta: RR
+  S                                              carpeta: S
+  T                                              carpeta: T
+  U                                              carpeta: U
+  V                                              carpeta: V
+  W                                              carpeta: W
+  X                                              carpeta: X
+  Y                                              carpeta: Y
+  Z                                              carpeta: Z
+
+──────────────────────────────────────────────────
+  Actividades_Cotidianas  (55 palabras)
+──────────────────────────────────────────────────
+  Abrazar                                        carpeta: Abrazar
+  Abrir la puerta                                carpeta: Abrir la puerta
+  Actividad                                      carpeta: Actividad
+  Adiós                                         carpeta: Adiós
+  Apagar la luz                                  carpeta: Apagar la luz
+  Aprender                                       carpeta: Aprender
+  Empezar                                        carpeta: Empezar
+  Encontrar (Una Cosa)                           carpeta: Encontrar (Una Cosa)
+  Entre (Dividir)                                carpeta: Entre (Dividir)
+  Escoger                                        carpeta: Escoger
+  Escribir                                       carpeta: Escribir
+  Esforzar_Esfuerzo                              carpeta: Esforzar_Esfuerzo
+  Estudiar_Estudio                               carpeta: Estudiar_Estudio
+  Gracias                                        carpeta: Gracias
+  Hacer                                          carpeta: Hacer
+  Hambre_Hambriento                              carpeta: Hambre_Hambriento
+  Hasta Luego                                    carpeta: Hasta Luego
+  Hervir                                         carpeta: Hervir
+  Hola                                           carpeta: Hola
+  Imaginar                                       carpeta: Imaginar
+  Indicar                                        carpeta: Indicar
+  Ir                                             carpeta: Ir
+  Lavar al (Niño_Animal_Automovil)              carpeta: Lavar al (Niño_Animal_Automovil)
+  Lavar la ropa                                  carpeta: Lavar la ropa
+  Lavar los platos                               carpeta: Lavar los platos
+  Lavar los trastes                              carpeta: Lavar los trastes
+  Lavarse la cara                                carpeta: Lavarse la cara
+  Leer                                           carpeta: Leer
+  Levantar                                       carpeta: Levantar
+  Levantarse                                     carpeta: Levantarse
+  Orinar                                         carpeta: Orinar
+  Pagar                                          carpeta: Pagar
+  Pegar (Adherir)                                carpeta: Pegar (Adherir)
+  Peinar                                         carpeta: Peinar
+  Poner                                          carpeta: Poner
+  Practicar                                      carpeta: Practicar
+  Preguntar                                      carpeta: Preguntar
+  Prender la Luz                                 carpeta: Prender la Luz
+  Quejarse                                       carpeta: Quejarse
+  Querer                                         carpeta: Querer
+  Querer (Objeto)                                carpeta: Querer (Objeto)
+  Quererse (Persona)                             carpeta: Quererse (Persona)
+  Quitar                                         carpeta: Quitar
+  Rastrillo_Rasurar                              carpeta: Rastrillo_Rasurar
+  Reclamar_Reprochar                             carpeta: Reclamar_Reprochar
+  Regresar                                       carpeta: Regresar
+  Reír_Risa                                     carpeta: Reír_Risa
+  Responder_Respuesta                            carpeta: Responder_Respuesta
+  Saltar (Brincar)                               carpeta: Saltar (Brincar)
+  Sed_Sedimiento                                 carpeta: Sed_Sedimiento
+  Soñar_Soñarse                                carpeta: Soñar_Soñarse
+  Subir (Subir y a Transportes)                  carpeta: Subir (Subir y a Transportes)
+  Tal vez                                        carpeta: Tal vez
+  Tarea                                          carpeta: Tarea
+  Tener                                          carpeta: Tener
+
+──────────────────────────────────────────────────
+  Adjetivos_Calificativos  (59 palabras)
+──────────────────────────────────────────────────
+  Alegría_Alegre                                carpeta: Alegría_Alegre
+  Ancha_Grande                                   carpeta: Ancha_Grande
+  Anciana_Anciano                                carpeta: Anciana_Anciano
+  Duro                                           carpeta: Duro
+  Elegante                                       carpeta: Elegante
+  Enojar_Enojado                                 carpeta: Enojar_Enojado
+  Extraño_Extrañamente                         carpeta: Extraño_Extrañamente
+  Fama_Famoso_Famosa                             carpeta: Fama_Famoso_Famosa
+  Favorito                                       carpeta: Favorito
+  Feliz                                          carpeta: Feliz
+  Feo                                            carpeta: Feo
+  Fidelidad_Fiel                                 carpeta: Fidelidad_Fiel
+  Fino                                           carpeta: Fino
+  Flaco                                          carpeta: Flaco
+  Fuerte                                         carpeta: Fuerte
+  Gordo_Gorda                                    carpeta: Gordo_Gorda
+  Grande                                         carpeta: Grande
+  Grosero_Grosería                              carpeta: Grosero_Grosería
+  Guapo                                          carpeta: Guapo
+  Gustar_Me Gusta                                carpeta: Gustar_Me Gusta
+  Hermoso                                        carpeta: Hermoso
+  Horrible_Horriblemente                         carpeta: Horrible_Horriblemente
+  Humilde                                        carpeta: Humilde
+  Infiel                                         carpeta: Infiel
+  Injusto                                        carpeta: Injusto
+  Inteligente_Inteligencia                       carpeta: Inteligente_Inteligencia
+  Largo_Largamente                               carpeta: Largo_Largamente
+  Latoso_Latosa                                  carpeta: Latoso_Latosa
+  Lejos_Lejano                                   carpeta: Lejos_Lejano
+  Lento_Lenta_Lentamente                         carpeta: Lento_Lenta_Lentamente
+  Naco                                           carpeta: Naco
+  Necio_ Necia                                   carpeta: Necio_ Necia
+  Nuevo_ Nueva_ Nuevamente                       carpeta: Nuevo_ Nueva_ Nuevamente
+  Orgullo_Orgulloso_Orgullosamente               carpeta: Orgullo_Orgulloso_Orgullosamente
+  Pelón                                         carpeta: Pelón
+  Pequeño_Pequeña                              carpeta: Pequeño_Pequeña
+  Persona Blanca                                 carpeta: Persona Blanca
+  Persona Inglesa (Británica)                   carpeta: Persona Inglesa (Británica)
+  Persona Negra                                  carpeta: Persona Negra
+  Personas Indígenas                            carpeta: Personas Indígenas
+  Pesado                                         carpeta: Pesado
+  Picoso                                         carpeta: Picoso
+  Pobre_Pobrecito                                carpeta: Pobre_Pobrecito
+  Pobretón                                      carpeta: Pobretón
+  Precioso                                       carpeta: Precioso
+  Presumido                                      carpeta: Presumido
+  Profundizar_Profundo                           carpeta: Profundizar_Profundo
+  Puntual                                        carpeta: Puntual
+  Raramente_Raro                                 carpeta: Raramente_Raro
+  Rápidamente_Rápido                           carpeta: Rápidamente_Rápido
+  Rebelde_Rebeldía                              carpeta: Rebelde_Rebeldía
+  Rico                                           carpeta: Rico
+  Rico (Sabroso)                                 carpeta: Rico (Sabroso)
+  Ridículo                                      carpeta: Ridículo
+  Romance_Romántico                             carpeta: Romance_Romántico
+  Sabroso                                        carpeta: Sabroso
+  Salud_Saludable                                carpeta: Salud_Saludable
+  Sucia_Sucio_Suciedad                           carpeta: Sucia_Sucio_Suciedad
+  Tímido_Tímida_Timidez                        carpeta: Tímido_Tímida_Timidez
+
+──────────────────────────────────────────────────
+  Alimentos_y_Bebidas  (39 palabras)
 ──────────────────────────────────────────────────
   Aceite                                         carpeta: Aceite
   Agua                                           carpeta: Agua
   Agua de horchata                               carpeta: Agua Horchata
   Agua de jamaica                                carpeta: Agua Jamaica
-  Agua mineral / Peñafiel                        carpeta: Agua Mineral_Peñafiel
+  Agua mineral / Peñafiel                        carpeta: Agua Mineral_Peñafiel
   Alimentos / Comida / Comer                     carpeta: Alimentos_Comida_Comer
   Enchiladas                                     carpeta: Enchiladas
   Ensalada                                       carpeta: Ensalada
-  Fanta (Refresco)                               carpeta: Fanta (Color_Color_Refresco)
+  Fanta                                          carpeta: Fanta
   Galleta                                        carpeta: Galleta
   Gelatina                                       carpeta: Gelatina
   Hamburguesa                                    carpeta: Hamburguesa
@@ -23,13 +178,12 @@
   Mezcal                                         carpeta: Mezcal
   Miel                                           carpeta: Miel
   Mole                                           carpeta: Mole
-  Mole verde                                     carpeta: Mole verde
+  Mole verde                                     carpeta: Mole Verde
   Mostaza                                        carpeta: Mostaza
   Naranjada                                      carpeta: Naranjada
-  Ostión                                         carpeta: Ostión
+  Ostión                                         carpeta: Ostión
   Paleta                                         carpeta: Paleta
   Pan                                            carpeta: Pan
-  Peñafiel                                       carpeta: Peñafiel
   Pescado                                        carpeta: Pescado
   Pizza                                          carpeta: Pizza
   Postre                                         carpeta: Postre
@@ -40,15 +194,15 @@
   Sopa de fideos                                 carpeta: Sopa de Fideos
   Spaguetti                                      carpeta: Spaguetti
   Sprite (Refresco)                              carpeta: Sprite
-  Té                                             carpeta: Té
   Tequila                                        carpeta: Tequila
+  Té                                             carpeta: Té
 
 ──────────────────────────────────────────────────
-  Animales e Insectos  (40 palabras)
+  Animales_e_Insectos  (40 palabras)
 ──────────────────────────────────────────────────
   Abeja                                          carpeta: Abeja
-  Águila                                         carpeta: Águila
-  Almeja / Ostión                                carpeta: Almeja_Ostión
+  Almeja / Ostión                                carpeta: Almeja_Ostión
+  Águila                                         carpeta: Águila
   Elefante                                       carpeta: Elefante
   Estrella de Mar                                carpeta: Estrella de Mar
   Foca                                           carpeta: Foca
@@ -56,34 +210,34 @@
   Gato                                           carpeta: Gato
   Gorila                                         carpeta: Gorila
   Gusano                                         carpeta: Gusano
-  Hipopótamo                                     carpeta: Hipopótamo
+  Hipopótamo                                     carpeta: Hipopótamo
   Hormiga                                        carpeta: Hormiga
-  Langosta                                       carpeta: Langosta
   Lagartija                                      carpeta: Lagartija
-  León                                           carpeta: León
+  Langosta                                       carpeta: Langosta
   Leopardo                                       carpeta: Leopardo
-  Mosco                                          carpeta: Mosco
+  León                                           carpeta: León
+  Mono                                           carpeta: Mono
   Mosca                                          carpeta: Mosca
   Oso                                            carpeta: Oso
   Oso Panda                                      carpeta: Oso Panda
   Oso Polar                                      carpeta: Oso Polar
-  Pájaro                                         carpeta: Pájaro
   Paloma                                         carpeta: Paloma
   Pantera                                        carpeta: Pantera
   Pavo                                           carpeta: Pavo
   Pavo Real                                      carpeta: Pavo Real
-  Pelícano                                       carpeta: Pelícano
+  Pájaro                                         carpeta: Pájaro
+  Pelícano                                       carpeta: Pelicano
   Perro                                          carpeta: Perro
   Pez                                            carpeta: Pez
-  Pingüino                                       carpeta: Pingüino
+  Pingüino                                       carpeta: Pingüino
   Piojo                                          carpeta: Piojo
-  Piraña                                         carpeta: Piraña
+  Piraña                                         carpeta: Piraña
   Pollo                                          carpeta: Pollo
   Puerco                                         carpeta: Puerco
   Pulpo                                          carpeta: Pulpo
   Rana                                           carpeta: Rana
   Rata                                           carpeta: Rata
-  Ratón                                          carpeta: Ratón
+  Ratón                                          carpeta: Ratón
   Reptil                                         carpeta: Reptil
   Sapo                                           carpeta: Sapo
 
@@ -108,7 +262,7 @@
   Hijo                                           carpeta: Hijo
   Padrastro                                      carpeta: Padrastro
   Padres                                         carpeta: Padres
-  Papá                                           carpeta: Papá
+  Papá                                           carpeta: Papá
   Pareja                                         carpeta: Pareja
   Prima                                          carpeta: Prima
   Primo                                          carpeta: Primo
@@ -116,34 +270,34 @@
   Sobrino                                        carpeta: Sobrino
   Soltero                                        carpeta: Soltero
   Tía                                            carpeta: Tia
-  Tío                                            carpeta: Tío
+  Tío                                            carpeta: Tío
 
 ──────────────────────────────────────────────────
   Festividades  (20 palabras)
 ──────────────────────────────────────────────────
   Aguinaldo                                      carpeta: Aguinaldo
   Esferas de Navidad                             carpeta: Esferas de Navidad
-  Año Nuevo                                      carpeta: Año Nuevo
-  Feliz Cumpleaños                               carpeta: Feliz Cumpleaños
+  Feliz Año Nuevo                               carpeta: Feliz Año Nuevo
+  Feliz Cumpleaños                               carpeta: Feliz Cumpleaños
   Feliz Navidad                                  carpeta: Feliz Navidad
-  Noche Buena                                    carpeta: Noche Buena
+  Flor Nochebuena                                carpeta: Flor Nochebuena
   Fuegos Artificiales                            carpeta: Fuegos Artificiales
   Globo                                          carpeta: Globo
-  Guirnalda Navideña                             carpeta: Guirnalda Navideña
-  Intercambio de regalos                         carpeta: Intercambio de regalos
+  Guirnalda Navideña                             carpeta: Guirnalda Navideña
+  Intercambio de regalos                         carpeta: Intercambio de Regalos
   Pavo de Navidad                                carpeta: Pavo de Navidad
   Ponche                                         carpeta: Ponche
   Reyes Magos                                    carpeta: Reyes Magos
   Rosca de Reyes                                 carpeta: Rosca de Reyes
-  San / Santo / Santa                            carpeta: San_Santo_Santa
   San Judas                                      carpeta: San Judas
+  San / Santo / Santa                            carpeta: San_Santo_Santa
   Santa Claus                                    carpeta: Santa Claus
   Santa Muerte                                   carpeta: Santa Muerte
   Series de Navidad                              carpeta: Series de Navidad
   Tarjeta de Navidad                             carpeta: Tarjeta de Navidad
 
 ──────────────────────────────────────────────────
-  Frutas, Verduras y Plantas  (29 palabras)
+  Frutas_Verduras_y_Plantas  (29 palabras)
 ──────────────────────────────────────────────────
   Aguacate                                       carpeta: Aguacate
   Ajo                                            carpeta: Ajo
@@ -166,20 +320,158 @@
   Pepino                                         carpeta: Pepino
   Pera                                           carpeta: Pera
   Pimiento                                       carpeta: Pimiento
-  Piña                                           carpeta: Piña
+  Piña                                           carpeta: Piña
   Pistacho                                       carpeta: Pistacho
-  Plátano                                        carpeta: Plátano
-  Rábano                                         carpeta: Rábano
+  Plátano                                        carpeta: Plátano
+  Rábano                                         carpeta: Rábano
   Repollo                                        carpeta: Repollo
   Rosa (Flor)                                    carpeta: Rosa
-  Sandía                                         carpeta: Sandía
+  Sandía                                         carpeta: Sandía
   Tamarindo                                      carpeta: Tamarindo
 
 ──────────────────────────────────────────────────
-  Locaciones  (2 palabras)
+  Locaciones  (140 palabras)
 ──────────────────────────────────────────────────
-  XXX                                            carpeta: XXX
-  XXX                                            carpeta: XXXX
+  Acapulco (Gro)                                 carpeta: Acapulco (Gro)
+  Acámbaro (Gto)                                carpeta: Acámbaro (Gto)
+  Aguascalientes                                 carpeta: Aguascalientes
+  Alemania (LSM)                                 carpeta: Alemania (LSM)
+  Alvaro Obregon (DF)                            carpeta: Alvaro Obregon (DF)
+  Apodaca (NL)                                   carpeta: Apodaca (NL)
+  África (LSM)                                  carpeta: África (LSM)
+  África (Señas Internacional)                 carpeta: África (Señas Internacional)
+  Durango                                        carpeta: Durango
+  Egipto (LSM)                                   carpeta: Egipto (LSM)
+  El Fuerte (Sinaloa)                            carpeta: El Fuerte (Sinaloa)
+  El Rosario (Sinaloa)                           carpeta: El Rosario (Sinaloa)
+  El Salvador (LSM)                              carpeta: El Salvador (LSM)
+  Escobedo (Nuevo León)                         carpeta: Escobedo (Nuevo León)
+  Escuinapa (Sinaloa)                            carpeta: Escuinapa (Sinaloa)
+  Español_España                               carpeta: Español_España
+  Estado de México                              carpeta: Estado de México
+  Estados Unidos de América (LSM)               carpeta: Estados Unidos de América (LSM)
+  Europa (LSM)                                   carpeta: Europa (LSM)
+  Filipinas (LSM)                                carpeta: Filipinas (LSM)
+  Finlandia                                      carpeta: Finlandia
+  Francia (LSM)                                  carpeta: Francia (LSM)
+  Galilea (Cristiano)                            carpeta: Galilea (Cristiano)
+  Grecia (LSM)                                   carpeta: Grecia (LSM)
+  Guadalajara                                    carpeta: Guadalajara
+  Guanajuato                                     carpeta: Guanajuato
+  Guasabe (Sinaloa)                              carpeta: Guasabe (Sinaloa)
+  Guatemala (LSM)                                carpeta: Guatemala (LSM)
+  Guaymas (Sonora)                               carpeta: Guaymas (Sonora)
+  Guerrero                                       carpeta: Guerrero
+  Haiti (LSM)                                    carpeta: Haiti (LSM)
+  Hawaii                                         carpeta: Hawaii
+  Hermosillo (Sonora)                            carpeta: Hermosillo (Sonora)
+  Herzegovina                                    carpeta: Herzegovina
+  Holanda                                        carpeta: Holanda
+  Honduras (LSM)                                 carpeta: Honduras (LSM)
+  Huatulco (Oaxaca)                              carpeta: Huatulco (Oaxaca)
+  Hungría (LSM)                                 carpeta: Hungría (LSM)
+  Iguala (Guerrero)                              carpeta: Iguala (Guerrero)
+  India (LSM)                                    carpeta: India (LSM)
+  Indonesia                                      carpeta: Indonesia
+  Irapuato (Guanajuato)                          carpeta: Irapuato (Guanajuato)
+  Irák                                          carpeta: Irák
+  Irán                                          carpeta: Irán
+  Isla Mujeres (Quintana Roo)                    carpeta: Isla Mujeres (Quintana Roo)
+  Ixtapa Zihuatanejo (Guerrero)                  carpeta: Ixtapa Zihuatanejo (Guerrero)
+  La Paz (Baja California Sur)                   carpeta: La Paz (Baja California Sur)
+  Lagos de Moreno (Jalisco)                      carpeta: Lagos de Moreno (Jalisco)
+  Laos (LSM)                                     carpeta: Laos (LSM)
+  Lázaro Cárdenas (Michoacán)                 carpeta: Lázaro Cárdenas (Michoacán)
+  León (Guanajuato)                             carpeta: León (Guanajuato)
+  Mexicali (Baja California)                     carpeta: Mexicali (Baja California)
+  Mérida (Yucatán)                             carpeta: Mérida (Yucatán)
+  México                                        carpeta: México
+  Michoacán                                     carpeta: Michoacán
+  Minantitlán (Veracruz)                        carpeta: Minantitlán (Veracruz)
+  Mocorito (Sinaloa)                             carpeta: Mocorito (Sinaloa)
+  Montreal (Canadá)                             carpeta: Montreal (Canadá)
+  Morelia                                        carpeta: Morelia
+  Morelos                                        carpeta: Morelos
+  Moscú                                         carpeta: Moscú
+  Naucalpán (Edo de México)                    carpeta: Naucalpán (Edo de México)
+  Navolato (Sinaloa)                             carpeta: Navolato (Sinaloa)
+  Nayarit                                        carpeta: Nayarit
+  Nicaragua (LSM)                                carpeta: Nicaragua (LSM)
+  Nicaragua (Señas Internacional)               carpeta: Nicaragua (Señas Internacional)
+  Nicolas Romero (Edo de México)                carpeta: Nicolas Romero (Edo de México)
+  Nigeria (LSM)                                  carpeta: Nigeria (LSM)
+  Nigeria (Señas Internacional)                 carpeta: Nigeria (Señas Internacional)
+  Nogales (Sonora)                               carpeta: Nogales (Sonora)
+  Norte                                          carpeta: Norte
+  Norteamérica                                  carpeta: Norteamérica
+  Noruega (LSM)                                  carpeta: Noruega (LSM)
+  Noruega (Señas Internacional)                 carpeta: Noruega (Señas Internacional)
+  Nuevo León                                    carpeta: Nuevo León
+  Oaxaca                                         carpeta: Oaxaca
+  Oeste                                          carpeta: Oeste
+  Orizaba (Veracruz)                             carpeta: Orizaba (Veracruz)
+  Pachuca (Hidalgo)                              carpeta: Pachuca (Hidalgo)
+  Paraguay (LSM)                                 carpeta: Paraguay (LSM)
+  Paraguay (Señas Internacional)                carpeta: Paraguay (Señas Internacional)
+  Parral (Coahuila)                              carpeta: Parral (Coahuila)
+  Patzcuaro (Michoacán)                         carpeta: Patzcuaro (Michoacán)
+  Piedras Negras (Coahuila)                      carpeta: Piedras Negras (Coahuila)
+  Polonia (LSM)                                  carpeta: Polonia (LSM)
+  Polonia (Señas Internacional)                 carpeta: Polonia (Señas Internacional)
+  Portugal (LSM)                                 carpeta: Portugal (LSM)
+  Portugal (Señas Internacional)                carpeta: Portugal (Señas Internacional)
+  Praga                                          carpeta: Praga
+  Progreso (Yucatán)                            carpeta: Progreso (Yucatán)
+  Puebla                                         carpeta: Puebla
+  Puerto Angel (Oaxaca)                          carpeta: Puerto Angel (Oaxaca)
+  Puerto Escondido (Oaxaca)                      carpeta: Puerto Escondido (Oaxaca)
+  Puerto Vallarta (Jalisco)                      carpeta: Puerto Vallarta (Jalisco)
+  Quebec (Canadá)                               carpeta: Quebec (Canadá)
+  Querétaro                                     carpeta: Querétaro
+  Quintana Roo                                   carpeta: Quintana Roo
+  República Dominica (LSM)                      carpeta: República Dominica (LSM)
+  República Dominica (Señas Internacional)     carpeta: República Dominica (Señas Internacional)
+  República Mexicana                            carpeta: República Mexicana
+  Reynosa (Tamaulipas)                           carpeta: Reynosa (Tamaulipas)
+  Roma (LSM)                                     carpeta: Roma (LSM)
+  Roma (Señas Internacional)                    carpeta: Roma (Señas Internacional)
+  Ruanda                                         carpeta: Ruanda
+  Rumania (LSM)                                  carpeta: Rumania (LSM)
+  Rumania (Señas Internacional)                 carpeta: Rumania (Señas Internacional)
+  Rusia (LSM)                                    carpeta: Rusia (LSM)
+  Salamanca (Guanajuato)                         carpeta: Salamanca (Guanajuato)
+  Saltillo (Coahuila)                            carpeta: Saltillo (Coahuila)
+  Salvador Alvarado (Sinaloa)                    carpeta: Salvador Alvarado (Sinaloa)
+  Salvatierra (Guanajuato)                       carpeta: Salvatierra (Guanajuato)
+  San Francisco (Baja California)                carpeta: San Francisco (Baja California)
+  San Ignacio (Sinaloa)                          carpeta: San Ignacio (Sinaloa)
+  San Julian (Jalisco)                           carpeta: San Julian (Jalisco)
+  San Lucas (Baja California Sur)                carpeta: San Lucas (Baja California Sur)
+  San Luis Potosí                               carpeta: San Luis Potosí
+  San Nicolás de Los Garza                      carpeta: San Nicolás de Los Garza
+  Satélite (Edo de México)                     carpeta: Satélite (Edo de México)
+  Silao (Guanajuato)                             carpeta: Silao (Guanajuato)
+  Sinaloa                                        carpeta: Sinaloa
+  Singapur (LSM)                                 carpeta: Singapur (LSM)
+  Siria                                          carpeta: Siria
+  Sonora                                         carpeta: Sonora
+  Sri Lanka                                      carpeta: Sri Lanka
+  Sudamérica                                    carpeta: Sudamérica
+  Sudán                                         carpeta: Sudán
+  Suiza (LSM)                                    carpeta: Suiza (LSM)
+  Tabasco                                        carpeta: Tabasco
+  Tacubaya (DF)                                  carpeta: Tacubaya (DF)
+  Tailandia (LSM)                                carpeta: Tailandia (LSM)
+  Taipei                                         carpeta: Taipei
+  Tamaulipas                                     carpeta: Tamaulipas
+  Tampico (Tamaulipas)                           carpeta: Tampico (Tamaulipas)
+  Tanzania                                       carpeta: Tanzania
+  Tecamac (Edo de México)                       carpeta: Tecamac (Edo de México)
+  Tecate (Baja California)                       carpeta: Tecate (Baja California)
+  Tehuacán (Puebla)                             carpeta: Tehuacán (Puebla)
+  Teotihuacán                                   carpeta: Teotihuacán
+  Tepic                                          carpeta: Tepic
+  Tijuana (Baja California)                      carpeta: Tijuana (Baja California)
 
 ──────────────────────────────────────────────────
   Objetos  (17 palabras)
@@ -197,24 +489,24 @@
   Grifo                                          carpeta: Grifo
   Horno                                          carpeta: Horno
   Horno de microondas                            carpeta: Horno Microondas
-  Lápiz                                          carpeta: Lápiz
   Láptop                                         carpeta: Laptop
+  Lápiz                                          carpeta: Lápiz
   Libro                                          carpeta: Libro
   Licencia                                       carpeta: Licencia
 
 ──────────────────────────────────────────────────
-  Personajes Históricos  (10 palabras)
+  Personajes_Historicos  (10 palabras)
 ──────────────────────────────────────────────────
   Adolf Hitler                                   carpeta: Adolf Hitler
   Frida Khalo                                    carpeta: Frida Khalo
   Gustavo Madero                                 carpeta: Gustavo Madero
-  Lázaro Cárdenas                                carpeta: Lázaro Cárdenas
-  Miguel Hidalgo y Costilla                      carpeta: Miguel Hidalgo y Costilla
+  Lázaro Cárdenas                                carpeta: Lázaro Cárdenas
+  Miguel Hidalgo y Costilla                      carpeta: Miguel Hidlago y Costilla (Personaje y Delegación)
   Moctezuma                                      carpeta: Moctezuma
-  Napoleón Bonaparte                             carpeta: Napoleón Bonaparte
+  Napoleón Bonaparte                             carpeta: Napoleón Bonaparte
   Pancho Villa                                   carpeta: Pancho Villa
   Pedro Infante                                  carpeta: Pedro Infante
-  Porfirio Díaz                                  carpeta: Porfirio Díaz
+  Porfirio Díaz                                  carpeta: Porfirio Díaz
 
 ──────────────────────────────────────────────────
   Personas  (11 palabras)
@@ -226,7 +518,7 @@
   Amigo                                          carpeta: Amigo
   Amistad                                        carpeta: Amistad
   Apellido                                       carpeta: Apellido
-  Él                                             carpeta: Él
+  Él                                             carpeta: El
   Ellos                                          carpeta: Ellos
   Esposo / Casado                                carpeta: Esposo_Casado
   Gente                                          carpeta: Gente
@@ -234,10 +526,10 @@
 ──────────────────────────────────────────────────
   Profesiones  (29 palabras)
 ──────────────────────────────────────────────────
-  Abogado                                        carpeta: abogado
+  Abogado                                        carpeta: Abogado
   Actor / Artista                                carpeta: Actor_Artista
   Agente                                         carpeta: Agente
-  Edecán                                         carpeta: Edecán
+  Edecán                                         carpeta: Edecán
   Emperador                                      carpeta: Emperador
   Enfermera                                      carpeta: Enfermera
   General                                        carpeta: General
@@ -250,13 +542,13 @@
   Misionero                                      carpeta: Misionero
   Monja                                          carpeta: Monja
   Narcotraficante                                carpeta: Narcotraficante
-  Padre (Religión)                               carpeta: Padre (Religión)
+  Padre (Religión)                               carpeta: Padre (Religión)
   Peluquero                                      carpeta: Peluquero
   Pescar / Pesca                                 carpeta: Pescar_Pesca
-  Policía                                        carpeta: Policía
+  Policía                                        carpeta: Policía
   Presidente                                     carpeta: Presidente
-  Príncipe                                       carpeta: Príncipe
-  Profesión / Profesional                        carpeta: Profesión_Profesional
+  Príncipe                                       carpeta: Príncipe
+  Profesión / Profesional                        carpeta: Profesión_Profesional
   Profesor                                       carpeta: Profesor
   Rey                                            carpeta: Rey
   Sacerdote                                      carpeta: Sacerdote
@@ -265,5 +557,5 @@
   Soldado                                        carpeta: Soldado
 
 ══════════════════════════════════════════════════
-  Total: 221 palabras en 11 categorías
+  Total: 501 palabras en 14 categorías
 ══════════════════════════════════════════════════

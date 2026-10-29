@@ -11,7 +11,7 @@ Aplicaciones Swift para el proyecto **LSM (Lengua de Señas Mexicana)**. Este re
 │                         Flujo completo LSM                              │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  LSMVideos/           LSMExtractorGUI          lsm_fingerprints (Fase 1) │
+│  LSMVideos/           Extractor GUI/CLI        lsm_fingerprints (Fase 1) │
 │  category/word/*.mp4  (macOS, Vision)    ──►   fingerprints.npz/.bin      │
 │  + manifest (opt.)    *_landmarks.json          evaluate.py (LOO)         │
 │                       *_overlay.mp4 (opt.)      │                         │
@@ -27,6 +27,7 @@ Aplicaciones Swift para el proyecto **LSM (Lengua de Señas Mexicana)**. Este re
 | Repositorio / app | Plataforma | Rol |
 |---|---|---|
 | **LSMExtractorGUI** | macOS | Extrae landmarks de manos y pose desde videos con Vision Framework |
+| **LSMExtractorCLI** | macOS | La misma extracción en lote, sin interfaz, para scripts |
 | **TrainingPipeline** | Python | Fase 2: entrena modelos y exporta a Core ML; incluye **lsm_fingerprints** (Fase 1) |
 | **LSMMobileModelTesting** | iOS | Inferencia en vivo (Fase 1 fingerprint o Fase 2 Core ML) |
 
@@ -100,6 +101,46 @@ LSMVideosOutput/
 | `DatasetScanner.swift` | Descubrimiento por ruta, build/merge de `dataset_manifest.json` |
 | `Models.swift` | Tipos JSON, `DatasetManifest`, modelos de estado (`VideoItem`, `BatchReport`) |
 | `ContentView.swift` | Interfaz SwiftUI con panel de control, log y lista de videos |
+
+---
+
+### LSMExtractorCLI — Extractor de landmarks (macOS, terminal)
+
+La misma extracción que LSMExtractorGUI, sin interfaz. El esquema de `*_landmarks.json` no cambia (`frame`, `timestamp_ms`, `leftHand`, `rightHand`, `pose`, Y=0 arriba), y el lote sigue escribiendo `dataset_manifest.json` y `_batch_report.json`.
+
+El target es un command-line tool. El deployment target del proyecto es macOS 26.5. Hereda los permisos de la terminal desde la que se lanza.
+
+**Uso:**
+
+```bash
+# Abrir LSMExtractorCLI/LSMExtractorCLI.xcodeproj, compilar y ejecutar el binario:
+LSMExtractorCLI \
+  --input ./LSMVideos \
+  --output ./LSMVideosOutput \
+  --manifest ./LSMVideosOutput/dataset_manifest.json \
+  --skip-existing
+```
+
+| Flag | Función |
+|---|---|
+| `--input`, `-i` | Carpeta raíz `category/word/*.{mp4,mov,m4v}` (obligatorio) |
+| `--output`, `-o` | Carpeta de salida (obligatorio; se crea si no existe) |
+| `--manifest`, `-m` | `dataset_manifest.json` existente a cargar y actualizar. Si se omite, se escribe `{output}/dataset_manifest.json` |
+| `--overlay` | Genera `{base}_overlay.mp4`. Por defecto solo JSON |
+| `--skip-existing` | Omite un video si ya existe su `*_landmarks.json` y lo marca `skipped` en el manifiesto |
+| `--help`, `-h` | Muestra la ayuda |
+
+Códigos de salida: `0` si el lote termina sin errores, `1` si faltan argumentos, las rutas son inválidas o no se pudo guardar el manifiesto o el reporte, `2` si al menos un video falló. El log va a stdout, una línea por video.
+
+**Archivos principales:**
+
+| Archivo | Responsabilidad |
+|---|---|
+| `main.swift` | Argumentos y códigos de salida |
+| `BatchRunner.swift` | Lote, manifiesto y `_batch_report.json` |
+| `LandmarkExtractor.swift` | Detección Vision, overlay opcional, JSON |
+| `DatasetScanner.swift` | Descubrimiento `category/word/` y merge del manifiesto |
+| `Models.swift` | Mismos tipos JSON que la GUI |
 
 ---
 
@@ -445,9 +486,17 @@ python organize_from_json.py --json themes.json --input ./videos --output ./data
 
 ### 2. Extraer landmarks (macOS)
 
+Con la app:
+
 ```bash
 # Abrir LSMExtractorGUI en Xcode
 # Dataset: ./LSMVideos   Salida: ./LSMVideosOutput
+```
+
+O desde la terminal, con el mismo esquema JSON:
+
+```bash
+LSMExtractorCLI --input ./LSMVideos --output ./LSMVideosOutput --skip-existing
 ```
 
 La carpeta `./LSMVideosOutput` resultante es el `--dataset` de `train.py`.
@@ -482,6 +531,15 @@ AppLSMTests/
 │       ├── ContentView.swift           # UI principal
 │       ├── LandmarkExtractor.swift     # Vision + AVFoundation
 │       ├── BatchProcessor.swift        # Procesamiento en lote
+│       ├── DatasetScanner.swift        # Descubrimiento y manifiesto
+│       └── Models.swift                # Tipos y DatasetManifest
+│
+├── LSMExtractorCLI/                    # CLI macOS — la misma extracción
+│   ├── LSMExtractorCLI.xcodeproj
+│   └── LSMExtractorCLI/
+│       ├── main.swift                  # Argumentos y códigos de salida
+│       ├── BatchRunner.swift           # Lote, manifiesto y reporte
+│       ├── LandmarkExtractor.swift     # Vision + AVFoundation
 │       ├── DatasetScanner.swift        # Descubrimiento y manifiesto
 │       └── Models.swift                # Tipos y DatasetManifest
 │
@@ -588,6 +646,7 @@ Esquema simplificado:
 **Permisos:**
 
 - **LSMExtractorGUI**: acceso a carpetas del sistema vía `NSOpenPanel` (sin entitlements especiales)
+- **LSMExtractorCLI**: permisos de la terminal que lo ejecuta (sin entitlements especiales)
 - **LSMMobileModelTesting**: permiso de cámara (`NSCameraUsageDescription`: *"Used to detect and extract sign language landmarks"*)
 
 **Code signing:** ambos proyectos usan firma automática con team `6Q5574XLD8`. Cambiar al team propio antes de compilar en dispositivo.
@@ -598,7 +657,7 @@ Esquema simplificado:
 
 | Componente | Estado |
 |---|---|
-| Extracción batch macOS | Funcional — procesa videos, genera JSON + overlay opcional |
+| Extracción batch macOS | Funcional — GUI y CLI; JSON + overlay opcional |
 | Catálogo dataset_manifest.json | Funcional — descubrimiento por ruta, merge y persistencia |
 | Inferencia iOS en vivo | Funcional — calificación Top-5 + Otra, export CSV |
 | Fase 1 production bin | Versionado en git (307 clases embebidas) |
@@ -615,7 +674,7 @@ Este repositorio cierra el ciclo que antes quedaba fuera del repo de Python:
 
 | Antes (TrainingPipeline README) | Ahora (AppLSMTests) |
 |---|---|
-| "Extracción de landmarks no incluida" | **LSMExtractorGUI** genera `*_landmarks.json` |
+| "Extracción de landmarks no incluida" | **LSMExtractorGUI** y **LSMExtractorCLI** generan `*_landmarks.json` |
 | "Listo para arrastrar al proyecto Xcode" | **LSMMobileModelTesting** ya incluye el modelo y la app de prueba |
 
 Para documentación del entrenamiento, vocabulario y exportación Core ML, ver [TrainingPipeline/README.md](../README.md).

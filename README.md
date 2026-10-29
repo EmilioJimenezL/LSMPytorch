@@ -55,25 +55,26 @@ El TCN de Fase 2 debe superar el baseline de Fase 1 (~60% top-1 LOO) para valida
 
 ## Vocabulario y datos
 
-`themes.json` define el vocabulario del proyecto:
+`themes.json` define el vocabulario del proyecto. Está inventariado desde `LSMVideos/` (`categoría/palabra/*.mp4|mov`): el nombre de la categoría es la carpeta en disco, `videoUrl` apunta a la carpeta de la palabra y `videos` lista los archivos. Si la carpeta ya existía, se conserva el nombre de visualización anterior.
 
-| Categoría | Palabras |
-|---|---|
-| Alimentos y Bebidas | 40 |
-| Animales e Insectos | 40 |
-| Colores | 2 |
-| Familia | 21 |
-| Festividades | 20 |
-| Frutas, Verduras y Plantas | 29 |
-| Locaciones | 2 |
-| Objetos | 17 |
-| Personajes Históricos | 10 |
-| Personas | 11 |
-| Profesiones | 29 |
+| Categoría | Palabras | Videos |
+|---|---|---|
+| Abecedario | 29 | 384 |
+| Actividades_Cotidianas | 55 | 57 |
+| Adjetivos_Calificativos | 59 | 59 |
+| Alimentos_y_Bebidas | 39 | 232 |
+| Animales_e_Insectos | 40 | 236 |
+| Colores | 2 | 12 |
+| Familia | 21 | 126 |
+| Festividades | 20 | 119 |
+| Frutas_Verduras_y_Plantas | 29 | 162 |
+| Locaciones | 140 | 345 |
+| Objetos | 17 | 101 |
+| Personajes_Historicos | 10 | 81 |
+| Personas | 11 | 55 |
+| Profesiones | 29 | 165 |
 
-**Total: 221 palabras en 11 categorías.**
-
-Cada entrada incluye un nombre de visualización y una ruta de video (`videoUrl`) que determina la carpeta destino al organizar el dataset.
+**Total: 501 palabras en 14 categorías, 2134 videos** (1648 `.mov`, 486 `.mp4`). 307 palabras tienen 2 o más videos; 194 tienen uno solo y quedarían fuera con `--min_videos 2` después de extraer landmarks.
 
 ### Formato de entrada (landmarks)
 

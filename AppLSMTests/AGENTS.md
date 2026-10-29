@@ -7,6 +7,7 @@
 This repo contains **Swift apps** for LSM (Lengua de Señas Mexicana):
 
 - **LSMExtractorGUI** (macOS) — batch landmark extraction from video via Apple Vision
+- **LSMExtractorCLI** (macOS) — same extraction without a UI; same landmark JSON schema
 - **LSMMobileModelTesting** (iOS) — live camera inference (Fase 1 fingerprint+DTW or Fase 2 Core ML)
 
 ---
@@ -19,7 +20,7 @@ This repo contains **Swift apps** for LSM (Lengua de Señas Mexicana):
 | **Fase 1 mobile** | On-device fingerprint matching | Parity with Python (`Phase1ParityCheck`); latency <200ms |
 | **Fase 2 mobile** | On-device Core ML inference | Top-5 predictions; buffer fills to 85 frames before inference |
 
-**Vocabulary:** 221 words defined in TrainingPipeline `themes.json`; extractor infers category/word from folder path only.
+**Vocabulary:** 501 words in TrainingPipeline `themes.json` (14 categories, inventoried from `LSMVideos`); extractor infers category/word from folder path only.
 
 ---
 
@@ -32,7 +33,7 @@ flowchart LR
   end
 
   subgraph applsm [AppLSMTests]
-    Extractor[LSMExtractorGUI]
+    Extractor["LSMExtractorGUI / CLI"]
     Mobile[LSMMobileModelTesting]
   end
 
@@ -87,6 +88,21 @@ flowchart LR
 | Types (JSON, manifest, report) | `LSMExtractorGUI/Models.swift` |
 | Xcode project | `LSMExtractorGUI/LSMExtractorGUI.xcodeproj/` |
 
+### LSMExtractorCLI (macOS)
+
+Headless front end for the same contract as the GUI. Engine sources are copied into this target (CoreGraphics instead of AppKit). Do not change the landmark JSON schema here independently of `LSMExtractorGUI/Models.swift` and `TrainingPipeline/dataset.py`.
+
+| Task | Files |
+|---|---|
+| Arguments and exit codes | `LSMExtractorCLI/main.swift` |
+| Batch, manifest, report | `LSMExtractorCLI/BatchRunner.swift` |
+| Vision + video I/O | `LSMExtractorCLI/LandmarkExtractor.swift` |
+| Path discovery + manifest | `LSMExtractorCLI/DatasetScanner.swift` |
+| Types (JSON, manifest, report) | `LSMExtractorCLI/Models.swift` |
+| Xcode project | `LSMExtractorCLI/LSMExtractorCLI.xcodeproj/` |
+
+Flags: `--input`/`-i`, `--output`/`-o`, optional `--manifest`/`-m`, `--overlay` (off by default), `--skip-existing` (marks manifest status `skipped` when `*_landmarks.json` already exists). Exit `0` clean batch, `1` bad arguments/paths or failed manifest/report write, `2` one or more video failures.
+
 ### LSMMobileModelTesting (iOS)
 
 | Task | Files |
@@ -133,6 +149,16 @@ flowchart LR
 2. Select input root (`LSMVideos/`), output root (`LSMVideosOutput/`)
 3. Optional: load existing `dataset_manifest.json`; toggle overlay off for JSON-only mode
 4. Run **Procesar**
+
+### Extract landmarks (CLI)
+
+Same JSON, manifest, and report as the GUI. Overlay stays off unless `--overlay` is passed.
+
+```bash
+LSMExtractorCLI --input ../LSMVideos --output ../LSMVideosOutput --skip-existing
+```
+
+Open `LSMExtractorCLI/LSMExtractorCLI.xcodeproj` to build the tool. Deployment target is macOS 26.5.
 
 ### Update Fase 1 on iOS
 

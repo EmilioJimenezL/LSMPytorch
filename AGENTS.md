@@ -16,7 +16,7 @@ This repo is the **Python side** of LSM (Lengua de Señas Mexicana): Fase 1 stat
 | **Fase 2** | Beat Fase 1 with deep learning | TCN/CNN accuracy > Fase 1 baseline on same dataset |
 | **Mobile** | Real-time inference on iOS | Fase 1 latency <200ms (goal <100ms) |
 
-**Vocabulary:** 221 words in `themes.json` (11 categories). Current trained model: ~187 classes (classes with ≥2 valid videos after `--min-videos` filter).
+**Vocabulary:** 501 words in `themes.json` (14 categories), inventoried from `LSMVideos` — 2134 videos (1648 `.mov`, 486 `.mp4`). 307 words have ≥2 videos; 194 have one and would be dropped by `--min_videos 2` after landmark extraction. Current trained model is still the previous LSMOutput run (~307 classes).
 
 ---
 
