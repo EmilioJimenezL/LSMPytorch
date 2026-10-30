@@ -181,7 +181,7 @@ App de prueba en SwiftUI que ejecuta modelos Core ML en tiempo real usando la c�
 
 | Control | Función |
 |---|---|
-| Selector de modelo | Cambia entre los 5 backends; muestra overlay de carga con progreso |
+| Selector de modelo | Abre el catálogo agrupado por set de señas y familia, con búsqueda, confirmación y una pantalla de carga hasta que el modelo y la cámara están listos |
 | Exportar (↑) | Comparte `live_test_log.csv` (share sheet); deshabilitado si no hay registros |
 | Eliminar (🗑) | Borra todos los registros CSV; alerta con conteo; **No** es la opción segura por defecto |
 | Esqueleto (figura) | Muestra/oculta overlay de manos y pose |
@@ -198,11 +198,20 @@ App de prueba en SwiftUI que ejecuta modelos Core ML en tiempo real usando la c�
 | Fase 2 CNN | `runs_lsmoutput_cnn_lsmoutput.mlpackage` | `runs_lsmoutput_cnn_classes.json` | 307 | **47.16%** | Recomendado para pruebas |
 | Fase 2 TCN | `runs_lsmoutput_tcn_lsmoutput.mlpackage` | `runs_lsmoutput_tcn_classes.json` | 307 | 44.78% | Mejor val Top-5 |
 | Fase 2 3D CNN | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage` | `runs_lsmoutput_3dcnn_classes.json` | 307 | 15.52% | |
+| CNN ≥12 videos | `runs_m4_min12_cnn_lsmoutput.mlpackage` | `runs_m4_min12_cnn_classes.json` | 28 | 48.21% | Incluye solo palabras con ≥12 videos |
+| TCN ≥12 videos | `runs_m4_min12_tcn_lsmoutput.mlpackage` | `runs_m4_min12_tcn_classes.json` | 28 | 35.71% | |
+| 3D CNN ≥12 videos | `runs_m4_min12_3dcnn_lsmoutput.mlpackage` | `runs_m4_min12_3dcnn_classes.json` | 28 | 3.57% | |
+| CNN ≥7 videos | `runs_m4_min7_cnn_lsmoutput.mlpackage` | `runs_m4_min7_cnn_classes.json` | 54 | **52.44%** | Incluye las de ≥12 |
+| TCN ≥7 videos | `runs_m4_min7_tcn_lsmoutput.mlpackage` | `runs_m4_min7_tcn_classes.json` | 54 | 39.02% | |
+| 3D CNN ≥7 videos | `runs_m4_min7_3dcnn_lsmoutput.mlpackage` | `runs_m4_min7_3dcnn_classes.json` | 54 | 15.85% | |
+| CNN ≥5 videos | `runs_m4_min5_cnn_lsmoutput.mlpackage` | `runs_m4_min5_cnn_classes.json` | 286 | 47.45% | Incluye las de ≥7 y ≥12 |
+| TCN ≥5 videos | `runs_m4_min5_tcn_lsmoutput.mlpackage` | `runs_m4_min5_tcn_classes.json` | 286 | 47.45% | |
+| 3D CNN ≥5 videos | `runs_m4_min5_3dcnn_lsmoutput.mlpackage` | `runs_m4_min5_3dcnn_classes.json` | 286 | 13.69% | |
 | Fase 2 legacy | `coreml_models.mlpackage` | `classes.json` | 187 | 9.68% | Pre-LSMOutput |
 
 Los `.mlpackage` y los `*_classes.json` están versionados bajo `LSMMobileModelTesting/LSMMobileModelTesting/` para que un clone abra Fase 2 sin copiar desde el pipeline. `fingerprints.bin` no se sube: se genera en local (ver el README del pipeline, Puesta en marcha). Tras reentrenar, actualizar los `.mlpackage` y **commitearlos** (ver [AGENTS.md — Bundled model artifacts](./AGENTS.md#bundled-model-artifacts-tracked-in-git)).
 
-El selector de modelos permite alternar entre los 5 backends. **Fase 1 y Fase 2 LSMOutput comparten `SequencePreprocessor`** (normalización hombro).
+El selector de modelos es un catálogo: las secciones son el set de señas y el filtro es la familia. Confirmar un modelo abre la carga y la cámara solo aparece cuando el modelo y la sesión de video están listos. Los nueve de umbral (≥12, ≥7, ≥5 videos) están anidados: el corte más bajo incluye las palabras de los cortes más altos. Los cinco modelos anteriores se conservan. **Fase 1 y Fase 2 LSMOutput comparten `SequencePreprocessor`** (normalización hombro).
 
 ### Etiquetas de clase (nombres en predicciones)
 
@@ -213,7 +222,7 @@ Cada índice de salida del modelo se muestra como `classes[i]`. La app resuelve 
 
 **Importante:** el `.mlpackage` exportado termina en `_lsmoutput` (p. ej. `runs_lsmoutput_cnn_lsmoutput`), pero el JSON de etiquetas se copia desde la carpeta del run y se renombra sin ese sufijo: `runs_lsmoutput_cnn_classes.json`. Cada entrada en `AVAILABLE_MODELS` declara explícitamente `bundleName` y `classesBundleName`.
 
-Si el conteo de etiquetas es menor que la salida del modelo, la UI muestra placeholders `clase_N` (p. ej. `clase_187` en un modelo de 307 clases con solo 187 etiquetas). En el panel debug, **Clases** debe ser **307** para Fase 1 y backends LSMOutput, **187** para legacy.
+Si el conteo de etiquetas es menor que la salida del modelo, la UI muestra placeholders `clase_N` (p. ej. `clase_187` en un modelo de 307 clases con solo 187 etiquetas). En el panel debug, **Clases** debe coincidir con el modelo activo: **307** en Fase 1 y LSMOutput, **28 / 54 / 286** en los umbrales de videos, **187** en legacy.
 
 Detalle técnico y troubleshooting: [AGENTS.md — Class labels (iOS)](./AGENTS.md#class-labels-ios)
 
@@ -283,7 +292,7 @@ Lista de señas compartidas para A/B: `TrainingPipeline/reports/class_overlap.js
 **Requisito:** Mac + Xcode + dispositivo físico.
 
 1. Usar señas de `TrainingPipeline/reports/class_overlap.json` (307 clases compartidas)
-2. Misma sesión: alternar selector entre los 5 backends (esperar overlay de carga entre cambios)
+2. Misma sesión: volver al catálogo con el botón del cerebro, confirmar otro modelo y esperar la pantalla de carga (modelo y cámara)
 3. Por cada seña: seleccionar la etiqueta correcta en el panel de **calificación** (Top-5 u **Otra**)
 4. Al terminar, exportar CSV con **↑** y analizar offline
 
@@ -328,7 +337,7 @@ Requisitos previos en TrainingPipeline (referencia de baseline):
 |---|---|---|
 | Bin en bundle | Local | `fingerprints.bin` se genera en el setup; no se sube a git |
 | CNN/TCN/3DCNN mlpackages + `*_classes.json` | Hecho | Copiados desde TrainingPipeline; versionados en git |
-| `AVAILABLE_MODELS` (5 backends) | Hecho | `bundleName` + `classesBundleName` por backend |
+| `AVAILABLE_MODELS` (14 backends) | Hecho | 5 de baseline + 9 por umbral de videos (`bundleName` + `classesBundleName`) |
 | Etiquetas de clase en vivo | Hecho | Mapeo explícito; sin `clase_N` si **Clases** = 307 en panel debug |
 | Calificación en vivo + CSV | Hecho | Top-5 + Otra; export ↑; `GradingLog.swift` requiere `import Combine` |
 | Overlay carga de modelo | Hecho | Progreso, éxito/error, revierte al modelo previo si falla |
@@ -561,7 +570,9 @@ AppLSMTests/
         ├── runs_lsmoutput_tcn_classes.json
         ├── runs_lsmoutput_3dcnn_classes.json
         ├── classes.json                # 187 clases (legacy)
-        └── coreml_models.mlpackage/
+        ├── coreml_models.mlpackage/
+        ├── runs_m4_min{12,7,5}_{cnn,tcn,3dcnn}_lsmoutput.mlpackage/
+        └── runs_m4_min{12,7,5}_{cnn,tcn,3dcnn}_classes.json
 ```
 
 ---
@@ -665,7 +676,7 @@ Esquema simplificado:
 | Etiquetas de clase (mapeo modelo ↔ JSON) | Funcional — `classesBundleName` en `AVAILABLE_MODELS` |
 | Overlay carga de modelo | Funcional — progreso, éxito/error, revierte si falla |
 | Calificación / CSV en dispositivo | Funcional — `live_test_log.csv` en Documents; export ↑ |
-| Multi-modelo | 5 backends en selector (Fase 1 default, CNN recomendado NN) |
+| Multi-modelo | 14 backends en selector (5 de baseline + 9 por umbral de videos) |
 | Validación dispositivo | Fase 2 etiquetas + grading verificados; resto B3–B5, C2–C5 pendiente Mac |
 
 ## Relación con TrainingPipeline

@@ -1,0 +1,108 @@
+{
+  "n_total": 12,
+  "n_train": 10,
+  "n_val": 2,
+  "n_classes": 2,
+  "classes": [
+    "Amarillo",
+    "Gris"
+  ],
+  "entries": [
+    {
+      "index": 0,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 0,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Amarillo/AMARILLO2_landmarks.json"
+    },
+    {
+      "index": 1,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 0,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Amarillo/AMARILLO5_landmarks.json"
+    },
+    {
+      "index": 2,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 0,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Amarillo/Amarillo1_landmarks.json"
+    },
+    {
+      "index": 3,
+      "split": "val",
+      "class": "Amarillo",
+      "class_idx": 0,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Amarillo/Amarillo3_landmarks.json"
+    },
+    {
+      "index": 4,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 0,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Amarillo/Amarillo4_landmarks.json"
+    },
+    {
+      "index": 5,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 0,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Amarillo/Amarillo_landmarks.json"
+    },
+    {
+      "index": 6,
+      "split": "train",
+      "class": "Gris",
+      "class_idx": 1,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Gris/GRIS2_landmarks.json"
+    },
+    {
+      "index": 7,
+      "split": "train",
+      "class": "Gris",
+      "class_idx": 1,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Gris/GRIS5_landmarks.json"
+    },
+    {
+      "index": 8,
+      "split": "val",
+      "class": "Gris",
+      "class_idx": 1,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Gris/Gris1_landmarks.json"
+    },
+    {
+      "index": 9,
+      "split": "train",
+      "class": "Gris",
+      "class_idx": 1,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Gris/Gris3_landmarks.json"
+    },
+    {
+      "index": 10,
+      "split": "train",
+      "class": "Gris",
+      "class_idx": 1,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Gris/Gris4_landmarks.json"
+    },
+    {
+      "index": 11,
+      "split": "train",
+      "class": "Gris",
+      "class_idx": 1,
+      "category": "",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Colores/Gris/Gris_landmarks.json"
+    }
+  ]
+}

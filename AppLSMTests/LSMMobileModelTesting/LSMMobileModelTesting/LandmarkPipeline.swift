@@ -62,6 +62,66 @@ struct SkeletonData {
 
 // ── Model descriptor ──────────────────────────────────────────────────────────
 
+enum ModelFamily: String, CaseIterable, Identifiable {
+    case fingerprint
+    case cnn
+    case tcn
+    case cnn3d
+    case legacy
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .fingerprint: return "Fase 1"
+        case .cnn: return "CNN"
+        case .tcn: return "TCN"
+        case .cnn3d: return "3D CNN"
+        case .legacy: return "Legacy"
+        }
+    }
+
+    var sortIndex: Int {
+        switch self {
+        case .fingerprint: return 0
+        case .cnn: return 1
+        case .tcn: return 2
+        case .cnn3d: return 3
+        case .legacy: return 4
+        }
+    }
+}
+
+enum SignSet: String, CaseIterable, Identifiable {
+    case lsmoutput307
+    case min12
+    case min7
+    case min5
+    case legacy187
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .lsmoutput307: return "LSMOutput"
+        case .min12: return "Al menos 12 videos"
+        case .min7: return "Al menos 7 videos"
+        case .min5: return "Al menos 5 videos"
+        case .legacy187: return "Legacy"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .lsmoutput307: return "307 clases, al menos 2 videos"
+        case .min12: return "28 clases"
+        case .min7: return "54 clases, incluye las de 12 o más"
+        case .min5: return "286 clases, incluye las de 7 y 12"
+        case .legacy187: return "187 clases, anterior a LSMOutput"
+        }
+    }
+}
+
 struct LSMModel: Identifiable, Equatable {
     let id          = UUID()
     let name:        String
@@ -71,20 +131,27 @@ struct LSMModel: Identifiable, Equatable {
     let classesBundleName: String?
     let description: String
     let isFingerprint: Bool
+    let family: ModelFamily
+    let signSet: SignSet
 
     init(name: String, bundleName: String, classesBundleName: String? = nil,
-         description: String, isFingerprint: Bool = false) {
+         description: String, isFingerprint: Bool = false,
+         family: ModelFamily, signSet: SignSet) {
         self.name = name
         self.bundleName = bundleName
         self.classesBundleName = classesBundleName
         self.description = description
         self.isFingerprint = isFingerprint
+        self.family = family
+        self.signSet = signSet
     }
 
     static func == (lhs: LSMModel, rhs: LSMModel) -> Bool {
         lhs.bundleName == rhs.bundleName
             && lhs.classesBundleName == rhs.classesBundleName
             && lhs.isFingerprint == rhs.isFingerprint
+            && lhs.family == rhs.family
+            && lhs.signSet == rhs.signSet
     }
 }
 
@@ -94,31 +161,113 @@ let AVAILABLE_MODELS: [LSMModel] = [
         name:        "Fase 1 — Fingerprint+DTW",
         bundleName:  "fingerprints",
         description: "307 clases, LOO Top-1 6.57%",
-        isFingerprint: true
+        isFingerprint: true,
+        family: .fingerprint,
+        signSet: .lsmoutput307
     ),
     LSMModel(
         name:        "Fase 2 — CNN LSMOutput",
         bundleName:  "runs_lsmoutput_cnn_lsmoutput",
         classesBundleName: "runs_lsmoutput_cnn_classes",
-        description: "307 clases, val Top-1 47.16% (recomendado)"
+        description: "307 clases, val Top-1 47.16% (recomendado)",
+        family: .cnn,
+        signSet: .lsmoutput307
     ),
     LSMModel(
         name:        "Fase 2 — TCN LSMOutput",
         bundleName:  "runs_lsmoutput_tcn_lsmoutput",
         classesBundleName: "runs_lsmoutput_tcn_classes",
-        description: "307 clases, val Top-1 44.78%"
+        description: "307 clases, val Top-1 44.78%",
+        family: .tcn,
+        signSet: .lsmoutput307
     ),
     LSMModel(
         name:        "Fase 2 — 3D CNN LSMOutput",
         bundleName:  "runs_lsmoutput_3dcnn_lsmoutput",
         classesBundleName: "runs_lsmoutput_3dcnn_classes",
-        description: "307 clases, val Top-1 15.52%"
+        description: "307 clases, val Top-1 15.52%",
+        family: .cnn3d,
+        signSet: .lsmoutput307
+    ),
+    LSMModel(
+        name:        "CNN — al menos 12 videos",
+        bundleName:  "runs_m4_min12_cnn_lsmoutput",
+        classesBundleName: "runs_m4_min12_cnn_classes",
+        description: "28 clases, val Top-1 48.21%",
+        family: .cnn,
+        signSet: .min12
+    ),
+    LSMModel(
+        name:        "TCN — al menos 12 videos",
+        bundleName:  "runs_m4_min12_tcn_lsmoutput",
+        classesBundleName: "runs_m4_min12_tcn_classes",
+        description: "28 clases, val Top-1 35.71%",
+        family: .tcn,
+        signSet: .min12
+    ),
+    LSMModel(
+        name:        "3D CNN — al menos 12 videos",
+        bundleName:  "runs_m4_min12_3dcnn_lsmoutput",
+        classesBundleName: "runs_m4_min12_3dcnn_classes",
+        description: "28 clases, val Top-1 3.57%",
+        family: .cnn3d,
+        signSet: .min12
+    ),
+    LSMModel(
+        name:        "CNN — al menos 7 videos",
+        bundleName:  "runs_m4_min7_cnn_lsmoutput",
+        classesBundleName: "runs_m4_min7_cnn_classes",
+        description: "54 clases, val Top-1 52.44%",
+        family: .cnn,
+        signSet: .min7
+    ),
+    LSMModel(
+        name:        "TCN — al menos 7 videos",
+        bundleName:  "runs_m4_min7_tcn_lsmoutput",
+        classesBundleName: "runs_m4_min7_tcn_classes",
+        description: "54 clases, val Top-1 39.02%",
+        family: .tcn,
+        signSet: .min7
+    ),
+    LSMModel(
+        name:        "3D CNN — al menos 7 videos",
+        bundleName:  "runs_m4_min7_3dcnn_lsmoutput",
+        classesBundleName: "runs_m4_min7_3dcnn_classes",
+        description: "54 clases, val Top-1 15.85%",
+        family: .cnn3d,
+        signSet: .min7
+    ),
+    LSMModel(
+        name:        "CNN — al menos 5 videos",
+        bundleName:  "runs_m4_min5_cnn_lsmoutput",
+        classesBundleName: "runs_m4_min5_cnn_classes",
+        description: "286 clases, val Top-1 47.45%",
+        family: .cnn,
+        signSet: .min5
+    ),
+    LSMModel(
+        name:        "TCN — al menos 5 videos",
+        bundleName:  "runs_m4_min5_tcn_lsmoutput",
+        classesBundleName: "runs_m4_min5_tcn_classes",
+        description: "286 clases, val Top-1 47.45%",
+        family: .tcn,
+        signSet: .min5
+    ),
+    LSMModel(
+        name:        "3D CNN — al menos 5 videos",
+        bundleName:  "runs_m4_min5_3dcnn_lsmoutput",
+        classesBundleName: "runs_m4_min5_3dcnn_classes",
+        description: "286 clases, val Top-1 13.69%",
+        family: .cnn3d,
+        signSet: .min5
     ),
     LSMModel(
         name:        "Fase 2 — Legacy v1",
         bundleName:  "coreml_models",
         classesBundleName: "classes",
-        description: "187 clases, pre-LSMOutput (val 9.68%)"
+        description: "187 clases, pre-LSMOutput (val 9.68%)",
+        family: .legacy,
+        signSet: .legacy187
     ),
 ]
 
@@ -347,7 +496,6 @@ class LandmarkPipeline: ObservableObject {
     private var loadTask: Task<Void, Never>?
     private var inferenceTask: Task<Void, Never>?
     private var inferenceInFlight = false
-    private var overlayDismissTask: Task<Void, Never>?
 
     private let inferenceStride = 15
 
@@ -359,16 +507,21 @@ class LandmarkPipeline: ObservableObject {
         #if DEBUG
         Phase1ParityCheck.verify()
         #endif
-        if let first = AVAILABLE_MODELS.first { loadModel(first) }
     }
 
     // MARK: - Model switching
 
     func loadModel(_ descriptor: LSMModel) {
-        if activeModel == descriptor, case .idle = modelLoadPhase { return }
+        if activeModel == descriptor, !modelLoadPhase.isLoading {
+            switch modelLoadPhase {
+            case .failed:
+                break
+            default:
+                return
+            }
+        }
 
         loadTask?.cancel()
-        overlayDismissTask?.cancel()
         inferenceTask?.cancel()
         inferenceInFlight = false
         loadError = nil
@@ -390,7 +543,6 @@ class LandmarkPipeline: ObservableObject {
             case .success(let state):
                 commitLoadedState(state, descriptor: descriptor)
                 modelLoadPhase = .succeeded(modelName: descriptor.name, warning: state.warning)
-                scheduleOverlayDismiss(after: 1.8)
             case .failure(let message):
                 loadError = message
                 modelLoadPhase = .failed(
@@ -398,23 +550,7 @@ class LandmarkPipeline: ObservableObject {
                     message: message,
                     keptModelName: keptName
                 )
-                scheduleOverlayDismiss(after: 3.0)
             }
-        }
-    }
-
-    func dismissModelLoadOverlay() {
-        overlayDismissTask?.cancel()
-        modelLoadPhase = .idle
-    }
-
-    private func scheduleOverlayDismiss(after seconds: Double) {
-        overlayDismissTask?.cancel()
-        overlayDismissTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-            guard !Task.isCancelled else { return }
-            if case .idle = modelLoadPhase { return }
-            modelLoadPhase = .idle
         }
     }
 

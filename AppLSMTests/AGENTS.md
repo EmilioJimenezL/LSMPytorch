@@ -316,7 +316,7 @@ See [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) for the f
 
 ### Head-to-head A/B (Fase 1 vs Fase 2)
 
-- [ ] Same session, switch model picker across all 5 backends
+- [ ] Same session, switch model picker across all 14 backends
 - [ ] Use in-app **grading panel** (Top-5 + **Otra**) — logs append to `Documents/live_test_log.csv`; export via share sheet (↑)
 - [ ] Optional cross-check: [TrainingPipeline/review/live_test_log_template.csv](../review/live_test_log_template.csv) column layout (app CSV is a superset with all Top-5 guesses)
 - [ ] Minimum 10-sign matrix from `class_overlap.json` (Festividades, Personajes, Colores, Familia, Abecedario)
@@ -444,6 +444,9 @@ Prediction text in **LSMMobileModelTesting** maps model output index `i` to `cla
 |---|---|---|
 | Fase 1 — Fingerprint+DTW | Class names appended to `fingerprints.bin` after sequences | 307 |
 | Fase 2 — CNN / TCN / 3D CNN | Core ML user metadata `classes` (JSON array), else bundled `runs_lsmoutput_*_classes.json` | 307 |
+| CNN / TCN / 3D CNN ≥12 videos | `runs_m4_min12_*_classes.json` | 28 |
+| CNN / TCN / 3D CNN ≥7 videos | `runs_m4_min7_*_classes.json` (incluye las de ≥12) | 54 |
+| CNN / TCN / 3D CNN ≥5 videos | `runs_m4_min5_*_classes.json` (incluye las de ≥7 y ≥12) | 286 |
 | Fase 2 — Legacy v1 | Core ML metadata `classes`, else `classes.json` | 187 |
 
 ### `AVAILABLE_MODELS` registration
@@ -463,6 +466,15 @@ Current mapping:
 | `runs_lsmoutput_cnn_lsmoutput` | `runs_lsmoutput_cnn_classes` | `runs_lsmoutput_cnn_classes.json` |
 | `runs_lsmoutput_tcn_lsmoutput` | `runs_lsmoutput_tcn_classes` | `runs_lsmoutput_tcn_classes.json` |
 | `runs_lsmoutput_3dcnn_lsmoutput` | `runs_lsmoutput_3dcnn_classes` | `runs_lsmoutput_3dcnn_classes.json` |
+| `runs_m4_min12_cnn_lsmoutput` | `runs_m4_min12_cnn_classes` | `runs_m4_min12_cnn_classes.json` |
+| `runs_m4_min12_tcn_lsmoutput` | `runs_m4_min12_tcn_classes` | `runs_m4_min12_tcn_classes.json` |
+| `runs_m4_min12_3dcnn_lsmoutput` | `runs_m4_min12_3dcnn_classes` | `runs_m4_min12_3dcnn_classes.json` |
+| `runs_m4_min7_cnn_lsmoutput` | `runs_m4_min7_cnn_classes` | `runs_m4_min7_cnn_classes.json` |
+| `runs_m4_min7_tcn_lsmoutput` | `runs_m4_min7_tcn_classes` | `runs_m4_min7_tcn_classes.json` |
+| `runs_m4_min7_3dcnn_lsmoutput` | `runs_m4_min7_3dcnn_classes` | `runs_m4_min7_3dcnn_classes.json` |
+| `runs_m4_min5_cnn_lsmoutput` | `runs_m4_min5_cnn_classes` | `runs_m4_min5_cnn_classes.json` |
+| `runs_m4_min5_tcn_lsmoutput` | `runs_m4_min5_tcn_classes` | `runs_m4_min5_tcn_classes.json` |
+| `runs_m4_min5_3dcnn_lsmoutput` | `runs_m4_min5_3dcnn_classes` | `runs_m4_min5_3dcnn_classes.json` |
 | `coreml_models` | `classes` | `classes.json` |
 
 **Naming rule:** TrainingPipeline exports `.mlpackage` with suffix `_lsmoutput` (export name), but `classes.json` is copied from the **run folder** (`runs_lsmoutput_cnn/`, etc.) and renamed `{run_stem}_classes.json`. Do **not** name the JSON after the full `.mlpackage` stem unless you also set `classesBundleName` accordingly.
@@ -499,6 +511,8 @@ Inference bundles live in **`LSMMobileModelTesting/LSMMobileModelTesting/`** and
 | `runs_lsmoutput_3dcnn_lsmoutput.mlpackage/` | Fase 2 — 3D CNN |
 | `coreml_models.mlpackage/` | Fase 2 — Legacy v1 (187 classes) |
 | `runs_lsmoutput_*_classes.json` | Class label fallbacks for LSMOutput models (307 labels each) |
+| `runs_m4_min{12,7,5}_{cnn,tcn,3dcnn}_lsmoutput.mlpackage/` | Nested video-count models (28 / 54 / 286 classes) |
+| `runs_m4_min{12,7,5}_{cnn,tcn,3dcnn}_classes.json` | Class label fallbacks for those models |
 | `classes.json` | Legacy Core ML class labels (187) |
 
 See [Class labels (iOS)](#class-labels-ios) for the full `bundleName` ↔ JSON mapping and load order.

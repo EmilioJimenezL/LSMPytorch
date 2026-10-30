@@ -99,7 +99,8 @@ def top_k_accuracy(model, loader, device, k=5):
         X_batch = X_batch.to(device)
         y_batch = y_batch.to(device)
         logits  = model(X_batch)
-        topk    = logits.topk(k, dim=1).indices
+        k_eff   = min(k, logits.size(1))
+        topk    = logits.topk(k_eff, dim=1).indices
         correct += (topk == y_batch.unsqueeze(1)).any(dim=1).sum().item()
         total   += len(y_batch)
     return correct / total
@@ -151,10 +152,19 @@ def main(args):
     train_ds = LSMDataset(X_train, y_train)
     val_ds   = LSMDataset(X_val,   y_val)
 
+    if args.workers is not None:
+        num_workers = args.workers
+    elif device.type == "cuda":
+        num_workers = 4
+    else:
+        num_workers = 0
+    pin_memory = device.type == "cuda"
+    print(f"  DataLoader   : workers={num_workers}, pin_memory={pin_memory}")
+
     train_loader = DataLoader(train_ds, batch_size=args.batch,
-                              shuffle=True,  num_workers=4, pin_memory=True)
+                              shuffle=True,  num_workers=num_workers, pin_memory=pin_memory)
     val_loader   = DataLoader(val_ds,   batch_size=args.batch,
-                              shuffle=False, num_workers=4, pin_memory=True)
+                              shuffle=False, num_workers=num_workers, pin_memory=pin_memory)
 
     # ── Modelo ────────────────────────────────────────────────────────────────
     registry_name = TRAIN_MODEL_MAP[args.model]
@@ -307,6 +317,8 @@ if __name__ == "__main__":
     parser.add_argument("--min_videos",  type=int,   default=2,    help="Mínimo de videos por clase para incluirla")
     parser.add_argument("--no-shoulder-norm", action="store_true",
                         help="Usar preprocesamiento legacy (solo interpolación, sin normalización hombro)")
+    parser.add_argument("--workers",    type=int,   default=None,
+                        help="Workers del DataLoader. Por defecto 4 en CUDA y 0 en MPS/CPU")
     parser.add_argument("--resume",     default=None,             help="Checkpoint para continuar")
     args = parser.parse_args()
     main(args)

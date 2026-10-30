@@ -141,6 +141,16 @@ python convert_to_coreml.py --checkpoint ./runs_lsmoutput_tcn/best_model.pt --ou
 
 Script todo-en-uno (entrena + exporta): `./train_all_lsmoutput.sh ../LSMOutput`
 
+En un Mac con chip M no uses `setup_env.sh` (instala PyTorch con CUDA). `train.py` elige MPS solo, con `num_workers=0` y sin `pin_memory`. El script de esta máquina crea `.venv` si falta e instala las ruedas de PyPI:
+
+```bash
+./train_m4.sh smoke          # 1 época de CNN en LSMOutput/Colores
+./train_m4.sh                # CNN, TCN y 3D CNN completos + Core ML
+./train_m4_tiers.sh          # mismos epochs/batches, min_videos 12, 7 y 5
+```
+
+`train_m4_tiers.sh` entrena los tres modelos tres veces. El umbral es anidado: ≥7 incluye las palabras de ≥12, y ≥5 incluye ambas. Los modelos de 307 clases no se reemplazan. Val Top-1 medido: ≥12 CNN 48.21% (28 clases), TCN 35.71%, 3D CNN 3.57%; ≥7 CNN 52.44% (54), TCN 39.02%, 3D CNN 15.85%; ≥5 CNN 47.45% (286), TCN 47.45%, 3D CNN 13.69%. En la app de pruebas el paquete es `runs_m4_min{N}_{modelo}_lsmoutput` y las etiquetas `runs_m4_min{N}_{modelo}_classes.json`.
+
 Configs en `configs/*.yaml` documentan hiperparámetros (`num_classes: 307`). Campos no implementados en `train.py` aún: warmup, AMP, early stopping, `joint_dropout`.
 
 ## Revisar y comparar resultados (Fase 1 vs Fase 2)

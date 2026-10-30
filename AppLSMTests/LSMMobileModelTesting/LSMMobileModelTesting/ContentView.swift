@@ -12,85 +12,47 @@ struct ContentView: View {
     @State private var exportPayload: ExportSharePayload?
     @State private var isPreparingExport = false
     @State private var lastLoggedMessage: String?
+    @State private var path: [SessionRoute] = []
     private let bridge = PipelineBridgeHolder()
 
     var body: some View {
-        ZStack {
-            // ── Camera ────────────────────────────────────────────────────
-            CameraPreview(camera: camera,
-                          isFrontCamera: camera.isFrontCamera,
-                          configurationToken: camera.configurationToken)
-                .ignoresSafeArea()
-
-            // ── Skeleton overlay ──────────────────────────────────────────
-            if showSkeleton {
-                SkeletonOverlay(skeleton: pipeline.skeleton,
-                                mirrorX: camera.isFrontCamera)
-                    .ignoresSafeArea()
-            }
-
-            // ── UI ────────────────────────────────────────────────────────
-            VStack(spacing: 0) {
-                topBar
-                    .padding(.top, 8)
-                    .padding(.horizontal, 12)
-
-                Spacer()
-
-                if showDebug {
-                    debugPanel
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 8)
+        NavigationStack(path: $path) {
+            ModelBrowserView(
+                pipeline: pipeline,
+                onConfirm: { model in
+                    path = [.preparing(bundleName: model.bundleName)]
+                },
+                onReturnToCamera: { path = [.live] }
+            )
+            .navigationDestination(for: SessionRoute.self) { route in
+                switch route {
+                case .preparing(let bundleName):
+                    if let model = AVAILABLE_MODELS.first(where: { $0.bundleName == bundleName }) {
+                        ModelPreparingView(
+                            pipeline: pipeline,
+                            camera: camera,
+                            model: model,
+                            onReady: { path = [.live] },
+                            onCancel: { path = [] },
+                            onKeepPrevious: { path = [.live] }
+                        )
+                    } else {
+                        ContentUnavailableView(
+                            "Modelo no encontrado",
+                            systemImage: "questionmark.circle",
+                            description: Text(bundleName)
+                        )
+                    }
+                case .live:
+                    liveSession
                 }
-
-                predictionsPanel
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 32)
             }
-
-            if pipeline.modelLoadPhase != .idle {
-                ModelLoadingOverlay(
-                    phase: pipeline.modelLoadPhase,
-                    onDismiss: { pipeline.dismissModelLoadOverlay() }
-                )
-                .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                .zIndex(10)
-            }
-
-            if isPreparingExport {
-                ExportPreparingOverlay()
-                    .zIndex(11)
-            }
-        }
-        .animation(.easeInOut(duration: 0.25), value: pipeline.modelLoadPhase)
-        .onChange(of: pipeline.pendingGrading?.id) { _, newID in
-            if newID != nil { lastLoggedMessage = nil }
         }
         .onAppear {
             bridge.pipeline = pipeline
             camera.delegate = bridge
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                camera.start()
-            }
         }
         .onDisappear { camera.stop() }
-        .sheet(isPresented: $showOtraSearch) {
-            OtraSignSearchSheet(labels: pipeline.availableClassLabels) { sign in
-                submitGradingSelection(sign, source: .otraSearch)
-            }
-        }
-        .sheet(item: $exportPayload) { payload in
-            ShareSheet(url: payload.url)
-        }
-        .alert("Eliminar registros", isPresented: $showDeleteAlert) {
-            Button("No", role: .cancel) {}
-            Button("Sí, eliminar", role: .destructive) {
-                let n = gradingStore.deleteAllEntries()
-                lastLoggedMessage = "Se eliminaron \(n) registros"
-            }
-        } message: {
-            Text("Se eliminarán \(gradingStore.entryCount) registro(s) de prueba. Esta acción no se puede deshacer.")
-        }
     }
 
     private func submitGradingSelection(_ sign: String, source: GradingSelectionSource) {
@@ -129,36 +91,87 @@ struct ContentView: View {
         }
     }
 
+    private var liveSession: some View {
+        ZStack {
+            CameraPreview(camera: camera,
+                          isFrontCamera: camera.isFrontCamera,
+                          configurationToken: camera.configurationToken)
+                .ignoresSafeArea()
+
+            if showSkeleton {
+                SkeletonOverlay(skeleton: pipeline.skeleton,
+                                mirrorX: camera.isFrontCamera)
+                    .ignoresSafeArea()
+            }
+
+            VStack(spacing: 0) {
+                topBar
+                    .padding(.top, 8)
+                    .padding(.horizontal, 12)
+
+                Spacer()
+
+                if showDebug {
+                    debugPanel
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 8)
+                }
+
+                predictionsPanel
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 32)
+            }
+
+            if isPreparingExport {
+                ExportPreparingOverlay()
+                    .zIndex(11)
+            }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .navigationBarBackButtonHidden(true)
+        .onChange(of: pipeline.pendingGrading?.id) { _, newID in
+            if newID != nil { lastLoggedMessage = nil }
+        }
+        .sheet(isPresented: $showOtraSearch) {
+            OtraSignSearchSheet(labels: pipeline.availableClassLabels) { sign in
+                submitGradingSelection(sign, source: .otraSearch)
+            }
+        }
+        .sheet(item: $exportPayload) { payload in
+            ShareSheet(url: payload.url)
+        }
+        .alert("Eliminar registros", isPresented: $showDeleteAlert) {
+            Button("No", role: .cancel) {}
+            Button("Sí, eliminar", role: .destructive) {
+                let n = gradingStore.deleteAllEntries()
+                lastLoggedMessage = "Se eliminaron \(n) registros"
+            }
+        } message: {
+            Text("Se eliminarán \(gradingStore.entryCount) registro(s) de prueba. Esta acción no se puede deshacer.")
+        }
+    }
+
     // MARK: - Top bar
 
     var topBar: some View {
         HStack(spacing: 10) {
             // Model picker
-            Menu {
-                ForEach(AVAILABLE_MODELS) { m in
-                    Button {
-                        pipeline.loadModel(m)
-                    } label: {
-                        Label(m.name,
-                              systemImage: pipeline.activeModel == m ? "checkmark.circle.fill" : "circle")
-                    }
-                    .disabled(pipeline.modelLoadPhase.isLoading || isPreparingExport)
-                }
+            Button {
+                path = []
             } label: {
                 HStack(spacing: 5) {
-                    Image(systemName: pipeline.modelLoadPhase.isLoading ? "arrow.triangle.2.circlepath" : "brain")
-                        .symbolEffect(.rotate, isActive: pipeline.modelLoadPhase.isLoading)
+                    Image(systemName: "brain")
                     Text(pipeline.activeModel?.name ?? "Sin modelo")
                         .font(.caption)
                         .lineLimit(1)
-                    Image(systemName: "chevron.down")
-                        .font(.caption2)
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 7)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
             }
+            .accessibilityLabel("Cambiar modelo")
+            .accessibilityValue(pipeline.activeModel?.name ?? "Sin modelo")
 
             Spacer()
 
@@ -425,165 +438,6 @@ struct ContentView: View {
             return "Listo para comenzar"
         }
         return pipeline.isDetecting ? "Detectando…" : "Esperando seña…"
-    }
-}
-
-// MARK: - Model loading overlay
-
-struct ModelLoadingOverlay: View {
-    let phase: ModelLoadPhase
-    var onDismiss: () -> Void
-
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.55)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    if !phase.isLoading { onDismiss() }
-                }
-
-            VStack(spacing: 20) {
-                iconView
-                    .font(.system(size: 44))
-                    .symbolEffect(.bounce, value: phase)
-
-                VStack(spacing: 8) {
-                    Text(titleText)
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-
-                    if let subtitle = subtitleText {
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.75))
-                            .multilineTextAlignment(.center)
-                    }
-                }
-
-                if case .loading(_, let progress) = phase {
-                    VStack(spacing: 8) {
-                        ProgressView(value: progress)
-                            .tint(.white)
-                            .frame(maxWidth: 220)
-                        Text("\(Int(progress * 100))%")
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(.white.opacity(0.7))
-                    }
-                }
-
-                if let warning = warningText {
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.yellow)
-                        Text(warning)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.85))
-                            .multilineTextAlignment(.leading)
-                    }
-                    .padding(12)
-                    .frame(maxWidth: 280)
-                    .background(.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-                }
-
-                if let error = errorText {
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.red)
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.9))
-                            .multilineTextAlignment(.leading)
-                    }
-                    .padding(12)
-                    .frame(maxWidth: 280)
-                    .background(.red.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
-                }
-
-                if let kept = keptModelText {
-                    Text(kept)
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.65))
-                        .multilineTextAlignment(.center)
-                }
-
-                if !phase.isLoading {
-                    Button("Continuar", action: onDismiss)
-                        .buttonStyle(.borderedProminent)
-                        .tint(.white.opacity(0.2))
-                        .foregroundStyle(.white)
-                }
-            }
-            .padding(28)
-            .frame(maxWidth: 320)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(.white.opacity(0.15), lineWidth: 1)
-            )
-            .padding(.horizontal, 24)
-        }
-    }
-
-    @ViewBuilder
-    private var iconView: some View {
-        switch phase {
-        case .idle:
-            EmptyView()
-        case .loading:
-            ProgressView()
-                .scaleEffect(1.4)
-                .tint(.white)
-        case .succeeded:
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.green)
-        case .failed:
-            Image(systemName: "xmark.octagon.fill")
-                .foregroundStyle(.red)
-        }
-    }
-
-    private var titleText: String {
-        switch phase {
-        case .idle:
-            return ""
-        case .loading(_, _):
-            return "Cargando modelo"
-        case .succeeded:
-            return "Modelo cargado correctamente"
-        case .failed:
-            return "Error al cargar el modelo"
-        }
-    }
-
-    private var subtitleText: String? {
-        switch phase {
-        case .loading(let name, _):
-            return name
-        case .succeeded(let name, _):
-            return name
-        case .failed(let name, _, _):
-            return name
-        default:
-            return nil
-        }
-    }
-
-    private var warningText: String? {
-        if case .succeeded(_, let warning) = phase { return warning }
-        return nil
-    }
-
-    private var errorText: String? {
-        if case .failed(_, let message, _) = phase { return message }
-        return nil
-    }
-
-    private var keptModelText: String? {
-        if case .failed(_, _, let kept) = phase, let kept {
-            return "Se mantiene el modelo activo: \(kept)"
-        }
-        return nil
     }
 }
 

@@ -80,6 +80,8 @@ flowchart LR
 | Dataset inventory | `scripts/dataset_report.py` |
 | Review / compare | `review/evaluate_nn.py`, `review/compare_models.py`, `review/error_analysis.py`, `review/generate_training_report.py`, `review/run_all.sh` |
 | Train all models | `train_all_lsmoutput.sh` |
+| Train on Apple Silicon | `train_m4.sh` (MPS; not `setup_env.sh`) |
+| Nested video-count models | `train_m4_tiers.sh` → app picker entries `runs_m4_min{12,7,5}_*` |
 | Modular models (smoke tests) | `models/` (`__init__.py`, `cnn1d.py`, `tcn.py`, `cnn3d.py`) |
 | Core ML export | `convert_to_coreml.py` |
 | Organize raw videos | `organize_from_json.py`, `themes.json` |
@@ -171,6 +173,12 @@ Copy resulting `fingerprints.bin` to LSMMobileModelTesting Xcode target.
 ```bash
 python train.py --dataset ./output --model tcn --epochs 100 --batch 64 --output ./runs
 ```
+
+On a Mac with Apple silicon, use `./train_m4.sh` (smoke: `./train_m4.sh smoke`). `setup_env.sh` installs CUDA wheels and is not the Mac path. MPS runs with `num_workers=0`.
+
+`./train_m4_tiers.sh` retrains CNN, TCN, and 3D CNN at `--min_videos` 12, then 7, then 5. The cuts are nested (7 includes 12; 5 includes both) and use the same epochs and batches as `train_m4.sh`. The 307-class models stay in the iOS picker. Measured val Top-1: ≥12 CNN 48.21% (28 classes), TCN 35.71%, 3D CNN 3.57%; ≥7 CNN 52.44% (54), TCN 39.02%, 3D CNN 15.85%; ≥5 CNN 47.45% (286), TCN 47.45%, 3D CNN 13.69%. Bundles are `runs_m4_min{N}_{model}_lsmoutput` with labels `runs_m4_min{N}_{model}_classes.json`.
+
+
 
 ### Export Core ML
 
@@ -334,7 +342,7 @@ Structured loops to close the Python val → device accuracy gap. Log results in
 
 ### Loop A — Measure (weeks 1–2)
 
-- Run device A/B matrix across all 5 backends; fill `live_test_log.csv`
+- Run device A/B matrix across all 14 backends (5 baseline + 9 video-count tiers); fill `live_test_log.csv`
 - Compute **live Top-1 per backend** vs Python val (gap analysis)
 - Tag failure modes: wrong class, low confidence, no detection, latency timeout
 

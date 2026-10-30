@@ -1,0 +1,3022 @@
+{
+  "n_total": 373,
+  "n_train": 317,
+  "n_val": 56,
+  "n_classes": 28,
+  "classes": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "Ñ",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "RR",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z"
+  ],
+  "entries": [
+    {
+      "index": 0,
+      "split": "val",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A13_landmarks.json"
+    },
+    {
+      "index": 1,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A14_landmarks.json"
+    },
+    {
+      "index": 2,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A1_landmarks.json"
+    },
+    {
+      "index": 3,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A2_landmarks.json"
+    },
+    {
+      "index": 4,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A3_landmarks.json"
+    },
+    {
+      "index": 5,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A4_landmarks.json"
+    },
+    {
+      "index": 6,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A5_landmarks.json"
+    },
+    {
+      "index": 7,
+      "split": "val",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A6_landmarks.json"
+    },
+    {
+      "index": 8,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A7_landmarks.json"
+    },
+    {
+      "index": 9,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A8_landmarks.json"
+    },
+    {
+      "index": 10,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A9_landmarks.json"
+    },
+    {
+      "index": 11,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/A/A_landmarks.json"
+    },
+    {
+      "index": 12,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B10_landmarks.json"
+    },
+    {
+      "index": 13,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B13_landmarks.json"
+    },
+    {
+      "index": 14,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B14_landmarks.json"
+    },
+    {
+      "index": 15,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B1_landmarks.json"
+    },
+    {
+      "index": 16,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B2_landmarks.json"
+    },
+    {
+      "index": 17,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B3_landmarks.json"
+    },
+    {
+      "index": 18,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B4_landmarks.json"
+    },
+    {
+      "index": 19,
+      "split": "val",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B5_landmarks.json"
+    },
+    {
+      "index": 20,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B6_landmarks.json"
+    },
+    {
+      "index": 21,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B7_landmarks.json"
+    },
+    {
+      "index": 22,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B8_landmarks.json"
+    },
+    {
+      "index": 23,
+      "split": "train",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B9_landmarks.json"
+    },
+    {
+      "index": 24,
+      "split": "val",
+      "class": "B",
+      "class_idx": 1,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/B/B_landmarks.json"
+    },
+    {
+      "index": 25,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C10_landmarks.json"
+    },
+    {
+      "index": 26,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C13_landmarks.json"
+    },
+    {
+      "index": 27,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C14_landmarks.json"
+    },
+    {
+      "index": 28,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C1_landmarks.json"
+    },
+    {
+      "index": 29,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C2_landmarks.json"
+    },
+    {
+      "index": 30,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C3_landmarks.json"
+    },
+    {
+      "index": 31,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C4_landmarks.json"
+    },
+    {
+      "index": 32,
+      "split": "val",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C5_landmarks.json"
+    },
+    {
+      "index": 33,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C6_landmarks.json"
+    },
+    {
+      "index": 34,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C7_landmarks.json"
+    },
+    {
+      "index": 35,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C8_landmarks.json"
+    },
+    {
+      "index": 36,
+      "split": "train",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C9_landmarks.json"
+    },
+    {
+      "index": 37,
+      "split": "val",
+      "class": "C",
+      "class_idx": 2,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/C/C_landmarks.json"
+    },
+    {
+      "index": 38,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D10_landmarks.json"
+    },
+    {
+      "index": 39,
+      "split": "val",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D13_landmarks.json"
+    },
+    {
+      "index": 40,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D14_landmarks.json"
+    },
+    {
+      "index": 41,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D1_landmarks.json"
+    },
+    {
+      "index": 42,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D2_landmarks.json"
+    },
+    {
+      "index": 43,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D3_landmarks.json"
+    },
+    {
+      "index": 44,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D4_landmarks.json"
+    },
+    {
+      "index": 45,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D5_landmarks.json"
+    },
+    {
+      "index": 46,
+      "split": "val",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D6_landmarks.json"
+    },
+    {
+      "index": 47,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D7_landmarks.json"
+    },
+    {
+      "index": 48,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D8_landmarks.json"
+    },
+    {
+      "index": 49,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D9_landmarks.json"
+    },
+    {
+      "index": 50,
+      "split": "train",
+      "class": "D",
+      "class_idx": 3,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/D/D_landmarks.json"
+    },
+    {
+      "index": 51,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E10_landmarks.json"
+    },
+    {
+      "index": 52,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E13_landmarks.json"
+    },
+    {
+      "index": 53,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E14_landmarks.json"
+    },
+    {
+      "index": 54,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E1_landmarks.json"
+    },
+    {
+      "index": 55,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E2_landmarks.json"
+    },
+    {
+      "index": 56,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E3_landmarks.json"
+    },
+    {
+      "index": 57,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E4_landmarks.json"
+    },
+    {
+      "index": 58,
+      "split": "val",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E5_landmarks.json"
+    },
+    {
+      "index": 59,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E6_landmarks.json"
+    },
+    {
+      "index": 60,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E7_landmarks.json"
+    },
+    {
+      "index": 61,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E8_landmarks.json"
+    },
+    {
+      "index": 62,
+      "split": "train",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E9_landmarks.json"
+    },
+    {
+      "index": 63,
+      "split": "val",
+      "class": "E",
+      "class_idx": 4,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/E/E_landmarks.json"
+    },
+    {
+      "index": 64,
+      "split": "val",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F10_landmarks.json"
+    },
+    {
+      "index": 65,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F13_landmarks.json"
+    },
+    {
+      "index": 66,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F14_landmarks.json"
+    },
+    {
+      "index": 67,
+      "split": "val",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F1_landmarks.json"
+    },
+    {
+      "index": 68,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F2_landmarks.json"
+    },
+    {
+      "index": 69,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F3_landmarks.json"
+    },
+    {
+      "index": 70,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F4_landmarks.json"
+    },
+    {
+      "index": 71,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F5_landmarks.json"
+    },
+    {
+      "index": 72,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F6_landmarks.json"
+    },
+    {
+      "index": 73,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F7_landmarks.json"
+    },
+    {
+      "index": 74,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F8_landmarks.json"
+    },
+    {
+      "index": 75,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F9_landmarks.json"
+    },
+    {
+      "index": 76,
+      "split": "train",
+      "class": "F",
+      "class_idx": 5,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/F/F_landmarks.json"
+    },
+    {
+      "index": 77,
+      "split": "val",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G10_landmarks.json"
+    },
+    {
+      "index": 78,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G13_landmarks.json"
+    },
+    {
+      "index": 79,
+      "split": "val",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G14_landmarks.json"
+    },
+    {
+      "index": 80,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G1_landmarks.json"
+    },
+    {
+      "index": 81,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G2_landmarks.json"
+    },
+    {
+      "index": 82,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G3_landmarks.json"
+    },
+    {
+      "index": 83,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G4_landmarks.json"
+    },
+    {
+      "index": 84,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G5_landmarks.json"
+    },
+    {
+      "index": 85,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G6_landmarks.json"
+    },
+    {
+      "index": 86,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G7_landmarks.json"
+    },
+    {
+      "index": 87,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G8_landmarks.json"
+    },
+    {
+      "index": 88,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G9_landmarks.json"
+    },
+    {
+      "index": 89,
+      "split": "train",
+      "class": "G",
+      "class_idx": 6,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/G/G_landmarks.json"
+    },
+    {
+      "index": 90,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H10_landmarks.json"
+    },
+    {
+      "index": 91,
+      "split": "val",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H13_landmarks.json"
+    },
+    {
+      "index": 92,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H14_landmarks.json"
+    },
+    {
+      "index": 93,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H1_landmarks.json"
+    },
+    {
+      "index": 94,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H2_landmarks.json"
+    },
+    {
+      "index": 95,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H3_landmarks.json"
+    },
+    {
+      "index": 96,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H4_landmarks.json"
+    },
+    {
+      "index": 97,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H5_landmarks.json"
+    },
+    {
+      "index": 98,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H6_landmarks.json"
+    },
+    {
+      "index": 99,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H7_landmarks.json"
+    },
+    {
+      "index": 100,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H8_landmarks.json"
+    },
+    {
+      "index": 101,
+      "split": "val",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H9_landmarks.json"
+    },
+    {
+      "index": 102,
+      "split": "train",
+      "class": "H",
+      "class_idx": 7,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/H/H_landmarks.json"
+    },
+    {
+      "index": 103,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I10_landmarks.json"
+    },
+    {
+      "index": 104,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I13_landmarks.json"
+    },
+    {
+      "index": 105,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I14_landmarks.json"
+    },
+    {
+      "index": 106,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I1_landmarks.json"
+    },
+    {
+      "index": 107,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I2_landmarks.json"
+    },
+    {
+      "index": 108,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I3_landmarks.json"
+    },
+    {
+      "index": 109,
+      "split": "val",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I4_landmarks.json"
+    },
+    {
+      "index": 110,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I5_landmarks.json"
+    },
+    {
+      "index": 111,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I6_landmarks.json"
+    },
+    {
+      "index": 112,
+      "split": "val",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I7_landmarks.json"
+    },
+    {
+      "index": 113,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I8_landmarks.json"
+    },
+    {
+      "index": 114,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I9_landmarks.json"
+    },
+    {
+      "index": 115,
+      "split": "train",
+      "class": "I",
+      "class_idx": 8,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/I/I_landmarks.json"
+    },
+    {
+      "index": 116,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J10_landmarks.json"
+    },
+    {
+      "index": 117,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J13_landmarks.json"
+    },
+    {
+      "index": 118,
+      "split": "val",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J14_landmarks.json"
+    },
+    {
+      "index": 119,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J1_landmarks.json"
+    },
+    {
+      "index": 120,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J2_landmarks.json"
+    },
+    {
+      "index": 121,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J3_landmarks.json"
+    },
+    {
+      "index": 122,
+      "split": "val",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J4_landmarks.json"
+    },
+    {
+      "index": 123,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J5_landmarks.json"
+    },
+    {
+      "index": 124,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J6_landmarks.json"
+    },
+    {
+      "index": 125,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J7_landmarks.json"
+    },
+    {
+      "index": 126,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J8_landmarks.json"
+    },
+    {
+      "index": 127,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J9_landmarks.json"
+    },
+    {
+      "index": 128,
+      "split": "train",
+      "class": "J",
+      "class_idx": 9,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/J/J_landmarks.json"
+    },
+    {
+      "index": 129,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K10_landmarks.json"
+    },
+    {
+      "index": 130,
+      "split": "val",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K13_landmarks.json"
+    },
+    {
+      "index": 131,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K14_landmarks.json"
+    },
+    {
+      "index": 132,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K1_landmarks.json"
+    },
+    {
+      "index": 133,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K2_landmarks.json"
+    },
+    {
+      "index": 134,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K3_landmarks.json"
+    },
+    {
+      "index": 135,
+      "split": "val",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K5_landmarks.json"
+    },
+    {
+      "index": 136,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K6_landmarks.json"
+    },
+    {
+      "index": 137,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K7_landmarks.json"
+    },
+    {
+      "index": 138,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K8_landmarks.json"
+    },
+    {
+      "index": 139,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K9_landmarks.json"
+    },
+    {
+      "index": 140,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/K_landmarks.json"
+    },
+    {
+      "index": 141,
+      "split": "train",
+      "class": "K",
+      "class_idx": 10,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/K/k4_landmarks.json"
+    },
+    {
+      "index": 142,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L10_landmarks.json"
+    },
+    {
+      "index": 143,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L13_landmarks.json"
+    },
+    {
+      "index": 144,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L14_landmarks.json"
+    },
+    {
+      "index": 145,
+      "split": "val",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L1_landmarks.json"
+    },
+    {
+      "index": 146,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L2_landmarks.json"
+    },
+    {
+      "index": 147,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L3_landmarks.json"
+    },
+    {
+      "index": 148,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L4_landmarks.json"
+    },
+    {
+      "index": 149,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L5_landmarks.json"
+    },
+    {
+      "index": 150,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L6_landmarks.json"
+    },
+    {
+      "index": 151,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L7_landmarks.json"
+    },
+    {
+      "index": 152,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L8_landmarks.json"
+    },
+    {
+      "index": 153,
+      "split": "train",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L9_landmarks.json"
+    },
+    {
+      "index": 154,
+      "split": "val",
+      "class": "L",
+      "class_idx": 11,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/L/L_landmarks.json"
+    },
+    {
+      "index": 155,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M10_landmarks.json"
+    },
+    {
+      "index": 156,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M13_landmarks.json"
+    },
+    {
+      "index": 157,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M14_landmarks.json"
+    },
+    {
+      "index": 158,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M1_landmarks.json"
+    },
+    {
+      "index": 159,
+      "split": "val",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M2_landmarks.json"
+    },
+    {
+      "index": 160,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M3_landmarks.json"
+    },
+    {
+      "index": 161,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M4_landmarks.json"
+    },
+    {
+      "index": 162,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M5_landmarks.json"
+    },
+    {
+      "index": 163,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M6_landmarks.json"
+    },
+    {
+      "index": 164,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M7_landmarks.json"
+    },
+    {
+      "index": 165,
+      "split": "val",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M8_landmarks.json"
+    },
+    {
+      "index": 166,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M9_landmarks.json"
+    },
+    {
+      "index": 167,
+      "split": "train",
+      "class": "M",
+      "class_idx": 12,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/M/M_landmarks.json"
+    },
+    {
+      "index": 168,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N10_landmarks.json"
+    },
+    {
+      "index": 169,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N13_landmarks.json"
+    },
+    {
+      "index": 170,
+      "split": "val",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N14_landmarks.json"
+    },
+    {
+      "index": 171,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N1_landmarks.json"
+    },
+    {
+      "index": 172,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N2_landmarks.json"
+    },
+    {
+      "index": 173,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N3_landmarks.json"
+    },
+    {
+      "index": 174,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N4_landmarks.json"
+    },
+    {
+      "index": 175,
+      "split": "val",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N6_landmarks.json"
+    },
+    {
+      "index": 176,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N7_landmarks.json"
+    },
+    {
+      "index": 177,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N8_landmarks.json"
+    },
+    {
+      "index": 178,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N9_landmarks.json"
+    },
+    {
+      "index": 179,
+      "split": "train",
+      "class": "N",
+      "class_idx": 13,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/N/N_landmarks.json"
+    },
+    {
+      "index": 180,
+      "split": "val",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/N3_landmarks.json"
+    },
+    {
+      "index": 181,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ10_landmarks.json"
+    },
+    {
+      "index": 182,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ13_landmarks.json"
+    },
+    {
+      "index": 183,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ14_landmarks.json"
+    },
+    {
+      "index": 184,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ1_landmarks.json"
+    },
+    {
+      "index": 185,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ2_landmarks.json"
+    },
+    {
+      "index": 186,
+      "split": "val",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ4_landmarks.json"
+    },
+    {
+      "index": 187,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ5_landmarks.json"
+    },
+    {
+      "index": 188,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ6_landmarks.json"
+    },
+    {
+      "index": 189,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ7_landmarks.json"
+    },
+    {
+      "index": 190,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ8_landmarks.json"
+    },
+    {
+      "index": 191,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ9_landmarks.json"
+    },
+    {
+      "index": 192,
+      "split": "train",
+      "class": "Ñ",
+      "class_idx": 14,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Ñ/Ñ_landmarks.json"
+    },
+    {
+      "index": 193,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/08_landmarks.json"
+    },
+    {
+      "index": 194,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O10_landmarks.json"
+    },
+    {
+      "index": 195,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O11_landmarks.json"
+    },
+    {
+      "index": 196,
+      "split": "val",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O12_landmarks.json"
+    },
+    {
+      "index": 197,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O13_landmarks.json"
+    },
+    {
+      "index": 198,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O14_landmarks.json"
+    },
+    {
+      "index": 199,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O1_landmarks.json"
+    },
+    {
+      "index": 200,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O2_landmarks.json"
+    },
+    {
+      "index": 201,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O3_landmarks.json"
+    },
+    {
+      "index": 202,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O4_landmarks.json"
+    },
+    {
+      "index": 203,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O5_landmarks.json"
+    },
+    {
+      "index": 204,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O6_landmarks.json"
+    },
+    {
+      "index": 205,
+      "split": "val",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O7_landmarks.json"
+    },
+    {
+      "index": 206,
+      "split": "train",
+      "class": "O",
+      "class_idx": 15,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/O/O_landmarks.json"
+    },
+    {
+      "index": 207,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P10_landmarks.json"
+    },
+    {
+      "index": 208,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P11_landmarks.json"
+    },
+    {
+      "index": 209,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P13_landmarks.json"
+    },
+    {
+      "index": 210,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P14_landmarks.json"
+    },
+    {
+      "index": 211,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P1_landmarks.json"
+    },
+    {
+      "index": 212,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P2_landmarks.json"
+    },
+    {
+      "index": 213,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P3_landmarks.json"
+    },
+    {
+      "index": 214,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P4_landmarks.json"
+    },
+    {
+      "index": 215,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P5_landmarks.json"
+    },
+    {
+      "index": 216,
+      "split": "val",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P6_landmarks.json"
+    },
+    {
+      "index": 217,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P7_landmarks.json"
+    },
+    {
+      "index": 218,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P8_landmarks.json"
+    },
+    {
+      "index": 219,
+      "split": "val",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P9_landmarks.json"
+    },
+    {
+      "index": 220,
+      "split": "train",
+      "class": "P",
+      "class_idx": 16,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/P/P_landmarks.json"
+    },
+    {
+      "index": 221,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q10_landmarks.json"
+    },
+    {
+      "index": 222,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q11_landmarks.json"
+    },
+    {
+      "index": 223,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q12_landmarks.json"
+    },
+    {
+      "index": 224,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q13_landmarks.json"
+    },
+    {
+      "index": 225,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q14_landmarks.json"
+    },
+    {
+      "index": 226,
+      "split": "val",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q1_landmarks.json"
+    },
+    {
+      "index": 227,
+      "split": "val",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q2_landmarks.json"
+    },
+    {
+      "index": 228,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q3_landmarks.json"
+    },
+    {
+      "index": 229,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q4_landmarks.json"
+    },
+    {
+      "index": 230,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q5_landmarks.json"
+    },
+    {
+      "index": 231,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q6_landmarks.json"
+    },
+    {
+      "index": 232,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q7_landmarks.json"
+    },
+    {
+      "index": 233,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q8_landmarks.json"
+    },
+    {
+      "index": 234,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q9_landmarks.json"
+    },
+    {
+      "index": 235,
+      "split": "train",
+      "class": "Q",
+      "class_idx": 17,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Q/Q_landmarks.json"
+    },
+    {
+      "index": 236,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R10_landmarks.json"
+    },
+    {
+      "index": 237,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R11_landmarks.json"
+    },
+    {
+      "index": 238,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R12_landmarks.json"
+    },
+    {
+      "index": 239,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R13_landmarks.json"
+    },
+    {
+      "index": 240,
+      "split": "val",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R14_landmarks.json"
+    },
+    {
+      "index": 241,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R1_landmarks.json"
+    },
+    {
+      "index": 242,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R2_landmarks.json"
+    },
+    {
+      "index": 243,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R3_landmarks.json"
+    },
+    {
+      "index": 244,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R4_landmarks.json"
+    },
+    {
+      "index": 245,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R5_landmarks.json"
+    },
+    {
+      "index": 246,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R6_landmarks.json"
+    },
+    {
+      "index": 247,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R7_landmarks.json"
+    },
+    {
+      "index": 248,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R8_landmarks.json"
+    },
+    {
+      "index": 249,
+      "split": "val",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R9_landmarks.json"
+    },
+    {
+      "index": 250,
+      "split": "train",
+      "class": "R",
+      "class_idx": 18,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/R/R_landmarks.json"
+    },
+    {
+      "index": 251,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR10_landmarks.json"
+    },
+    {
+      "index": 252,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR11_landmarks.json"
+    },
+    {
+      "index": 253,
+      "split": "val",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR13_landmarks.json"
+    },
+    {
+      "index": 254,
+      "split": "val",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR1_landmarks.json"
+    },
+    {
+      "index": 255,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR2_landmarks.json"
+    },
+    {
+      "index": 256,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR3_landmarks.json"
+    },
+    {
+      "index": 257,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR4_landmarks.json"
+    },
+    {
+      "index": 258,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR5_landmarks.json"
+    },
+    {
+      "index": 259,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR6_landmarks.json"
+    },
+    {
+      "index": 260,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR7_landmarks.json"
+    },
+    {
+      "index": 261,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR8_landmarks.json"
+    },
+    {
+      "index": 262,
+      "split": "train",
+      "class": "RR",
+      "class_idx": 19,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/RR/RR9_landmarks.json"
+    },
+    {
+      "index": 263,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S10_landmarks.json"
+    },
+    {
+      "index": 264,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S11_landmarks.json"
+    },
+    {
+      "index": 265,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S13_landmarks.json"
+    },
+    {
+      "index": 266,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S14_landmarks.json"
+    },
+    {
+      "index": 267,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S1_landmarks.json"
+    },
+    {
+      "index": 268,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S2_landmarks.json"
+    },
+    {
+      "index": 269,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S3_landmarks.json"
+    },
+    {
+      "index": 270,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S4_landmarks.json"
+    },
+    {
+      "index": 271,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S5_landmarks.json"
+    },
+    {
+      "index": 272,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S6_landmarks.json"
+    },
+    {
+      "index": 273,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S7_landmarks.json"
+    },
+    {
+      "index": 274,
+      "split": "val",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S8_landmarks.json"
+    },
+    {
+      "index": 275,
+      "split": "train",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S9_landmarks.json"
+    },
+    {
+      "index": 276,
+      "split": "val",
+      "class": "S",
+      "class_idx": 20,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/S/S_landmarks.json"
+    },
+    {
+      "index": 277,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T10_landmarks.json"
+    },
+    {
+      "index": 278,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T11_landmarks.json"
+    },
+    {
+      "index": 279,
+      "split": "val",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T13_landmarks.json"
+    },
+    {
+      "index": 280,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T14_landmarks.json"
+    },
+    {
+      "index": 281,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T1_landmarks.json"
+    },
+    {
+      "index": 282,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T2_landmarks.json"
+    },
+    {
+      "index": 283,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T3_landmarks.json"
+    },
+    {
+      "index": 284,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T4_landmarks.json"
+    },
+    {
+      "index": 285,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T5_landmarks.json"
+    },
+    {
+      "index": 286,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T6_landmarks.json"
+    },
+    {
+      "index": 287,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T7_landmarks.json"
+    },
+    {
+      "index": 288,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T8_landmarks.json"
+    },
+    {
+      "index": 289,
+      "split": "train",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T9_landmarks.json"
+    },
+    {
+      "index": 290,
+      "split": "val",
+      "class": "T",
+      "class_idx": 21,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/T/T_landmarks.json"
+    },
+    {
+      "index": 291,
+      "split": "val",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U10_landmarks.json"
+    },
+    {
+      "index": 292,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U11_landmarks.json"
+    },
+    {
+      "index": 293,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U13_landmarks.json"
+    },
+    {
+      "index": 294,
+      "split": "val",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U14_landmarks.json"
+    },
+    {
+      "index": 295,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U1_landmarks.json"
+    },
+    {
+      "index": 296,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U2_landmarks.json"
+    },
+    {
+      "index": 297,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U3_landmarks.json"
+    },
+    {
+      "index": 298,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U4_landmarks.json"
+    },
+    {
+      "index": 299,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U5_landmarks.json"
+    },
+    {
+      "index": 300,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U6_landmarks.json"
+    },
+    {
+      "index": 301,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U7_landmarks.json"
+    },
+    {
+      "index": 302,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U8_landmarks.json"
+    },
+    {
+      "index": 303,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U9_landmarks.json"
+    },
+    {
+      "index": 304,
+      "split": "train",
+      "class": "U",
+      "class_idx": 22,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/U/U_landmarks.json"
+    },
+    {
+      "index": 305,
+      "split": "val",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V10_landmarks.json"
+    },
+    {
+      "index": 306,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V11_landmarks.json"
+    },
+    {
+      "index": 307,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V13_landmarks.json"
+    },
+    {
+      "index": 308,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V14_landmarks.json"
+    },
+    {
+      "index": 309,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V1_landmarks.json"
+    },
+    {
+      "index": 310,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V2_landmarks.json"
+    },
+    {
+      "index": 311,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V3_landmarks.json"
+    },
+    {
+      "index": 312,
+      "split": "val",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V4_landmarks.json"
+    },
+    {
+      "index": 313,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V5_landmarks.json"
+    },
+    {
+      "index": 314,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V6_landmarks.json"
+    },
+    {
+      "index": 315,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V8_landmarks.json"
+    },
+    {
+      "index": 316,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V9_landmarks.json"
+    },
+    {
+      "index": 317,
+      "split": "train",
+      "class": "V",
+      "class_idx": 23,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/V/V_landmarks.json"
+    },
+    {
+      "index": 318,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W10_landmarks.json"
+    },
+    {
+      "index": 319,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W11_landmarks.json"
+    },
+    {
+      "index": 320,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W13_landmarks.json"
+    },
+    {
+      "index": 321,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W14_landmarks.json"
+    },
+    {
+      "index": 322,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W1_landmarks.json"
+    },
+    {
+      "index": 323,
+      "split": "val",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W2_landmarks.json"
+    },
+    {
+      "index": 324,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W3_landmarks.json"
+    },
+    {
+      "index": 325,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W4_landmarks.json"
+    },
+    {
+      "index": 326,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W5_landmarks.json"
+    },
+    {
+      "index": 327,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W6_landmarks.json"
+    },
+    {
+      "index": 328,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W7_landmarks.json"
+    },
+    {
+      "index": 329,
+      "split": "val",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W8_landmarks.json"
+    },
+    {
+      "index": 330,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W9_landmarks.json"
+    },
+    {
+      "index": 331,
+      "split": "train",
+      "class": "W",
+      "class_idx": 24,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/W/W_landmarks.json"
+    },
+    {
+      "index": 332,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X10_landmarks.json"
+    },
+    {
+      "index": 333,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X11_landmarks.json"
+    },
+    {
+      "index": 334,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X13_landmarks.json"
+    },
+    {
+      "index": 335,
+      "split": "val",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X14_landmarks.json"
+    },
+    {
+      "index": 336,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X1_landmarks.json"
+    },
+    {
+      "index": 337,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X2_landmarks.json"
+    },
+    {
+      "index": 338,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X3_landmarks.json"
+    },
+    {
+      "index": 339,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X4_landmarks.json"
+    },
+    {
+      "index": 340,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X5_landmarks.json"
+    },
+    {
+      "index": 341,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X6_landmarks.json"
+    },
+    {
+      "index": 342,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X7_landmarks.json"
+    },
+    {
+      "index": 343,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X8_landmarks.json"
+    },
+    {
+      "index": 344,
+      "split": "train",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X9_landmarks.json"
+    },
+    {
+      "index": 345,
+      "split": "val",
+      "class": "X",
+      "class_idx": 25,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/X/X_landmarks.json"
+    },
+    {
+      "index": 346,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y10_landmarks.json"
+    },
+    {
+      "index": 347,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y11_landmarks.json"
+    },
+    {
+      "index": 348,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y13_landmarks.json"
+    },
+    {
+      "index": 349,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y1_landmarks.json"
+    },
+    {
+      "index": 350,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y2_landmarks.json"
+    },
+    {
+      "index": 351,
+      "split": "val",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y3_landmarks.json"
+    },
+    {
+      "index": 352,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y4_landmarks.json"
+    },
+    {
+      "index": 353,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y5_landmarks.json"
+    },
+    {
+      "index": 354,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y6_landmarks.json"
+    },
+    {
+      "index": 355,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y7_landmarks.json"
+    },
+    {
+      "index": 356,
+      "split": "val",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y8_landmarks.json"
+    },
+    {
+      "index": 357,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y9_landmarks.json"
+    },
+    {
+      "index": 358,
+      "split": "train",
+      "class": "Y",
+      "class_idx": 26,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Y/Y_landmarks.json"
+    },
+    {
+      "index": 359,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z10_landmarks.json"
+    },
+    {
+      "index": 360,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z11_landmarks.json"
+    },
+    {
+      "index": 361,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z13_landmarks.json"
+    },
+    {
+      "index": 362,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z14_landmarks.json"
+    },
+    {
+      "index": 363,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z1_landmarks.json"
+    },
+    {
+      "index": 364,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z2_landmarks.json"
+    },
+    {
+      "index": 365,
+      "split": "val",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z3_landmarks.json"
+    },
+    {
+      "index": 366,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z4_landmarks.json"
+    },
+    {
+      "index": 367,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z5_landmarks.json"
+    },
+    {
+      "index": 368,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z6_landmarks.json"
+    },
+    {
+      "index": 369,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z7_landmarks.json"
+    },
+    {
+      "index": 370,
+      "split": "val",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z8_landmarks.json"
+    },
+    {
+      "index": 371,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z9_landmarks.json"
+    },
+    {
+      "index": 372,
+      "split": "train",
+      "class": "Z",
+      "class_idx": 27,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/../LSMOutput/Abecedario/Z/Z_landmarks.json"
+    }
+  ]
+}

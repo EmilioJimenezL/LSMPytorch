@@ -120,7 +120,7 @@ class TemporalConvNet(nn.Module):
 
     def forward(self, x):
         # x: (batch, 85, 135)
-        x = x.permute(0, 2, 1)       # → (batch, 135, 85)
+        x = x.permute(0, 2, 1).contiguous()  # → (batch, 135, 85)
         x = self.input_projection(x)  # → (batch, 64, 85)
         for block in self.tcn_blocks:
             x = block(x)             # length preserved at 85

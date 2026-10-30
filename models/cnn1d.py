@@ -59,7 +59,7 @@ class CNN1D(nn.Module):
 
     def forward(self, x):
         # x: (batch, N_FRAMES, FEATURE_DIM)
-        x = x.permute(0, 2, 1)   # → (batch, FEATURE_DIM, N_FRAMES)
+        x = x.permute(0, 2, 1).contiguous()   # → (batch, FEATURE_DIM, N_FRAMES)
         x = self.features(x)
         x = self.gap(x)
         x = self.classifier(x)
