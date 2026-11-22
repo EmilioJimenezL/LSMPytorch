@@ -33,104 +33,160 @@ let COLOR_BLACK       = CGColor(red: 0,    green: 0,    blue: 0,    alpha: 1)
 let COLOR_PROGRESS    = CGColor(red: 0,    green: 0.78, blue: 0.39, alpha: 1)
 let COLOR_TRACK_BG    = CGColor(red: 0.15, green: 0.15, blue: 0.15, alpha: 1)
 
+let HAND_JOINT_NAMES: [VNHumanHandPoseObservation.JointName] = [
+    .wrist,
+    .thumbCMC, .thumbMP, .thumbIP, .thumbTip,
+    .indexMCP, .indexPIP, .indexDIP, .indexTip,
+    .middleMCP, .middlePIP, .middleDIP, .middleTip,
+    .ringMCP, .ringPIP, .ringDIP, .ringTip,
+    .littleMCP, .littlePIP, .littleDIP, .littleTip,
+]
+
+/// Vision joint names for the 12 distinct pose slots (schema v2).
+let POSE_V2_VISION: [VNHumanBodyPoseObservation.JointName] = [
+    .nose, .leftEye, .rightEye, .leftEar, .rightEar, .neck,
+    .leftShoulder, .rightShoulder, .leftElbow, .rightElbow, .leftWrist, .rightWrist,
+]
+
+/// Legacy 17-slot map used only for overlay drawing (duplicates fill missing MediaPipe indices).
+let POSE_OVERLAY_MAP: [Int: VNHumanBodyPoseObservation.JointName] = [
+    0: .nose, 1: .leftEye, 2: .leftEye, 3: .leftEye,
+    4: .rightEye, 5: .rightEye, 6: .rightEye,
+    7: .leftEar, 8: .rightEar, 9: .neck, 10: .neck,
+    11: .leftShoulder, 12: .rightShoulder,
+    13: .leftElbow, 14: .rightElbow,
+    15: .leftWrist, 16: .rightWrist,
+]
+
 // ── Main extractor ────────────────────────────────────────────────────────────
 
 class LandmarkExtractor {
 
-    // MARK: - Hand Detection
+    // MARK: - Orientation
 
-    func detectHands(in pixelBuffer: CVPixelBuffer)
-        throws -> (left: [Point2D]?, right: [Point2D]?)
-    {
-        let request = VNDetectHumanHandPoseRequest()
-        request.maximumHandCount = 2
-
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-        try handler.perform([request])
-
-        guard let observations = request.results, !observations.isEmpty else {
-            return (nil, nil)
+    /// Map AVFoundation preferredTransform to Vision CGImagePropertyOrientation.
+    static func orientation(from transform: CGAffineTransform) -> (vision: CGImagePropertyOrientation, label: String) {
+        // Common phone/camera transforms.
+        if transform.a == 0 && transform.b == 1.0 && transform.c == -1.0 && transform.d == 0 {
+            return (.right, "right")
         }
-
-        var left:  [Point2D]? = nil
-        var right: [Point2D]? = nil
-
-        for obs in observations {
-            let points = (try? extractHandPoints(from: obs)) ?? []
-            if obs.chirality == .left {
-                left = points
-            } else {
-                right = points
-            }
+        if transform.a == 0 && transform.b == -1.0 && transform.c == 1.0 && transform.d == 0 {
+            return (.left, "left")
         }
-        return (left, right)
+        if transform.a == -1.0 && transform.b == 0 && transform.c == 0 && transform.d == -1.0 {
+            return (.down, "down")
+        }
+        return (.up, "up")
     }
 
-    private func extractHandPoints(from obs: VNHumanHandPoseObservation) throws -> [Point2D] {
-        let jointNames: [VNHumanHandPoseObservation.JointName] = [
-            .wrist,
-            .thumbCMC, .thumbMP, .thumbIP, .thumbTip,
-            .indexMCP, .indexPIP, .indexDIP, .indexTip,
-            .middleMCP, .middlePIP, .middleDIP, .middleTip,
-            .ringMCP, .ringPIP, .ringDIP, .ringTip,
-            .littleMCP, .littlePIP, .littleDIP, .littleTip,
-        ]
+    // MARK: - Single-pass Vision detection
 
-        return jointNames.map { name in
+    struct FrameDetection {
+        /// Raw Vision coords (Y=0 at bottom) for overlay.
+        var leftHandRaw: [Point2D?]
+        var rightHandRaw: [Point2D?]
+        /// Overlay pose in legacy 17-slot layout (raw Vision coords).
+        var poseOverlay: [PosePoint2D]
+        /// Schema v2 pose (12 joints, raw Vision coords).
+        var poseV2: [PosePoint2D]
+    }
+
+    func detectAll(
+        in pixelBuffer: CVPixelBuffer,
+        orientation: CGImagePropertyOrientation
+    ) throws -> FrameDetection {
+        let handRequest = VNDetectHumanHandPoseRequest()
+        handRequest.maximumHandCount = 2
+        let poseRequest = VNDetectHumanBodyPoseRequest()
+
+        let handler = VNImageRequestHandler(
+            cvPixelBuffer: pixelBuffer,
+            orientation: orientation,
+            options: [:]
+        )
+        try handler.perform([handRequest, poseRequest])
+
+        var left: [Point2D?] = Array(repeating: nil, count: 21)
+        var right: [Point2D?] = Array(repeating: nil, count: 21)
+        var sawLeft = false
+        var sawRight = false
+
+        if let observations = handRequest.results {
+            for obs in observations {
+                let points = extractHandPointsOptional(from: obs)
+                if obs.chirality == .left {
+                    left = points
+                    sawLeft = true
+                } else {
+                    right = points
+                    sawRight = true
+                }
+            }
+        }
+        if !sawLeft { left = Array(repeating: nil, count: 21) }
+        if !sawRight { right = Array(repeating: nil, count: 21) }
+
+        let poseOverlay: [PosePoint2D]
+        let poseV2: [PosePoint2D]
+        if let observation = poseRequest.results?.first {
+            poseOverlay = POSE_INDICES.map { idx in
+                guard let jointName = POSE_OVERLAY_MAP[idx],
+                      let point = try? observation.recognizedPoint(jointName),
+                      point.confidence > 0.1
+                else {
+                    return PosePoint2D(id: idx, x: 0, y: 0, visibility: 0)
+                }
+                return PosePoint2D(
+                    id: idx,
+                    x: Float(point.location.x),
+                    y: Float(point.location.y),
+                    visibility: Float(point.confidence)
+                )
+            }
+            poseV2 = zip(POSE_V2_JOINTS, POSE_V2_VISION).map { meta, jointName in
+                if let point = try? observation.recognizedPoint(jointName),
+                   point.confidence > 0.1 {
+                    return PosePoint2D(
+                        id: meta.id,
+                        x: Float(point.location.x),
+                        y: Float(point.location.y),
+                        visibility: Float(point.confidence),
+                        name: meta.name
+                    )
+                }
+                return PosePoint2D(
+                    id: meta.id, x: 0, y: 0, visibility: 0, name: meta.name
+                )
+            }
+        } else {
+            poseOverlay = POSE_INDICES.map {
+                PosePoint2D(id: $0, x: 0, y: 0, visibility: 0)
+            }
+            poseV2 = POSE_V2_JOINTS.map {
+                PosePoint2D(id: $0.id, x: 0, y: 0, visibility: 0, name: $0.name)
+            }
+        }
+
+        return FrameDetection(
+            leftHandRaw: left,
+            rightHandRaw: right,
+            poseOverlay: poseOverlay,
+            poseV2: poseV2
+        )
+    }
+
+    private func extractHandPointsOptional(
+        from obs: VNHumanHandPoseObservation
+    ) -> [Point2D?] {
+        HAND_JOINT_NAMES.map { name in
             if let p = try? obs.recognizedPoint(name), p.confidence > 0.1 {
-                // Raw Vision coords (Y=0 at bottom) — used for drawing.
-                // Y flip for JSON is applied when building FrameLandmarks.
-                return Point2D(x: Float(p.location.x), y: Float(p.location.y))
+                return Point2D(
+                    x: Float(p.location.x),
+                    y: Float(p.location.y),
+                    c: Float(p.confidence)
+                )
             }
-            return Point2D(x: 0, y: 0)
-        }
-    }
-
-    // MARK: - Pose Detection
-
-    func detectPose(in pixelBuffer: CVPixelBuffer) throws -> [PosePoint2D]? {
-        let request = VNDetectHumanBodyPoseRequest()
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-        try handler.perform([request])
-
-        guard let observation = request.results?.first else { return nil }
-
-        // Map our indices to Vision joint names
-        // Note: Vision doesn't have inner/outer eye variants or explicit mouth points
-        // We map the closest available joint for each index
-        let jointMap: [Int: VNHumanBodyPoseObservation.JointName] = [
-            0:  .nose,
-            1:  .leftEye,
-            2:  .leftEye,
-            3:  .leftEye,
-            4:  .rightEye,
-            5:  .rightEye,
-            6:  .rightEye,
-            7:  .leftEar,
-            8:  .rightEar,
-            9:  .neck,
-            10: .neck,
-            11: .leftShoulder,
-            12: .rightShoulder,
-            13: .leftElbow,
-            14: .rightElbow,
-            15: .leftWrist,
-            16: .rightWrist,
-        ]
-
-        return POSE_INDICES.map { idx in
-            guard let jointName = jointMap[idx],
-                  let point = try? observation.recognizedPoint(jointName),
-                  point.confidence > 0.1
-            else {
-                return PosePoint2D(id: idx, x: 0, y: 0, visibility: 0)
-            }
-            return PosePoint2D(
-                id: idx,
-                x: Float(point.location.x),
-                y: Float(point.location.y),  // raw Vision coords — flip applied at JSON time
-                visibility: Float(point.confidence)
-            )
+            return nil
         }
     }
 
@@ -138,8 +194,8 @@ class LandmarkExtractor {
 
     func drawOverlay(
         on pixelBuffer: CVPixelBuffer,
-        leftHand: [Point2D]?,
-        rightHand: [Point2D]?,
+        leftHand: [Point2D?]?,
+        rightHand: [Point2D?]?,
         pose: [PosePoint2D]?,
         frameIdx: Int,
         totalFrames: Int
@@ -165,25 +221,23 @@ class LandmarkExtractor {
         ctx.setLineWidth(2.0)
 
         func toPixel(_ pt: Point2D) -> CGPoint {
-            // Vision Y=0 is at bottom, CGContext on pixelBuffer Y=0 is also at bottom
-            // So no flip needed — coordinates map directly
             CGPoint(x: CGFloat(pt.x) * w, y: CGFloat(pt.y) * h)
         }
 
-        func drawPoints(_ points: [Point2D], color: CGColor, connections: [(Int, Int)]) {
+        func drawPoints(_ points: [Point2D?], color: CGColor, connections: [(Int, Int)]) {
             ctx.setStrokeColor(color)
             for (a, b) in connections {
-                guard a < points.count, b < points.count else { continue }
-                let pa = toPixel(points[a])
-                let pb = toPixel(points[b])
-                if pa == .zero || pb == .zero { continue }
+                guard a < points.count, b < points.count,
+                      let paOpt = points[a], let pbOpt = points[b] else { continue }
+                let pa = toPixel(paOpt)
+                let pb = toPixel(pbOpt)
                 ctx.move(to: pa)
                 ctx.addLine(to: pb)
                 ctx.strokePath()
             }
-            for pt in points {
+            for ptOpt in points {
+                guard let pt = ptOpt else { continue }
                 let p = toPixel(pt)
-                if p == .zero { continue }
                 ctx.setFillColor(color)
                 ctx.fillEllipse(in: CGRect(x: p.x-4, y: p.y-4, width: 8, height: 8))
                 ctx.setStrokeColor(COLOR_BLACK)
@@ -191,24 +245,22 @@ class LandmarkExtractor {
             }
         }
 
-        // Draw pose
         if let pose = pose {
-            let posePoints = pose.map { Point2D(x: $0.x, y: $0.y) }
             var byIdx = [Int: CGPoint]()
-            for (i, idx) in POSE_INDICES.enumerated() {
-                byIdx[idx] = toPixel(posePoints[i])
+            for pt in pose {
+                if pt.visibility > 0.1 {
+                    byIdx[pt.id] = toPixel(Point2D(x: pt.x, y: pt.y))
+                }
             }
             ctx.setStrokeColor(COLOR_POSE)
             for (a, b) in POSE_CONNECTIONS {
                 guard let pa = byIdx[a], let pb = byIdx[b] else { continue }
-                if pa == .zero || pb == .zero { continue }
                 ctx.move(to: pa)
                 ctx.addLine(to: pb)
                 ctx.strokePath()
             }
-            for pt in posePoints {
-                let p = toPixel(pt)
-                if p == .zero { continue }
+            for pt in pose where pt.visibility > 0.1 {
+                let p = toPixel(Point2D(x: pt.x, y: pt.y))
                 ctx.setFillColor(COLOR_POSE)
                 ctx.fillEllipse(in: CGRect(x: p.x-5, y: p.y-5, width: 10, height: 10))
                 ctx.setStrokeColor(COLOR_BLACK)
@@ -219,7 +271,6 @@ class LandmarkExtractor {
         if let lh = leftHand  { drawPoints(lh, color: COLOR_LEFT_HAND,  connections: HAND_CONNECTIONS) }
         if let rh = rightHand { drawPoints(rh, color: COLOR_RIGHT_HAND, connections: HAND_CONNECTIONS) }
 
-        // Progress bar
         let progress = CGFloat(frameIdx + 1) / CGFloat(max(totalFrames, 1))
         let barY = h - 16
         ctx.setFillColor(COLOR_TRACK_BG)
@@ -248,10 +299,12 @@ class LandmarkExtractor {
                           userInfo: [NSLocalizedDescriptionKey: "No video track found"])
         }
 
-        let fps        = try await videoTrack.load(.nominalFrameRate)
-        let size       = try await videoTrack.load(.naturalSize)
-        let duration   = try await asset.load(.duration)
-        let totalFrames = Int(CMTimeGetSeconds(duration) * Double(fps))
+        let fps         = try await videoTrack.load(.nominalFrameRate)
+        let size        = try await videoTrack.load(.naturalSize)
+        let transform   = try await videoTrack.load(.preferredTransform)
+        let duration    = try await asset.load(.duration)
+        let totalFrames = Int(CMTimeGetSeconds(duration) * Double(max(fps, 1)))
+        let (visionOrientation, orientationLabel) = Self.orientation(from: transform)
 
         let reader = try AVAssetReader(asset: asset)
         let readerOutput = AVAssetReaderTrackOutput(
@@ -301,14 +354,34 @@ class LandmarkExtractor {
             let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
             let timestampMs = CMTimeGetSeconds(pts) * 1000.0
 
-            let (leftHand, rightHand) = (try? detectHands(in: pixelBuffer)) ?? (nil, nil)
-            let pose = try? detectPose(in: pixelBuffer)
+            let detection = (try? detectAll(in: pixelBuffer, orientation: visionOrientation))
+                ?? FrameDetection(
+                    leftHandRaw: Array(repeating: nil, count: 21),
+                    rightHandRaw: Array(repeating: nil, count: 21),
+                    poseOverlay: POSE_INDICES.map { PosePoint2D(id: $0, x: 0, y: 0, visibility: 0) },
+                    poseV2: POSE_V2_JOINTS.map {
+                        PosePoint2D(id: $0.id, x: 0, y: 0, visibility: 0, name: $0.name)
+                    }
+                )
 
-            let leftHandJSON  = leftHand.map  { pts in pts.map { Point2D(x: $0.x, y: 1.0 - $0.y) } }
-            let rightHandJSON = rightHand.map { pts in pts.map { Point2D(x: $0.x, y: 1.0 - $0.y) } }
-            let poseJSON      = pose.map { pts in pts.map {
-                PosePoint2D(id: $0.id, x: $0.x, y: 1.0 - $0.y, visibility: $0.visibility)
-            }}
+            // Flip Y for JSON (Y=0 at top), keep confidence; nulls stay null.
+            let leftHandJSON: [Point2D?] = detection.leftHandRaw.map { pt in
+                guard let pt else { return nil }
+                return Point2D(x: pt.x, y: 1.0 - pt.y, c: pt.c)
+            }
+            let rightHandJSON: [Point2D?] = detection.rightHandRaw.map { pt in
+                guard let pt else { return nil }
+                return Point2D(x: pt.x, y: 1.0 - pt.y, c: pt.c)
+            }
+            let poseJSON: [PosePoint2D] = detection.poseV2.map { pt in
+                if pt.visibility <= 0.1 {
+                    return PosePoint2D(id: pt.id, x: 0, y: 0, visibility: 0, name: pt.name)
+                }
+                return PosePoint2D(
+                    id: pt.id, x: pt.x, y: 1.0 - pt.y,
+                    visibility: pt.visibility, name: pt.name
+                )
+            }
 
             frames.append(FrameLandmarks(
                 frame: frameIdx,
@@ -321,9 +394,9 @@ class LandmarkExtractor {
             if generateOverlay, let writerInput, let adaptor {
                 drawOverlay(
                     on: pixelBuffer,
-                    leftHand: leftHand,
-                    rightHand: rightHand,
-                    pose: pose,
+                    leftHand: detection.leftHandRaw,
+                    rightHand: detection.rightHandRaw,
+                    pose: detection.poseOverlay,
                     frameIdx: frameIdx,
                     totalFrames: totalFrames
                 )
@@ -331,7 +404,7 @@ class LandmarkExtractor {
                 while !writerInput.isReadyForMoreMediaData {
                     try await Task.sleep(nanoseconds: 5_000_000)
                 }
-                let presentationTime = CMTime(value: CMTimeValue(frameIdx), timescale: CMTimeScale(fps))
+                let presentationTime = CMTime(value: CMTimeValue(frameIdx), timescale: CMTimeScale(max(fps, 1)))
                 adaptor.append(pixelBuffer, withPresentationTime: presentationTime)
             }
 
@@ -346,10 +419,19 @@ class LandmarkExtractor {
             }
         }
 
+        let document = LandmarkDocument(
+            schemaVersion: LANDMARK_SCHEMA_VERSION,
+            fps: fps,
+            width: Float(size.width),
+            height: Float(size.height),
+            orientation: orientationLabel,
+            frames: frames
+        )
+
         let jsonURL = classOutputDir.appendingPathComponent("\(baseName)_landmarks.json")
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted]
-        let jsonData = try encoder.encode(frames)
+        // Compact JSON (no prettyPrinted) — schema v2.
+        let jsonData = try encoder.encode(document)
         try jsonData.write(to: jsonURL)
 
         let overlayName = generateOverlay ? "\(baseName)_overlay.mp4" : nil

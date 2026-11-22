@@ -109,5 +109,5 @@ class LSM3DCNNModel(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-def create_3dcnn(num_classes: int, dropout: float = 0.3) -> LSM3DCNNModel:
+def create_3dcnn(num_classes: int, dropout: float = 0.3, **kwargs) -> LSM3DCNNModel:
     return LSM3DCNNModel(num_classes=num_classes, dropout_rate=dropout)

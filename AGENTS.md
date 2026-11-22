@@ -59,14 +59,17 @@ flowchart LR
 
 | Contract | Value / rule |
 |---|---|
-| Landmark vector | 135 dims/frame: `[0:42]` left hand, `[42:84]` right hand, `[84:135]` pose (17× x,y,visibility) |
-| Sequence length | 85 frames after linear interpolation |
-| JSON frame keys | `frame`, `timestamp_ms`, `leftHand`, `rightHand`, `pose`; Y=0 at top in stored JSON |
-| Extractor input | `{root}/{category}/{word}/*.mp4` — folder path is source of truth |
+| Landmark vector **v1** | 135 dims/frame: `[0:42]` left hand, `[42:84]` right hand, `[84:135]` pose (17× x,y,visibility). Used by Fase 1 and all pre-v2 Core ML models |
+| Landmark vector **v2** | 162 dims/frame: 21×(x,y,c) left + 21×(x,y,c) right + 12×(x,y,c) pose. Confidence 0 = missing. New models only |
+| Sequence length | 85 frames after interpolation |
+| Feature layout metadata | Core ML `userDefinedMetadata["feature_layout"]` = `v1_135` or `v2_162` (missing → v1) |
+| JSON schema | v1 = bare frame array; v2 = `{schema_version:2, fps, orientation, frames:[...]}` with null joints |
+| Extractor input | `{root}/{category}/{word}/*.mp4` — folder path is source of truth; category symlinks resolved |
 | Extractor output | Mirrors input under separate output root + `dataset_manifest.json` |
 | Training dataset | Nested `category/word/*_landmarks.json` or flat `word/*_landmarks.json` — see `dataset.py` |
+| Class keys | Word name; if the same word appears in 2+ categories → `word (category)` (e.g. Rosa) |
 | Fase 1 binary | `fingerprints.bin` magic `0x4C534D46`, version 1 — see `lsm_fingerprints/export_bin.py` |
-| Fase 1 fingerprint | 810-dim, L2-normalized statistical fingerprint |
+| Fase 1 fingerprint | 810-dim, L2-normalized statistical fingerprint (v1 layout only) |
 
 ---
 
@@ -74,16 +77,22 @@ flowchart LR
 
 | Task | Files |
 |---|---|
-| Load / augment landmarks | `dataset.py` |
+| Feature layouts / prepare | `features.py` (`frame_to_vector_v1/v2`, `prepare_sequence_v2`) |
+| Load / augment landmarks | `dataset.py`, `augment.py` (GPU batch aug) |
 | Train model | `train.py`, `split_utils.py`, `models/` |
-| Stratified split | `split_utils.py` → `{output}/split_manifest.json` |
+| Stratified + cap/extra_test split | `split_utils.py` → `{output}/split_manifest.json` |
+| Shared prepared cache | `scripts/prepare_dataset.py` → `prepared/*.npz` |
 | Dataset inventory | `scripts/dataset_report.py` |
 | Review / compare | `review/evaluate_nn.py`, `review/compare_models.py`, `review/error_analysis.py`, `review/generate_training_report.py`, `review/run_all.sh` |
 | Train all models | `train_all_lsmoutput.sh` |
 | Train on Apple Silicon | `train_m4.sh` (MPS; not `setup_env.sh`) |
 | Nested video-count models | `train_m4_tiers.sh` → app picker entries `runs_m4_min{12,7,5}_*` |
+| Lab cap-5 cycle (v2) | `train_lab_cap5.sh` → `runs_lab_cap5_{cnn,tcn}` + app SignSets `labCap5` / `labMin5`; report `reports/training_report_lab_cap5.md` |
 | Modular models (smoke tests) | `models/` (`__init__.py`, `cnn1d.py`, `tcn.py`, `cnn3d.py`) |
-| Core ML export | `convert_to_coreml.py` |
+| Core ML export + parity | `convert_to_coreml.py` (`--parity --cache --fixture`) |
+| Copy export into iOS app | `scripts/export_to_app.py` |
+| Extractor CLI/GUI sync | `scripts/check_extractor_sync.py` |
+| Unit tests | `tests/` (`pytest`), plus `test_models_smoke.py` + `lsm_fingerprints/tests/` |
 | Organize raw videos | `organize_from_json.py`, `themes.json` |
 | Vocabulary listing | `list_words.py`, `palabras.txt` |
 | Fase 1 build DB | `lsm_fingerprints/build_db.py` |

@@ -1,0 +1,2918 @@
+Œ@
+j
+	landmarksOSecuencia de 85 frames Ã— 135 valores [left_hand(42), right_hand(42), pose(51)]*
+
+U‡ €R<
+logits%Logits sin normalizar para 517 clases*	
+…€¢Ş>
+3LSM â€” Reconocimiento de Lengua de SeÃ±as Mexicana¢å;
+classesÙ;["A", "Abeja", "Abogado", "Abrazar", "Abrir la puerta", "Abuela", "Abuelo", "Acapulco (Gro)", "AcaÌmbaro (Gto)", "Aceite", "Acta de nacimiento", "Actividad", "Actor_Artista", "AdioÌs", "Adolf Hitler", "Adulto", "Agente", "Agua", "Agua Horchata", "Agua Jamaica", "Agua Mineral_PenÌƒafiel", "Aguacate", "Aguascalientes", "Aguinaldo", "Ajo", "AlegriÌa_Alegre", "Alemania (LSM)", "Alguien", "Algunos", "Alimentos_Comida_Comer", "Almeja_OstioÌn", "Almendra", "Alvaro Obregon (DF)", "Amante", "Amarillo", "Amiga", "Amigo", "Amistad", "Anaranjado", "Ancha_Grande", "Anciana_Anciano", "Anillo_Compromiso", "Apagar la luz", "Apellido", "Apodaca (NL)", "Aprender", "Azul", "AÌfrica (LSM)", "AÌfrica (SenÌƒas Internacional)", "AÌguila", "B", "Blanco", "Brillante", "C", "Cien", "Cinco", "Cincuenta", "Cobre", "Color", "Cuarenta", "Cuatrocientos", "D", "Dos", "Doscientos", "Durango", "Durazno", "Duro", "E", "EdecaÌn", "Egipto (LSM)", "Ejote", "El", "El Fuerte (Sinaloa)", "El Rosario (Sinaloa)", "El Salvador (LSM)", "Elefante", "Elegante", "Ellos", "Elote", "Emperador", "Empezar", "Encendedor", "Enchiladas", "Encontrar (Una Cosa)", "Enfermera", "Enojar_Enojado", "Ensalada", "Entre (Dividir)", "Escalera_Escalera", "Escoba", "Escoger", "Escribir", "Escuinapa (Sinaloa)", "Esferas de Navidad", "Esforzar_Esfuerzo", "EspanÌƒol_EspanÌƒa", "Espejo", "Esponja", "Esposo_Casado", "Estado de MeÌxico", "Estados Unidos de AmeÌrica (LSM)", "Estrella de Mar", "Estudiar_Estudio", "Estufa", "Europa (LSM)", "ExtranÌƒo_ExtranÌƒamente", "F", "Fama_Famoso_Famosa", "Fanta", "Favorito", "Feliz", "Feliz AnÌƒo Nuevo", "Feliz CumpleanÌƒos", "Feliz Navidad", "Feo", "Fidelidad_Fiel", "Filipinas (LSM)", "Finlandia", "Fino", "Flaco", "Flor Nochebuena", "Foca", "Foco", "Francia (LSM)", "Fresa", "Frida Khalo", "Frijol", "Fruta", "Fuegos Artificiales", "Fuerte", "G", "Galilea (Cristiano)", "Galleta", "Gallina", "Gato", "Gelatina", "General", "Gente", "Globo", "Gobernador", "Goma", "Gordo_Gorda", "Gorila", "Gracias", "Granada", "Grande", "Grecia (LSM)", "Grifo", "Gris", "Grosero_GroseriÌa", "Guadalajara", "Guamuchil", "Guanajuato", "Guapo", "Guasabe (Sinaloa)", "Guatemala (LSM)", "Guayaba", "Guaymas (Sonora)", "Guerrero", "Guirnalda NavidenÌƒa", "Gusano", "Gustar_Me Gusta", "Gustavo Madero", "H", "Hacer", "Haiti (LSM)", "Hambre_Hambriento", "Hamburguesa", "Harina", "Hasta Luego", "Hawaii", "Helado", "Hermana", "Hermanastro", "Hermano", "Hermosillo (Sonora)", "Hermoso", "Herrero", "Hervir", "Herzegovina", "Higo", "Hija", "Hijastra", "Hijastro", "Hijo", "HipopoÌtamo", "Hola", "Holanda", "Honduras (LSM)", "Hongo", "Hormiga", "Horno", "Horno Microondas", "Horrible_Horriblemente", "Hot-Dog", "Huatulco (Oaxaca)", "Huevo", "Humilde", "I", "Imaginar", "Indicar", "Infiel", "Ingeniero", "Injusto", "Inteligente_Inteligencia", "Intercambio de Regalos", "Ir", "J", "K", "L", "LL", "Lagartija", "Langosta", "Laptop", "Largo_Largamente", "Latoso_Latosa", "Lavar al (NinÌƒo_Animal_Automovil)", "Lavar la ropa", "Lavar los platos", "Lavar los trastes", "Lavarse la cara", "LaÌpiz", "LaÌzaro CaÌrdenas", "Leche", "Lechuga", "Leer", "Lejos_Lejano", "Lento_Lenta_Lentamente", "Leopardo", "Levantar", "Levantarse", "Libro", "Licencia", "Licenciado_Licenciatura", "M", "Mermelada", "MetaÌlico", "Mexicali (Baja California)", "Mezcal", "MeÌrida (YucataÌn)", "MeÌxico", "MichoacaÌn", "Miel", "Miguel Hidlago y Costilla (Personaje y DelegacioÌn)", "Mil", "Militar", "MinantitlaÌn (Veracruz)", "Minero", "Misionero", "Mocorito (Sinaloa)", "Moctezuma", "Mole", "Mole Verde", "Monja", "Mono", "Montreal (CanadaÌ)", "Morado", "Morelia", "Morelos", "Mosca", "MoscuÌ", "Mostaza", "N", "Naco", "NapoleoÌn Bonaparte", "Naranja", "Naranjada", "Narcotraficante", "NaucalpaÌn (Edo de MeÌxico)", "Navolato (Sinaloa)", "Nayarit", "Necio_ Necia", "Negro", "Nicaragua (LSM)", "Nicaragua (SenÌƒas Internacional)", "Nicolas Romero (Edo de MeÌxico)", "Nigeria (LSM)", "Nigeria (SenÌƒas Internacional)", "Nogales (Sonora)", "Nopal", "Norte", "NorteameÌrica", "Noruega (LSM)", "Noruega (SenÌƒas Internacional)", "Novecientos", "Nuevo LeoÌn", "Nuevo_ Nueva_ Nuevamente", "Nuez", "Numero", "NÌƒ", "O", "Oaxaca", "Ochenta", "Ocho", "Ochocientos", "Oeste", "Orgullo_Orgulloso_Orgullosamente", "Orinar", "Orizaba (Veracruz)", "Oso", "Oso Panda", "Oso Polar", "OstioÌn", "P", "Pachuca (Hidalgo)", "Padrastro", "Padre (ReligioÌn)", "Padres", "Pagar", "Paleta", "Paloma", "Pan", "Pancho Villa", "Pantera", "PapaÌ", "Paraguay (LSM)", "Paraguay (SenÌƒas Internacional)", "Pareja", "Parral (Coahuila)", "Patzcuaro (MichoacaÌn)", "Pavo", "Pavo Real", "Pavo de Navidad", "PaÌjaro", "Pedro Infante", "Pegar (Adherir)", "Peinar", "Pelicano", "PeloÌn", "Peluquero", "Pepino", "PequenÌƒo_PequenÌƒa", "Pera", "Perro", "Persona Blanca", "Persona Inglesa (BritaÌnica)", "Pesado", "Pescado", "Pescar_Pesca", "Pez", "Picoso", "Piedras Negras (Coahuila)", "Pimiento", "PinguÌˆino", "Piojo", "PiranÌƒa", "Pistacho", "Pizza", "Plateado", "PlaÌtano", "Pobre_Pobrecito", "PobretoÌn", "PoliciÌa", "Pollo", "Polonia (LSM)", "Polonia (SenÌƒas Internacional)", "Ponche", "Poner", "Porfirio DiÌaz", "Portugal (LSM)", "Portugal (SenÌƒas Internacional)", "Postre", "Practicar", "Praga", "Precioso", "Preguntar", "Prender la Luz", "Presidente", "Presumido", "Prima", "Primo", "PriÌncipe", "ProfesioÌn_Profesional", "Profesor", "Profundizar_Profundo", "Progreso (YucataÌn)", "Puebla", "Puerco", "Puerto Angel (Oaxaca)", "Puerto Escondido (Oaxaca)", "Puerto Vallarta (Jalisco)", "Pulpo", "Puntual", "Q", "Quebec (CanadaÌ)", "Quejarse", "Querer", "Querer (Objeto)", "Quererse (Persona)", "QuereÌtaro", "Quinientos", "Quintana Roo", "Quitar", "R", "RR", "Rana", "Raramente_Raro", "Rastrillo_Rasurar", "Rata", "RatoÌn", "RaÌbano", "Rebelde_RebeldiÌa", "Reclamar_Reprochar", "Refresco", "Regresar", "ReiÌr_Risa", "Repollo", "Reptil", "RepuÌblica Dominica (LSM)", "RepuÌblica Dominica (SenÌƒas Internacional)", "RepuÌblica Mexicana", "Responder_Respuesta", "Rey", "Reyes Magos", "Reynosa (Tamaulipas)", "Rico", "Rico (Sabroso)", "RidiÌculo", "RojoA", "RojoB", "Roma (LSM)", "Roma (SenÌƒas Internacional)", "Romance_RomaÌntico", "Rosa", "Rosca de Reyes", "Ruanda", "Rumania (LSM)", "Rumania (SenÌƒas Internacional)", "Rusia (LSM)", "S", "Sabroso", "Sacerdote", "Sal", "Salamanca (Guanajuato)", "Salsa Catsup", "Saltar (Brincar)", "Saltillo (Coahuila)", "Salud_Saludable", "Salvador Alvarado (Sinaloa)", "Salvatierra (Guanajuato)", "San Francisco (Baja California)", "San Ignacio (Sinaloa)", "San Judas", "San Julian (Jalisco)", "San Lucas (Baja California Sur)", "San Luis PotosiÌ", "San NicolaÌs de Los Garza", "San_Santo_Santa", "SandiÌa", "Santa Claus", "Santa Muerte", "Sapo", "Sastre", "SateÌlite (Edo de MeÌxico)", "Secretaria", "Sed_Sedimiento", "Seis", "Seiscientos", "Series de Navidad", "Sesenta", "Setenta", "Siete", "Silao (Guanajuato)", "Sinaloa", "Singapur (LSM)", "Siria", "Sobrina", "Sobrino", "Soldado", "Soltero", "Sonora", "SonÌƒar_SonÌƒarse", "Sopa", "Sopa de Fideos", "Spaguetti", "Sprite", "Sri Lanka", "Subir (Subir y a Transportes)", "Sucia_Sucio_Suciedad", "SudameÌrica", "SudaÌn", "Suiza (LSM)", "T", "Tabasco", "Tacubaya (DF)", "Tailandia (LSM)", "Taipei", "Tal vez", "Tamarindo", "Tamaulipas", "Tampico (Tamaulipas)", "Tanzania", "Tarea", "Tarjeta de Navidad", "Tecamac (Edo de MeÌxico)", "Tecate (Baja California)", "TehuacaÌn (Puebla)", "Tener", "TeotihuacaÌn", "Tepic", "Tequila", "TeÌ", "Tia", "Tijuana (Baja California)", "TiÌmido_TiÌmida_Timidez", "TiÌo", "Tres", "Trescientos", "U", "Uno", "V", "Veinte", "Verde", "W", "X", "Y", "Z"]¢+
+$com.github.apple.coremltools.version9.0¢4
+#com.github.apple.coremltools.sourcetorch==2.15.0¢
+feature_dim135¢
+
+model_typetcn¢
+n_frames85¢:
+,com.github.apple.coremltools.conversion_date
+2026-11-21¢
+	n_classes517¢
+val_acc0.4857¢:
++com.github.apple.coremltools.source_dialectTorchScript²öÔ‡Ó
+mainıÒ
+&
+	landmarks
+
+
+U
+‡CoreML6ÈÒ
+CoreML6»Òlogits^
+const
+var_16
+
+
+* 
+val
+
+
+	
+
+ *
+name
+
+	"
+op_16v
+const!
+landmarks_to_fp16_dtype_0
+*
+val
+
+
+"
+fp16*/
+name'
+
+"
+landmarks_to_fp16_dtype_0i
+const
+input_3_pad_type_0
+*
+val
+
+	"
+valid*(
+name 
+
+"
+input_3_pad_type_0s
+const!
+input_3_strides_0
+
+
+*
+val
+
+
+
+
+*'
+name
+
+"
+input_3_strides_0l
+const
+input_3_pad_0
+
+
+*
+val
+
+
+
+
+  *#
+name
+
+"
+input_3_pad_0w
+const#
+input_3_dilations_0
+
+
+*
+val
+
+
+
+
+*)
+name!
+
+"
+input_3_dilations_0a
+const
+input_3_groups_0
+*
+val
+
+
+*&
+name
+
+"
+input_3_groups_0¤
+const,
+const_8_to_fp16
+
+
+@
+‡
+*F
+val?
+
+
+@
+‡
+*"
+@model_path/weights/weight.bin@*%
+name
+
+"
+const_8_to_fp16Œ
+const
+const_9_to_fp16
+
+
+
+@*;
+val4
+
+
+
+@*$
+@model_path/weights/weight.bin€ˆ*%
+name
+
+"
+const_9_to_fp16
+cast
+x
+
+	landmarks&
+dtype
+
+landmarks_to_fp16_dtype_0.
+landmarks_to_fp16
+
+
+
+U
+‡*
+name
+
+
+"
+cast_2
+	transpose
+x
+
+landmarks_to_fp16
+perm
+
+
+var_16-
+var_17_cast_fp16
+
+
+
+‡
+U*!
+name
+
+"
+transpose_0Û
+conv
+x
+
+var_17_cast_fp16
+weight
+
+const_8_to_fp16
+bias
+
+const_9_to_fp16
+pad
+
+input_3_pad_0$
+	dilations
+
+input_3_dilations_0
+groups
+
+input_3_groups_0 
+strides
+
+input_3_strides_0"
+pad_type
+
+input_3_pad_type_0-
+input_5_cast_fp16
+
+
+
+@
+U*'
+name
+
+"
+input_5_cast_fp16z
+relu
+x
+
+input_5_cast_fp16-
+input_7_cast_fp16
+
+
+
+@
+U*'
+name
+
+"
+input_7_cast_fp16p
+const
+input_9_pad_0
+
+
+*#
+val
+
+
+
+
+
+     *#
+name
+
+"
+input_9_pad_0d
+const
+input_9_mode_0
+*
+val
+
+"
+
+constant*$
+name
+
+"
+input_9_mode_0`
+const
+const_0_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_0_to_fp16Ô
+pad#
+constant_val
+
+const_0_to_fp16
+mode
+
+input_9_mode_0
+x
+
+input_7_cast_fp16
+pad
+
+input_9_pad_0-
+input_9_cast_fp16
+
+
+
+@
+Y*'
+name
+
+"
+input_9_cast_fp16k
+const
+input_11_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_11_pad_type_0u
+const"
+input_11_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_11_strides_0n
+const
+input_11_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_11_pad_0y
+const$
+input_11_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_11_dilations_0c
+const
+input_11_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_11_groups_0¦
+const,
+const_10_to_fp16
+
+
+@
+@
+*G
+val@
+
+
+@
+@
+*$
+@model_path/weights/weight.binÀ‰*&
+name
+
+"
+const_10_to_fp16
+const 
+const_11_to_fp16
+
+
+
+@*;
+val4
+
+
+
+@*$
+@model_path/weights/weight.bin€Ê*&
+name
+
+"
+const_11_to_fp16å
+conv
+x
+
+input_9_cast_fp16
+weight
+
+const_10_to_fp16
+bias
+
+const_11_to_fp16
+pad
+
+input_11_pad_0%
+	dilations
+
+input_11_dilations_0
+groups
+
+input_11_groups_0!
+strides
+
+input_11_strides_0#
+pad_type
+
+input_11_pad_type_0.
+input_13_cast_fp16
+
+
+
+@
+U*(
+name 
+
+"
+input_13_cast_fp16}
+relu
+x
+
+input_13_cast_fp16.
+input_15_cast_fp16
+
+
+
+@
+U*(
+name 
+
+"
+input_15_cast_fp16r
+const
+input_19_pad_0
+
+
+*#
+val
+
+
+
+
+
+     *$
+name
+
+"
+input_19_pad_0f
+const
+input_19_mode_0
+*
+val
+
+"
+
+constant*%
+name
+
+"
+input_19_mode_0`
+const
+const_1_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_1_to_fp16Ù
+pad#
+constant_val
+
+const_1_to_fp16
+mode
+
+input_19_mode_0
+x
+
+input_15_cast_fp16
+pad
+
+input_19_pad_0.
+input_19_cast_fp16
+
+
+
+@
+Y*(
+name 
+
+"
+input_19_cast_fp16k
+const
+input_21_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_21_pad_type_0u
+const"
+input_21_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_21_strides_0n
+const
+input_21_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_21_pad_0y
+const$
+input_21_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_21_dilations_0c
+const
+input_21_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_21_groups_0¦
+const,
+const_12_to_fp16
+
+
+@
+@
+*G
+val@
+
+
+@
+@
+*$
+@model_path/weights/weight.binÀË*&
+name
+
+"
+const_12_to_fp16
+const 
+const_13_to_fp16
+
+
+
+@*;
+val4
+
+
+
+@*$
+@model_path/weights/weight.bin€Œ*&
+name
+
+"
+const_13_to_fp16æ
+conv
+x
+
+input_19_cast_fp16
+weight
+
+const_12_to_fp16
+bias
+
+const_13_to_fp16
+pad
+
+input_21_pad_0%
+	dilations
+
+input_21_dilations_0
+groups
+
+input_21_groups_0!
+strides
+
+input_21_strides_0#
+pad_type
+
+input_21_pad_type_0.
+input_23_cast_fp16
+
+
+
+@
+U*(
+name 
+
+"
+input_23_cast_fp16˜
+add
+x
+
+input_23_cast_fp16
+y
+
+input_7_cast_fp16.
+input_25_cast_fp16
+
+
+
+@
+U*(
+name 
+
+"
+input_25_cast_fp16}
+relu
+x
+
+input_25_cast_fp16.
+input_27_cast_fp16
+
+
+
+@
+U*(
+name 
+
+"
+input_27_cast_fp16r
+const
+input_29_pad_0
+
+
+*#
+val
+
+
+
+
+
+     *$
+name
+
+"
+input_29_pad_0f
+const
+input_29_mode_0
+*
+val
+
+"
+
+constant*%
+name
+
+"
+input_29_mode_0`
+const
+const_2_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_2_to_fp16Ù
+pad#
+constant_val
+
+const_2_to_fp16
+mode
+
+input_29_mode_0
+x
+
+input_27_cast_fp16
+pad
+
+input_29_pad_0.
+input_29_cast_fp16
+
+
+
+@
+]*(
+name 
+
+"
+input_29_cast_fp16k
+const
+input_31_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_31_pad_type_0y
+const$
+input_31_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_31_dilations_0u
+const"
+input_31_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_31_strides_0n
+const
+input_31_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_31_pad_0c
+const
+input_31_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_31_groups_0¨
+const-
+const_14_to_fp16
+
+
+€
+@
+*H
+valA
+
+
+€
+@
+*$
+@model_path/weights/weight.binÀ*&
+name
+
+"
+const_14_to_fp16
+const!
+const_15_to_fp16
+
+
+€*<
+val5
+
+
+€*$
+@model_path/weights/weight.bin€*&
+name
+
+"
+const_15_to_fp16ç
+conv
+x
+
+input_29_cast_fp16
+weight
+
+const_14_to_fp16
+bias
+
+const_15_to_fp16
+pad
+
+input_31_pad_0%
+	dilations
+
+input_31_dilations_0
+groups
+
+input_31_groups_0!
+strides
+
+input_31_strides_0#
+pad_type
+
+input_31_pad_type_0/
+input_33_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_33_cast_fp16~
+relu
+x
+
+input_33_cast_fp16/
+input_35_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_35_cast_fp16r
+const
+input_39_pad_0
+
+
+*#
+val
+
+
+
+
+
+     *$
+name
+
+"
+input_39_pad_0f
+const
+input_39_mode_0
+*
+val
+
+"
+
+constant*%
+name
+
+"
+input_39_mode_0`
+const
+const_3_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_3_to_fp16Ú
+pad#
+constant_val
+
+const_3_to_fp16
+mode
+
+input_39_mode_0
+x
+
+input_35_cast_fp16
+pad
+
+input_39_pad_0/
+input_39_cast_fp16
+
+
+
+€
+]*(
+name 
+
+"
+input_39_cast_fp16k
+const
+input_41_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_41_pad_type_0y
+const$
+input_41_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_41_dilations_0u
+const"
+input_41_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_41_strides_0n
+const
+input_41_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_41_pad_0c
+const
+input_41_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_41_groups_0ª
+const.
+const_16_to_fp16
+
+
+€
+€
+*I
+valB
+
+
+€
+€
+*$
+@model_path/weights/weight.binÀ*&
+name
+
+"
+const_16_to_fp16
+const!
+const_17_to_fp16
+
+
+€*<
+val5
+
+
+€*$
+@model_path/weights/weight.bin€‘*&
+name
+
+"
+const_17_to_fp16ç
+conv
+x
+
+input_39_cast_fp16
+weight
+
+const_16_to_fp16
+bias
+
+const_17_to_fp16
+pad
+
+input_41_pad_0%
+	dilations
+
+input_41_dilations_0
+groups
+
+input_41_groups_0!
+strides
+
+input_41_strides_0#
+pad_type
+
+input_41_pad_type_0/
+input_43_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_43_cast_fp16e
+const
+res_1_pad_type_0
+*
+val
+
+	"
+valid*&
+name
+
+"
+res_1_pad_type_0o
+const
+res_1_strides_0
+
+
+*
+val
+
+
+
+
+*%
+name
+
+"
+res_1_strides_0h
+const
+res_1_pad_0
+
+
+*
+val
+
+
+
+
+  *!
+name
+
+"
+res_1_pad_0s
+const!
+res_1_dilations_0
+
+
+*
+val
+
+
+
+
+*'
+name
+
+"
+res_1_dilations_0]
+const
+res_1_groups_0
+*
+val
+
+
+*$
+name
+
+"
+res_1_groups_0Ğ
+constA
+$tcn_blocks_1_res_conv_weight_to_fp16
+
+
+€
+@
+*H
+valA
+
+
+€
+@
+*$
+@model_path/weights/weight.binÀ“*:
+name2
+*
+("&
+$tcn_blocks_1_res_conv_weight_to_fp16´
+const3
+"tcn_blocks_1_res_conv_bias_to_fp16
+
+
+€*<
+val5
+
+
+€*$
+@model_path/weights/weight.bin€”*8
+name0
+(
+&"$
+"tcn_blocks_1_res_conv_bias_to_fp16ø
+conv
+x
+
+input_27_cast_fp162
+weight(
+&
+$tcn_blocks_1_res_conv_weight_to_fp16.
+bias&
+$
+"tcn_blocks_1_res_conv_bias_to_fp16
+pad
+
+res_1_pad_0"
+	dilations
+
+res_1_dilations_0
+groups
+
+res_1_groups_0
+strides
+
+res_1_strides_0 
+pad_type
+
+res_1_pad_type_0,
+res_1_cast_fp16
+
+
+
+€
+U*%
+name
+
+"
+res_1_cast_fp16—
+add
+x
+
+input_43_cast_fp16
+y
+
+res_1_cast_fp16/
+input_45_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_45_cast_fp16~
+relu
+x
+
+input_45_cast_fp16/
+input_47_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_47_cast_fp16r
+const
+input_49_pad_0
+
+
+*#
+val
+
+
+
+
+
+     *$
+name
+
+"
+input_49_pad_0f
+const
+input_49_mode_0
+*
+val
+
+"
+
+constant*%
+name
+
+"
+input_49_mode_0`
+const
+const_4_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_4_to_fp16Ú
+pad#
+constant_val
+
+const_4_to_fp16
+mode
+
+input_49_mode_0
+x
+
+input_47_cast_fp16
+pad
+
+input_49_pad_0/
+input_49_cast_fp16
+
+
+
+€
+e*(
+name 
+
+"
+input_49_cast_fp16k
+const
+input_51_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_51_pad_type_0y
+const$
+input_51_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_51_dilations_0u
+const"
+input_51_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_51_strides_0n
+const
+input_51_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_51_pad_0c
+const
+input_51_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_51_groups_0ª
+const.
+const_18_to_fp16
+
+
+€
+€
+*I
+valB
+
+
+€
+€
+*$
+@model_path/weights/weight.binÀ–*&
+name
+
+"
+const_18_to_fp16
+const!
+const_19_to_fp16
+
+
+€*<
+val5
+
+
+€*$
+@model_path/weights/weight.bin€—**&
+name
+
+"
+const_19_to_fp16ç
+conv
+x
+
+input_49_cast_fp16
+weight
+
+const_18_to_fp16
+bias
+
+const_19_to_fp16
+pad
+
+input_51_pad_0%
+	dilations
+
+input_51_dilations_0
+groups
+
+input_51_groups_0!
+strides
+
+input_51_strides_0#
+pad_type
+
+input_51_pad_type_0/
+input_53_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_53_cast_fp16~
+relu
+x
+
+input_53_cast_fp16/
+input_55_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_55_cast_fp16r
+const
+input_59_pad_0
+
+
+*#
+val
+
+
+
+
+
+     *$
+name
+
+"
+input_59_pad_0f
+const
+input_59_mode_0
+*
+val
+
+"
+
+constant*%
+name
+
+"
+input_59_mode_0`
+const
+const_5_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_5_to_fp16Ú
+pad#
+constant_val
+
+const_5_to_fp16
+mode
+
+input_59_mode_0
+x
+
+input_55_cast_fp16
+pad
+
+input_59_pad_0/
+input_59_cast_fp16
+
+
+
+€
+e*(
+name 
+
+"
+input_59_cast_fp16k
+const
+input_61_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_61_pad_type_0y
+const$
+input_61_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_61_dilations_0u
+const"
+input_61_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_61_strides_0n
+const
+input_61_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_61_pad_0c
+const
+input_61_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_61_groups_0ª
+const.
+const_20_to_fp16
+
+
+€
+€
+*I
+valB
+
+
+€
+€
+*$
+@model_path/weights/weight.binÀ›**&
+name
+
+"
+const_20_to_fp16
+const!
+const_21_to_fp16
+
+
+€*<
+val5
+
+
+€*$
+@model_path/weights/weight.bin€œR*&
+name
+
+"
+const_21_to_fp16ç
+conv
+x
+
+input_59_cast_fp16
+weight
+
+const_20_to_fp16
+bias
+
+const_21_to_fp16
+pad
+
+input_61_pad_0%
+	dilations
+
+input_61_dilations_0
+groups
+
+input_61_groups_0!
+strides
+
+input_61_strides_0#
+pad_type
+
+input_61_pad_type_0/
+input_63_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_63_cast_fp16a
+const
+res_pad_type_0
+*
+val
+
+	"
+valid*$
+name
+
+"
+res_pad_type_0k
+const
+res_strides_0
+
+
+*
+val
+
+
+
+
+*#
+name
+
+"
+res_strides_0d
+const
+	res_pad_0
+
+
+*
+val
+
+
+
+
+  *
+name
+
+"
+	res_pad_0o
+const
+res_dilations_0
+
+
+*
+val
+
+
+
+
+*%
+name
+
+"
+res_dilations_0Y
+const
+res_groups_0
+*
+val
+
+
+*"
+name
+
+"
+res_groups_0Ò
+constB
+$tcn_blocks_2_res_conv_weight_to_fp16
+
+
+€
+€
+*I
+valB
+
+
+€
+€
+*$
+@model_path/weights/weight.binÀ R*:
+name2
+*
+("&
+$tcn_blocks_2_res_conv_weight_to_fp16´
+const3
+"tcn_blocks_2_res_conv_bias_to_fp16
+
+
+€*<
+val5
+
+
+€*$
+@model_path/weights/weight.bin€¡V*8
+name0
+(
+&"$
+"tcn_blocks_2_res_conv_bias_to_fp16ê
+conv
+x
+
+input_47_cast_fp162
+weight(
+&
+$tcn_blocks_2_res_conv_weight_to_fp16.
+bias&
+$
+"tcn_blocks_2_res_conv_bias_to_fp16
+pad
+
+	res_pad_0 
+	dilations
+
+res_dilations_0
+groups
+
+res_groups_0
+strides
+
+res_strides_0
+pad_type
+
+res_pad_type_0*
+res_cast_fp16
+
+
+
+€
+U*#
+name
+
+"
+res_cast_fp16•
+add
+x
+
+input_63_cast_fp16
+y
+
+res_cast_fp16/
+input_65_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_65_cast_fp16~
+relu
+x
+
+input_65_cast_fp16/
+input_67_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_67_cast_fp16r
+const
+input_69_pad_0
+
+
+*#
+val
+
+
+
+
+
+      *$
+name
+
+"
+input_69_pad_0f
+const
+input_69_mode_0
+*
+val
+
+"
+
+constant*%
+name
+
+"
+input_69_mode_0`
+const
+const_6_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_6_to_fp16Ú
+pad#
+constant_val
+
+const_6_to_fp16
+mode
+
+input_69_mode_0
+x
+
+input_67_cast_fp16
+pad
+
+input_69_pad_0/
+input_69_cast_fp16
+
+
+
+€
+u*(
+name 
+
+"
+input_69_cast_fp16k
+const
+input_71_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_71_pad_type_0y
+const$
+input_71_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_71_dilations_0u
+const"
+input_71_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_71_strides_0n
+const
+input_71_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_71_pad_0c
+const
+input_71_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_71_groups_0ª
+const.
+const_22_to_fp16
+
+
+€
+€
+*I
+valB
+
+
+€
+€
+*$
+@model_path/weights/weight.binÀ¥V*&
+name
+
+"
+const_22_to_fp16
+const!
+const_23_to_fp16
+
+
+€*<
+val5
+
+
+€*$
+@model_path/weights/weight.bin€¦~*&
+name
+
+"
+const_23_to_fp16ç
+conv
+x
+
+input_69_cast_fp16
+weight
+
+const_22_to_fp16
+bias
+
+const_23_to_fp16
+pad
+
+input_71_pad_0%
+	dilations
+
+input_71_dilations_0
+groups
+
+input_71_groups_0!
+strides
+
+input_71_strides_0#
+pad_type
+
+input_71_pad_type_0/
+input_73_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_73_cast_fp16~
+relu
+x
+
+input_73_cast_fp16/
+input_75_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_75_cast_fp16r
+const
+input_79_pad_0
+
+
+*#
+val
+
+
+
+
+
+      *$
+name
+
+"
+input_79_pad_0f
+const
+input_79_mode_0
+*
+val
+
+"
+
+constant*%
+name
+
+"
+input_79_mode_0`
+const
+const_7_to_fp16
+
+*
+val
+
+
+:
+  *%
+name
+
+"
+const_7_to_fp16Ú
+pad#
+constant_val
+
+const_7_to_fp16
+mode
+
+input_79_mode_0
+x
+
+input_75_cast_fp16
+pad
+
+input_79_pad_0/
+input_79_cast_fp16
+
+
+
+€
+u*(
+name 
+
+"
+input_79_cast_fp16k
+const
+input_81_pad_type_0
+*
+val
+
+	"
+valid*)
+name!
+
+"
+input_81_pad_type_0y
+const$
+input_81_dilations_0
+
+
+*
+val
+
+
+
+
+**
+name"
+
+"
+input_81_dilations_0u
+const"
+input_81_strides_0
+
+
+*
+val
+
+
+
+
+*(
+name 
+
+"
+input_81_strides_0n
+const
+input_81_pad_0
+
+
+*
+val
+
+
+
+
+  *$
+name
+
+"
+input_81_pad_0c
+const
+input_81_groups_0
+*
+val
+
+
+*'
+name
+
+"
+input_81_groups_0ª
+const.
+const_24_to_fp16
+
+
+€
+€
+*I
+valB
+
+
+€
+€
+*$
+@model_path/weights/weight.binÀª~*&
+name
+
+"
+const_24_to_fp16‘
+const!
+const_25_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.bin€«¦*&
+name
+
+"
+const_25_to_fp16ç
+conv
+x
+
+input_79_cast_fp16
+weight
+
+const_24_to_fp16
+bias
+
+const_25_to_fp16
+pad
+
+input_81_pad_0%
+	dilations
+
+input_81_dilations_0
+groups
+
+input_81_groups_0!
+strides
+
+input_81_strides_0#
+pad_type
+
+input_81_pad_type_0/
+input_83_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_83_cast_fp16š
+add
+x
+
+input_83_cast_fp16
+y
+
+input_67_cast_fp16/
+input_85_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_85_cast_fp16~
+relu
+x
+
+input_85_cast_fp16/
+input_87_cast_fp16
+
+
+
+€
+U*(
+name 
+
+"
+input_87_cast_fp16‚
+const$
+reduce_mean_0_axes_0
+
+
+*'
+val 
+
+
+
+
+
+ÿÿÿÿÿÿÿÿÿ**
+name"
+
+"
+reduce_mean_0_axes_0s
+const!
+reduce_mean_0_keep_dims_0
+*
+val
+
+
+*/
+name'
+
+"
+reduce_mean_0_keep_dims_0İ
+reduce_mean
+x
+
+input_87_cast_fp16*
+	keep_dims
+
+reduce_mean_0_keep_dims_0 
+axes
+
+reduce_mean_0_axes_04
+reduce_mean_0_cast_fp16
+
+
+
+€
+*-
+name%
+
+"
+reduce_mean_0_cast_fp16h
+const
+concat_0_axis_0
+*
+val
+
+
+
+ÿÿÿÿÿÿÿÿÿ*%
+name
+
+"
+concat_0_axis_0k
+const
+concat_0_interleave_0
+*
+val
+
+
+ *+
+name#
+
+"
+concat_0_interleave_0Ğ
+concat
+axis
+
+concat_0_axis_0'
+
+interleave
+
+concat_0_interleave_0%
+values
+
+reduce_mean_0_cast_fp16/
+concat_0_cast_fp16
+
+
+
+€
+*(
+name 
+
+"
+concat_0_cast_fp16c
+const
+concat_1
+
+
+* 
+val
+
+
+	
+
+€*
+name
+
+"
+
+concat_1’
+reshape
+x
+
+concat_0_cast_fp16
+shape
+
+
+concat_1)
+input_91_cast_fp16
+
+
+
+€*(
+name 
+
+"
+input_91_cast_fp16³
+const2
+fc_layers_2_weight_to_fp16
+
+
+€
+€*D
+val=
+
+
+€
+€*%
+@model_path/weights/weight.binÀ¯¦*0
+name(
+ 
+"
+fc_layers_2_weight_to_fp16¡
+const)
+fc_layers_2_bias_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.bin€°®*.
+name&
+
+"
+fc_layers_2_bias_to_fp16Ê
+linear
+x
+
+input_91_cast_fp16(
+weight
+
+fc_layers_2_weight_to_fp16$
+bias
+
+fc_layers_2_bias_to_fp16)
+linear_0_cast_fp16
+
+
+
+€*(
+name 
+
+"
+linear_0_cast_fp16˜
+const/
+input_95_rank2_expansion_axes_0
+
+
+*'
+val 
+
+
+
+
+
+ÿÿÿÿÿÿÿÿÿ*5
+name-
+%
+#"!
+input_95_rank2_expansion_axes_0Ò
+expand_dims
+x
+
+linear_0_cast_fp16+
+axes#
+!
+input_95_rank2_expansion_axes_0?
+"input_95_rank2_expansion_cast_fp16
+
+
+
+€
+*8
+name0
+(
+&"$
+"input_95_rank2_expansion_cast_fp16±
+const1
+ fc_layers_3_running_mean_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.binÀ´®*6
+name.
+&
+$""
+ fc_layers_3_running_mean_to_fp16¯
+const0
+fc_layers_3_running_var_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.bin€¹®*5
+name-
+%
+#"!
+fc_layers_3_running_var_to_fp16¥
+const+
+fc_layers_3_weight_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.binÀ½®*0
+name(
+ 
+"
+fc_layers_3_weight_to_fp16¡
+const)
+fc_layers_3_bias_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.bin€Â®*.
+name&
+
+"
+fc_layers_3_bias_to_fp16_
+const
+var_252_to_fp16
+
+*
+val
+
+
+:
+¨ *$
+name
+
+"
+op_252_to_fp16ş
+
+batch_norm
+epsilon
+
+var_252_to_fp16+
+x&
+$
+"input_95_rank2_expansion_cast_fp16/
+variance#
+!
+fc_layers_3_running_var_to_fp16'
+gamma
+
+fc_layers_3_weight_to_fp16,
+mean$
+"
+ fc_layers_3_running_mean_to_fp16$
+beta
+
+fc_layers_3_bias_to_fp16=
+ input_95_batch_norm_1d_cast_fp16
+
+
+
+€
+*6
+name.
+&
+$""
+ input_95_batch_norm_1d_cast_fp16x
+const
+input_95_axes_0
+
+
+*'
+val 
+
+
+
+
+
+ÿÿÿÿÿÿÿÿÿ*%
+name
+
+"
+input_95_axes_0¦
+squeeze)
+x$
+"
+ input_95_batch_norm_1d_cast_fp16
+axes
+
+input_95_axes_0)
+input_95_cast_fp16
+
+
+
+€*(
+name 
+
+"
+input_95_cast_fp16x
+relu
+x
+
+input_95_cast_fp16)
+input_97_cast_fp16
+
+
+
+€*(
+name 
+
+"
+input_97_cast_fp16³
+const2
+fc_layers_6_weight_to_fp16
+
+
+€
+€*D
+val=
+
+
+€
+€*%
+@model_path/weights/weight.binÀÆ®*0
+name(
+ 
+"
+fc_layers_6_weight_to_fp16¡
+const)
+fc_layers_6_bias_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.bin€Ç²*.
+name&
+
+"
+fc_layers_6_bias_to_fp16Ê
+linear
+x
+
+input_97_cast_fp16(
+weight
+
+fc_layers_6_weight_to_fp16$
+bias
+
+fc_layers_6_bias_to_fp16)
+linear_1_cast_fp16
+
+
+
+€*(
+name 
+
+"
+linear_1_cast_fp16š
+const0
+ input_103_rank2_expansion_axes_0
+
+
+*'
+val 
+
+
+
+
+
+ÿÿÿÿÿÿÿÿÿ*6
+name.
+&
+$""
+ input_103_rank2_expansion_axes_0Õ
+expand_dims
+x
+
+linear_1_cast_fp16,
+axes$
+"
+ input_103_rank2_expansion_axes_0@
+#input_103_rank2_expansion_cast_fp16
+
+
+
+€
+*9
+name1
+)
+'"%
+#input_103_rank2_expansion_cast_fp16±
+const1
+ fc_layers_7_running_mean_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.binÀÉ²*6
+name.
+&
+$""
+ fc_layers_7_running_mean_to_fp16¯
+const0
+fc_layers_7_running_var_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.bin€Ì²*5
+name-
+%
+#"!
+fc_layers_7_running_var_to_fp16¥
+const+
+fc_layers_7_weight_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.binÀÎ²*0
+name(
+ 
+"
+fc_layers_7_weight_to_fp16¡
+const)
+fc_layers_7_bias_to_fp16
+
+
+€*=
+val6
+
+
+€*%
+@model_path/weights/weight.bin€Ñ²*.
+name&
+
+"
+fc_layers_7_bias_to_fp16
+
+batch_norm
+epsilon
+
+var_252_to_fp16,
+x'
+%
+#input_103_rank2_expansion_cast_fp16/
+variance#
+!
+fc_layers_7_running_var_to_fp16'
+gamma
+
+fc_layers_7_weight_to_fp16,
+mean$
+"
+ fc_layers_7_running_mean_to_fp16$
+beta
+
+fc_layers_7_bias_to_fp16>
+!input_103_batch_norm_1d_cast_fp16
+
+
+
+€
+*7
+name/
+'
+%"#
+!input_103_batch_norm_1d_cast_fp16z
+const 
+input_103_axes_0
+
+
+*'
+val 
+
+
+
+
+
+ÿÿÿÿÿÿÿÿÿ*&
+name
+
+"
+input_103_axes_0ª
+squeeze*
+x%
+#
+!input_103_batch_norm_1d_cast_fp16
+axes
+
+input_103_axes_0*
+input_103_cast_fp16
+
+
+
+€*)
+name!
+
+"
+input_103_cast_fp16{
+relu
+x
+
+input_103_cast_fp16*
+input_105_cast_fp16
+
+
+
+€*)
+name!
+
+"
+input_105_cast_fp16±
+const1
+classifier_weight_to_fp16
+
+
+…
+€*D
+val=
+
+
+…
+€*%
+@model_path/weights/weight.binÀÓ²*/
+name'
+
+"
+classifier_weight_to_fp16Ÿ
+const(
+classifier_bias_to_fp16
+
+
+…*=
+val6
+
+
+…*%
+@model_path/weights/weight.bin€Şº*-
+name%
+
+"
+classifier_bias_to_fp16½
+linear
+x
+
+input_105_cast_fp16'
+weight
+
+classifier_weight_to_fp16#
+bias
+
+classifier_bias_to_fp16
+logits
+
+
+
+…*(
+name 
+
+"
+linear_2_cast_fp16"æ
+	buildInfoØ"
+
+
+Å"Â
+6
+!
+
+"
+coremltools-version
+	
+"
+9.0
+A
+)
+!
+"
+coremltools-component-torch
+
+
+"
+2.15.0
+E
+(
+ 
+"
+coremltools-source-dialect
+
+"
+TorchScript

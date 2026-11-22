@@ -255,6 +255,8 @@ struct ContentView: View {
                     debugRow("DTW", String(format: "%.1f ms", pipeline.debug.dtwMs))
                 }
                 debugRow("Buffer",     "\(pipeline.debug.framesInBuffer)/\(N_FRAMES)")
+                debugRow("Layout",     pipeline.debug.featureLayout)
+                debugRow("Segmento",   pipeline.debug.segmentState)
                 debugRow("Modelo",     pipeline.debug.modelName)
                 debugRow("Clases",     "\(pipeline.debug.nClasses)")
                 debugRow("Confianza",  String(format: "%.1f%%", pipeline.debug.topConfidence * 100))

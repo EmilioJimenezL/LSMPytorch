@@ -1,109 +1,209 @@
 """
 LSM — Conversión PyTorch → Core ML
 ====================================
-Convierte best_model.pt a un .mlpackage listo para iOS/macOS.
-
 Uso:
-    pip install coremltools
     python convert_to_coreml.py --checkpoint ./runs/best_model.pt --output ./lsm_model
+    python convert_to_coreml.py --checkpoint ./runs/best_model.pt --output ./lsm_model \
+        --cache prepared/lab_v2_cap5.npz --parity
 """
+
+from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
+
+import coremltools as ct
 import numpy as np
 import torch
-import coremltools as ct
 
-from dataset import N_FRAMES, FEATURE_DIM
-from models import create_model, TRAIN_MODEL_MAP
+from features import LAYOUT_V1, N_FRAMES, PREPROCESS_VERSION_V2
+from models import TRAIN_MODEL_MAP, create_model
 
 
-def convert(checkpoint_path: str, output_path: str):
-    # ── Cargar checkpoint ─────────────────────────────────────────────────────
-    print(f"\nCargando checkpoint: {checkpoint_path}")
-    ckpt    = torch.load(checkpoint_path, map_location="cpu")
+def _model_from_ckpt(ckpt: dict):
     classes = ckpt["classes"]
     n_classes = len(classes)
-
-    print(f"  Clases     : {n_classes}")
-    print(f"  N frames   : {ckpt.get('n_frames', N_FRAMES)}")
-    print(f"  Feature dim: {ckpt.get('feature_dim', FEATURE_DIM)}")
-    print(f"  Val Acc    : {ckpt.get('best_val_acc', 0):.4f}")
-
-    # ── Reconstruir modelo ────────────────────────────────────────────────────
     model_type = ckpt.get("model_type", "cnn")
-    print(f"  Arquitectura: {model_type}")
+    cfg = ckpt.get("model_config") or {}
+    feature_dim = int(cfg.get("input_dim", ckpt.get("feature_dim", 135)))
+    layout = cfg.get("layout", LAYOUT_V1)
+    pool = cfg.get("pool", "avg")
+    causal = cfg.get("causal", True)
+    registry = TRAIN_MODEL_MAP.get(model_type, model_type)
 
-    registry_name = TRAIN_MODEL_MAP.get(model_type, model_type)
-    model = create_model(registry_name, num_classes=n_classes)
-    if hasattr(model, "receptive_field"):
-        print(f"  Campo recep.: {model.receptive_field()}")
+    kwargs = {"input_dim": feature_dim, "pool": pool}
+    if model_type == "tcn":
+        kwargs["causal"] = causal
 
+    model = create_model(registry, num_classes=n_classes, **kwargs)
     model.load_state_dict(ckpt["model"])
     model.eval()
+    return model, classes, feature_dim, layout, model_type, cfg
 
-    # ── Trazar con TorchScript ────────────────────────────────────────────────
-    dummy_input = torch.randn(1, N_FRAMES, FEATURE_DIM)
-    traced = torch.jit.trace(model, dummy_input)
+
+def _parity_check(pt_model, mlmodel, X_val: np.ndarray, classes: list[str],
+                  max_logit_diff: float = 0.05, min_top1_agree: float = 0.99) -> dict:
+    """Compare PyTorch vs Core ML on validation tensors."""
+    n = min(len(X_val), 256)
+    X = X_val[:n].astype(np.float32)
+    with torch.no_grad():
+        pt_logits = pt_model(torch.from_numpy(X)).numpy()
+
+    cm_logits = []
+    for i in range(n):
+        out = mlmodel.predict({"landmarks": X[i:i+1]})
+        logits = list(out.values())[0]
+        cm_logits.append(np.asarray(logits).reshape(-1))
+    cm_logits = np.stack(cm_logits, axis=0)
+    if cm_logits.ndim == 1:
+        cm_logits = cm_logits.reshape(1, -1)
+
+    # Align shapes
+    if cm_logits.shape[0] != n:
+        cm_logits = cm_logits.reshape(n, -1)
+
+    diff = np.max(np.abs(pt_logits - cm_logits))
+    agree = float((pt_logits.argmax(1) == cm_logits.argmax(1)).mean())
+    report = {
+        "n": n,
+        "max_abs_logit_diff": float(diff),
+        "top1_agreement": agree,
+        "pass": bool(diff <= max_logit_diff and agree >= min_top1_agree),
+    }
+    print(f"  Parity: max|Δlogit|={diff:.6f}  top1_agree={agree:.2%}  "
+          f"{'PASS' if report['pass'] else 'FAIL'}")
+    if not report["pass"]:
+        raise SystemExit(
+            f"Core ML parity gate failed (diff={diff:.6f}, agree={agree:.2%})"
+        )
+    return report
+
+
+def convert(
+    checkpoint_path: str,
+    output_path: str,
+    cache_path: str | None = None,
+    require_parity: bool = False,
+    fixture_out: str | None = None,
+):
+    print(f"\nCargando checkpoint: {checkpoint_path}")
+    ckpt = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    model, classes, feature_dim, layout, model_type, cfg = _model_from_ckpt(ckpt)
+    n_classes = len(classes)
+
+    print(f"  Clases      : {n_classes}")
+    print(f"  Feature dim : {feature_dim}")
+    print(f"  Layout      : {layout}")
+    print(f"  Val Acc     : {ckpt.get('best_val_acc', 0):.4f}")
+    print(f"  Arquitectura: {model_type}  config={cfg}")
+
+    dummy = torch.randn(1, N_FRAMES, feature_dim)
+    traced = torch.jit.trace(model, dummy)
     print("\n  TorchScript trace OK")
 
-    # ── Convertir a Core ML ───────────────────────────────────────────────────
     mlmodel = ct.convert(
         traced,
         inputs=[ct.TensorType(
             name="landmarks",
-            shape=(1, N_FRAMES, FEATURE_DIM),
-            dtype=np.float32
+            shape=(1, N_FRAMES, feature_dim),
+            dtype=np.float32,
         )],
         outputs=[ct.TensorType(name="logits")],
         minimum_deployment_target=ct.target.iOS16,
         compute_units=ct.ComputeUnit.ALL,
     )
 
-    # ── Metadata ──────────────────────────────────────────────────────────────
     mlmodel.short_description = "LSM — Reconocimiento de Lengua de Señas Mexicana"
-    mlmodel.input_description["landmarks"] = \
-        f"Secuencia de {N_FRAMES} frames × {FEATURE_DIM} valores " \
-        f"[left_hand(42), right_hand(42), pose(51)]"
-    mlmodel.output_description["logits"] = \
-        f"Logits sin normalizar para {n_classes} clases"
+    mlmodel.input_description["landmarks"] = (
+        f"Secuencia de {N_FRAMES} frames × {feature_dim} ({layout})"
+    )
+    mlmodel.output_description["logits"] = f"Logits para {n_classes} clases"
 
-    mlmodel.user_defined_metadata["classes"]     = json.dumps(classes, ensure_ascii=False)
-    mlmodel.user_defined_metadata["n_frames"]    = str(N_FRAMES)
-    mlmodel.user_defined_metadata["feature_dim"] = str(FEATURE_DIM)
-    mlmodel.user_defined_metadata["n_classes"]   = str(n_classes)
-    mlmodel.user_defined_metadata["val_acc"]     = str(round(ckpt.get("best_val_acc", 0), 4))
-    mlmodel.user_defined_metadata["model_type"]  = model_type
+    mlmodel.user_defined_metadata["classes"] = json.dumps(classes, ensure_ascii=False)
+    mlmodel.user_defined_metadata["n_frames"] = str(N_FRAMES)
+    mlmodel.user_defined_metadata["feature_dim"] = str(feature_dim)
+    mlmodel.user_defined_metadata["n_classes"] = str(n_classes)
+    mlmodel.user_defined_metadata["val_acc"] = str(round(ckpt.get("best_val_acc", 0), 4))
+    mlmodel.user_defined_metadata["model_type"] = model_type
+    mlmodel.user_defined_metadata["feature_layout"] = layout
+    mlmodel.user_defined_metadata["preprocess_version"] = (
+        PREPROCESS_VERSION_V2 if layout.startswith("v2") else "v1_shoulder"
+    )
+    mlmodel.user_defined_metadata["model_config"] = json.dumps(cfg)
 
-    # ── Guardar ───────────────────────────────────────────────────────────────
-    output_path = output_path if output_path.endswith(".mlpackage") \
-                               else output_path + ".mlpackage"
+    if not output_path.endswith(".mlpackage"):
+        output_path = output_path + ".mlpackage"
     mlmodel.save(output_path)
     print(f"\n✅ Modelo guardado: {output_path}")
 
-    # ── Verificación rápida (macOS only) ────────────────────────────────────────
+    # Random smoke
     print("\nVerificando modelo...")
     try:
         loaded = ct.models.MLModel(output_path)
-        dummy  = {"landmarks": np.random.randn(1, N_FRAMES, FEATURE_DIM).astype(np.float32)}
-        out    = loaded.predict(dummy)
+        dummy_in = {"landmarks": np.random.randn(1, N_FRAMES, feature_dim).astype(np.float32)}
+        out = loaded.predict(dummy_in)
         logits = list(out.values())[0]
-        probs  = np.exp(logits) / np.exp(logits).sum()
-        top5_idx = np.argsort(probs[0])[::-1][:5]
-
-        print("  Top-5 predicciones (input aleatorio):")
-        for i, idx in enumerate(top5_idx):
-            print(f"    {i+1}. {classes[idx]:<40} {probs[0][idx]*100:5.2f}%")
+        probs = np.exp(logits) / np.exp(logits).sum()
+        flat = probs.reshape(-1)
+        top5 = np.argsort(flat)[::-1][:5]
+        print("  Top-5 (input aleatorio):")
+        for i, idx in enumerate(top5):
+            print(f"    {i+1}. {classes[idx]:<40} {flat[idx]*100:5.2f}%")
     except Exception as e:
-        print(f"  Skip predict verification (non-macOS or runtime unavailable): {e}")
+        print(f"  Skip random predict: {e}")
+        loaded = ct.models.MLModel(output_path)
 
-    print(f"\n  Listo para arrastrar al proyecto Xcode → {output_path}")
+    parity = None
+    if require_parity or cache_path:
+        if not cache_path:
+            raise SystemExit("--parity requires --cache with validation tensors")
+        data = np.load(cache_path, allow_pickle=True)
+        X = data["X"].astype(np.float32)
+        idx_val = data["idx_val"].astype(np.int64)
+        X_val = X[idx_val]
+        parity = _parity_check(model, loaded, X_val, classes)
+
+    if fixture_out:
+        # Golden fixture: first val sample
+        data = np.load(cache_path, allow_pickle=True) if cache_path else None
+        if data is not None:
+            idx_val = data["idx_val"].astype(np.int64)
+            i0 = int(idx_val[0])
+            seq = data["X"][i0].astype(np.float32)
+            with torch.no_grad():
+                logits = model(torch.from_numpy(seq[None])).numpy()[0]
+            fixture = {
+                "layout": layout,
+                "feature_layout": layout,
+                "feature_dim": feature_dim,
+                "n_frames": N_FRAMES,
+                "path": str(data["paths"][i0]),
+                "class": str(data["class_names"][i0]),
+                "prepared": seq.tolist(),
+                "prepared_sequence": seq.tolist(),
+                "logits": logits.tolist(),
+                "parity": parity,
+            }
+            Path(fixture_out).write_text(
+                json.dumps(fixture, ensure_ascii=False), encoding="utf-8",
+            )
+            print(f"  Fixture: {fixture_out}")
+
+    print(f"\n  Listo para Xcode → {output_path}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convierte best_model.pt a Core ML")
-    parser.add_argument("--checkpoint", required=True, help="Ruta al best_model.pt")
-    parser.add_argument("--output",     default="./lsm_model",
-                        help="Ruta de salida (sin .mlpackage)")
+    parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--output", default="./lsm_model")
+    parser.add_argument("--cache", default=None, help="Prepared npz for parity/fixture")
+    parser.add_argument("--parity", action="store_true", help="Fail if Core ML ≠ PyTorch")
+    parser.add_argument("--fixture", default=None, help="Write golden fixture JSON")
     args = parser.parse_args()
-    convert(args.checkpoint, args.output)
+    convert(
+        args.checkpoint, args.output,
+        cache_path=args.cache,
+        require_parity=args.parity,
+        fixture_out=args.fixture,
+    )

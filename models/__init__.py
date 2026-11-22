@@ -54,13 +54,16 @@ def create_model(model_name: str, num_classes: int, **kwargs):
     Args:
         model_name: '1d_cnn', 'tcn', or '3d_cnn'
         num_classes: Number of output classes
-        **kwargs: Model-specific arguments (dropout, etc.)
+        **kwargs: Model-specific arguments (dropout, input_dim, causal, pool, ...)
+                  Unknown kwargs are ignored by the individual create_* helpers
+                  that accept **kwargs.
     """
     if model_name not in MODEL_REGISTRY:
         raise ValueError(
             f"Unknown model: '{model_name}'. "
             f"Available: {list(MODEL_REGISTRY.keys())}"
         )
+    # Filter kwargs to what each factory accepts (3dcnn ignores causal/pool/input_dim).
     return MODEL_REGISTRY[model_name](num_classes, **kwargs)
 
 

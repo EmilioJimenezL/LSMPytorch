@@ -214,10 +214,15 @@ struct BatchRunner {
     }
 
     private func frameCount(at url: URL) -> Int {
-        guard let data = try? Data(contentsOf: url),
-              let frames = try? JSONDecoder().decode([FrameLandmarks].self, from: data)
-        else { return 0 }
-        return frames.count
+        guard let data = try? Data(contentsOf: url) else { return 0 }
+        // Schema v2 document first, then legacy bare array.
+        if let doc = try? JSONDecoder().decode(LandmarkDocument.self, from: data) {
+            return doc.frames.count
+        }
+        if let frames = try? JSONDecoder().decode([FrameLandmarks].self, from: data) {
+            return frames.count
+        }
+        return 0
     }
 
     // MARK: - Logging

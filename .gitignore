@@ -74,3 +74,8 @@ lsm_fingerprints/runs_pilot/
 *.md
 !README.md
 !AGENTS.md
+
+# --- Cap5 / local training caches (not app-bundled) ---
+/prepared/
+/runs_*/
+/exports/
