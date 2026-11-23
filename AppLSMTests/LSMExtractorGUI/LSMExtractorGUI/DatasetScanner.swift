@@ -35,13 +35,15 @@ enum DatasetScanner {
             let categoryName = categoryDir.lastPathComponent
             if categoryName.hasPrefix("_") || categoryName.hasPrefix(".") { continue }
 
+            // Resolve symlinks so category → real folder is enumerable.
+            let resolvedCategory = categoryDir.resolvingSymlinksInPath()
             var isDir: ObjCBool = false
-            guard fm.fileExists(atPath: categoryDir.path, isDirectory: &isDir), isDir.boolValue else {
+            guard fm.fileExists(atPath: resolvedCategory.path, isDirectory: &isDir), isDir.boolValue else {
                 continue
             }
 
             guard let wordDirs = try? fm.contentsOfDirectory(
-                at: categoryDir,
+                at: resolvedCategory,
                 includingPropertiesForKeys: [.isDirectoryKey],
                 options: [.skipsHiddenFiles]
             ) else { continue }
@@ -50,15 +52,16 @@ enum DatasetScanner {
                 let wordName = wordDir.lastPathComponent
                 if wordName.hasPrefix("_") || wordName.hasPrefix(".") { continue }
 
+                let resolvedWord = wordDir.resolvingSymlinksInPath()
                 var wordIsDir: ObjCBool = false
-                guard fm.fileExists(atPath: wordDir.path, isDirectory: &wordIsDir), wordIsDir.boolValue else {
+                guard fm.fileExists(atPath: resolvedWord.path, isDirectory: &wordIsDir), wordIsDir.boolValue else {
                     continue
                 }
 
                 let relativePath = "\(categoryName)/\(wordName)"
 
                 guard let files = try? fm.contentsOfDirectory(
-                    at: wordDir,
+                    at: resolvedWord,
                     includingPropertiesForKeys: [.isRegularFileKey],
                     options: [.skipsHiddenFiles]
                 ) else { continue }

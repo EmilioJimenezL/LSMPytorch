@@ -2,19 +2,19 @@
 1D CNN Baseline Model for LSM (Mexican Sign Language) recognition.
 
 Architecture:
-  Input  : (batch, 85, 135)  →  permute  →  (batch, 135, 85)
-  Block 1: Conv1d(135→128, k=3) + BN + ReLU + Dropout + MaxPool
-  Block 2: Conv1d(128→256, k=3) + BN + ReLU + Dropout + MaxPool
-  Block 3: Conv1d(256→512, k=3) + BN + ReLU + Dropout
-  Global Average Pooling
-  FC(512→256) + ReLU + Dropout
-  FC(256→n_classes)
-
-Parameters: ~1.8M  |  Size: ~7-8MB  |  Expected accuracy: 80-85%
+  Input  : (batch, 85, input_dim)  →  permute  →  (batch, input_dim, 85)
+  Block 1: Conv1d → BN → ReLU → Dropout → MaxPool
+  Block 2: Conv1d → BN → ReLU → Dropout → MaxPool
+  Block 3: Conv1d → BN → ReLU → Dropout
+  Pool   : AdaptiveAvgPool1d  OR  attentive temporal pool
+  FC → num_classes
 """
+
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 FEATURE_DIM = 135
 N_FRAMES = 85
@@ -37,17 +37,42 @@ class ConvBlock(nn.Module):
         return self.block(x)
 
 
-class CNN1D(nn.Module):
-    def __init__(self, num_classes: int = 330, dropout: float = 0.3):
+class AttentivePool1d(nn.Module):
+    """Linear score → softmax over time → weighted sum. Core ML-safe."""
+
+    def __init__(self, channels: int):
         super().__init__()
+        self.score = nn.Linear(channels, 1)
+
+    def forward(self, x):
+        # x: (B, C, T)
+        x_t = x.transpose(1, 2)          # (B, T, C)
+        weights = F.softmax(self.score(x_t).squeeze(-1), dim=1)  # (B, T)
+        return (x_t * weights.unsqueeze(-1)).sum(dim=1)          # (B, C)
+
+
+class CNN1D(nn.Module):
+    def __init__(
+        self,
+        num_classes: int = 330,
+        dropout: float = 0.3,
+        input_dim: int = FEATURE_DIM,
+        pool: str = "avg",
+    ):
+        super().__init__()
+        self.input_dim = input_dim
+        self.pool_type = pool
 
         self.features = nn.Sequential(
-            ConvBlock(FEATURE_DIM, 128, kernel=3, pool=True,  dropout=dropout),
-            ConvBlock(128,         256, kernel=3, pool=True,  dropout=dropout),
-            ConvBlock(256,         512, kernel=3, pool=False, dropout=dropout),
+            ConvBlock(input_dim, 128, kernel=3, pool=True,  dropout=dropout),
+            ConvBlock(128,       256, kernel=3, pool=True,  dropout=dropout),
+            ConvBlock(256,       512, kernel=3, pool=False, dropout=dropout),
         )
 
-        self.gap = nn.AdaptiveAvgPool1d(1)
+        if pool == "attn":
+            self.pool = AttentivePool1d(512)
+        else:
+            self.pool = nn.AdaptiveAvgPool1d(1)
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
@@ -58,20 +83,33 @@ class CNN1D(nn.Module):
         )
 
     def forward(self, x):
-        # x: (batch, N_FRAMES, FEATURE_DIM)
-        x = x.permute(0, 2, 1).contiguous()   # → (batch, FEATURE_DIM, N_FRAMES)
+        # x: (batch, N_FRAMES, input_dim)
+        x = x.permute(0, 2, 1).contiguous()
         x = self.features(x)
-        x = self.gap(x)
-        x = self.classifier(x)
-        return x  # logits (batch, num_classes)
+        if self.pool_type == "attn":
+            x = self.pool(x)            # (B, 512)
+            x = x.unsqueeze(-1)         # match Flatten expectation via classifier
+        else:
+            x = self.pool(x)            # (B, 512, 1)
+        return self.classifier(x)
 
     def predict_proba(self, x):
         return torch.softmax(self.forward(x), dim=-1)
 
 
-# Keep LSM_CNN as an alias so existing code using model.py still works
 LSM_CNN = CNN1D
 
 
-def create_cnn1d(num_classes: int, dropout: float = 0.3) -> CNN1D:
-    return CNN1D(num_classes=num_classes, dropout=dropout)
+def create_cnn1d(
+    num_classes: int,
+    dropout: float = 0.3,
+    input_dim: int = FEATURE_DIM,
+    pool: str = "avg",
+    **kwargs,
+) -> CNN1D:
+    return CNN1D(
+        num_classes=num_classes,
+        dropout=dropout,
+        input_dim=input_dim,
+        pool=pool,
+    )

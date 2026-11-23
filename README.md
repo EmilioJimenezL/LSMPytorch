@@ -452,20 +452,43 @@ python train.py --dataset ./dataset --resume ./runs/checkpoint_epoch50.pt
 | `--dropout` | 0.3 | Tasa de dropout |
 | `--val_split` | 0.15 | Fracción de validación |
 | `--augment` | 10 | Versiones augmentadas por video |
-| `--min_videos` | 2 | Mínimo de videos por clase |
-| `--resume` | — | Checkpoint para continuar |
+| `--min_videos` | 2 | Mínimo de secuencias **válidas** por clase |
+| `--max_videos_per_class` | — | Cap aleatorio (seed 42); el resto va a `extra_test` |
+| `--layout` | `v1_135` | `v1_135` o `v2_162` |
+| `--cache` | — | `.npz` de `scripts/prepare_dataset.py` (mismo split para todos los modelos) |
+| `--pool` | `avg` | `avg` o `attn` (pool temporal atento) |
+| `--causal` | 1 | Solo TCN: `1` causal (legacy), `0` padding simétrico |
+| `--warmup` / `--patience` | 10 / 15 | Warmup lineal + early stopping en val top-1 |
+| `--legacy-augment` | off | Augmentación estática CPU 10× (baseline de ablación) |
+| `--resume` | — | Reanuda desde `last.pt` |
 
 Hiperparámetros de referencia adicionales en `configs/` (`cnn1d_config.yaml`, `tcn_config.yaml`, `cnn3d_config.yaml`).
+
+**Layouts:** v1 (135) es el contrato de Fase 1 y modelos antiguos. v2 (162) añade confidence por articulación y 12 joints de pose reales; solo modelos nuevos. El `.mlpackage` lleva `feature_layout` en metadata.
+
+**Ciclo lab cap-5 (v2):**
+
+```bash
+./train_lab_cap5.sh   # prepare → ablación CNN → CNN/TCN full → Core ML parity → copy to app
+```
 
 ### 5. Exportar a Core ML
 
 ```bash
 python convert_to_coreml.py \
   --checkpoint ./runs/best_model.pt \
-  --output ./lsm_model
+  --output ./lsm_model \
+  --cache prepared/lab_v2_cap5.npz --parity \
+  --fixture ./exports/fixture.json
+
+python scripts/export_to_app.py \
+  --mlpackage ./exports/lsm_model.mlpackage \
+  --classes ./runs/classes.json \
+  --run-stem runs_lab_cap5_cnn \
+  --fixture ./exports/fixture.json
 ```
 
-Genera `lsm_model.mlpackage` listo para integrar en un proyecto Xcode.
+Genera `.mlpackage` + fixture de paridad; `export_to_app.py` lo copia a `AppLSMTests/LSMMobileModelTesting`.
 
 ### 6. Smoke tests de modelos
 

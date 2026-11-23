@@ -1,18 +1,11 @@
 """
 Temporal Convolutional Network (TCN) for LSM skeleton-based recognition.
 
-Input:  (batch, 85, 135)
-Output: (batch, num_classes)
-
-Architecture:
-  Input projection: Conv1d 135 → 64
-  4 residual blocks with exponential dilation (1, 2, 4, 8)
-  Causal (left-only) padding: output length == input length at every block
-  Global average pooling → FC(256 → 128 → num_classes)
-
-Receptive field: 1 + Σ (k-1)*2^i for i in [0,3] = 1+4+8+16+32 = 61 frames (72% of 85)
-Parameters: ~1.8M  |  Size: ~7-10MB  |  Expected accuracy: 85-87%
+Supports causal (legacy) and non-causal (symmetric) padding, configurable
+input_dim, and avg / attentive temporal pooling.
 """
+
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
@@ -20,13 +13,22 @@ import torch.nn.functional as F
 
 
 class ResidualBlock(nn.Module):
-    """TCN residual block with causal (left-only) dilated convolutions."""
+    """TCN residual block with dilated convolutions (causal or symmetric)."""
 
-    def __init__(self, in_channels, out_channels, kernel_size=5, dilation=1, dropout=0.3):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=5,
+        dilation=1,
+        dropout=0.3,
+        causal: bool = True,
+    ):
         super().__init__()
+        self.causal = causal
         self.left_pad = (kernel_size - 1) * dilation
+        self.pad_total = (kernel_size - 1) * dilation
 
-        # No padding in Conv1d — we pad manually before each conv for causality
         self.conv1 = nn.Conv1d(in_channels, out_channels, kernel_size, dilation=dilation)
         self.bn1   = nn.BatchNorm1d(out_channels)
         self.drop1 = nn.Dropout(dropout)
@@ -35,35 +37,41 @@ class ResidualBlock(nn.Module):
         self.bn2   = nn.BatchNorm1d(out_channels)
         self.drop2 = nn.Dropout(dropout)
 
-        # 1×1 conv to match channels when they differ
         self.res_conv = nn.Conv1d(in_channels, out_channels, 1) \
             if in_channels != out_channels else None
 
         self.relu = nn.ReLU()
 
+    def _pad(self, x):
+        if self.causal:
+            return F.pad(x, (self.left_pad, 0))
+        # Symmetric: split pad between left and right.
+        left = self.pad_total // 2
+        right = self.pad_total - left
+        return F.pad(x, (left, right))
+
     def forward(self, x):
-        # Left-pad → conv → BN → ReLU → dropout  (length preserved: T → T)
-        out = self.relu(self.bn1(self.conv1(F.pad(x, (self.left_pad, 0)))))
+        out = self.relu(self.bn1(self.conv1(self._pad(x))))
         out = self.drop1(out)
-
-        out = self.bn2(self.conv2(F.pad(out, (self.left_pad, 0))))
+        out = self.bn2(self.conv2(self._pad(out)))
         out = self.drop2(out)
-
         res = x if self.res_conv is None else self.res_conv(x)
         return self.relu(out + res)
 
 
+class AttentivePool1d(nn.Module):
+    def __init__(self, channels: int):
+        super().__init__()
+        self.score = nn.Linear(channels, 1)
+
+    def forward(self, x):
+        # x: (B, C, T)
+        x_t = x.transpose(1, 2)
+        weights = F.softmax(self.score(x_t).squeeze(-1), dim=1)
+        return (x_t * weights.unsqueeze(-1)).sum(dim=1)
+
+
 class TemporalConvNet(nn.Module):
-    """
-    TCN for skeleton action recognition.
-
-    num_channels=[64, 128, 256, 256] with 4 layers produces:
-      Block 0: 64  → 64  , dilation=1
-      Block 1: 64  → 128 , dilation=2
-      Block 2: 128 → 256 , dilation=4
-      Block 3: 256 → 256 , dilation=8
-    """
-
     def __init__(
         self,
         num_classes: int = 330,
@@ -73,14 +81,19 @@ class TemporalConvNet(nn.Module):
         kernel_size: int = 5,
         dropout: float = 0.3,
         num_layers: int = 4,
+        causal: bool = True,
+        pool: str = "avg",
     ):
         super().__init__()
         if num_channels is None:
             num_channels = [64, 128, 256, 256]
 
-        self.num_frames   = num_frames
+        self.num_frames = num_frames
+        self.input_dim = input_dim
         self._kernel_size = kernel_size
-        self._num_layers  = num_layers
+        self._num_layers = num_layers
+        self.causal = causal
+        self.pool_type = pool
 
         self.input_projection = nn.Sequential(
             nn.Conv1d(input_dim, num_channels[0], kernel_size=1),
@@ -99,43 +112,63 @@ class TemporalConvNet(nn.Module):
                     kernel_size=kernel_size,
                     dilation=2 ** i,
                     dropout=dropout,
+                    causal=causal,
                 )
             )
 
         final_ch = num_channels[-1]
-        self.fc_layers = nn.Sequential(
-            nn.AdaptiveAvgPool1d(1),
-            nn.Flatten(),
-            nn.Linear(final_ch, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(256, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Dropout(dropout * 0.5),
-        )
+        if pool == "attn":
+            self.temporal_pool = AttentivePool1d(final_ch)
+            self.fc_layers = nn.Sequential(
+                nn.Linear(final_ch, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Linear(256, 128),
+                nn.BatchNorm1d(128),
+                nn.ReLU(),
+                nn.Dropout(dropout * 0.5),
+            )
+        else:
+            self.temporal_pool = None
+            self.fc_layers = nn.Sequential(
+                nn.AdaptiveAvgPool1d(1),
+                nn.Flatten(),
+                nn.Linear(final_ch, 256),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Linear(256, 128),
+                nn.BatchNorm1d(128),
+                nn.ReLU(),
+                nn.Dropout(dropout * 0.5),
+            )
         self.classifier = nn.Linear(128, num_classes)
         self._init_weights()
 
     def forward(self, x):
-        # x: (batch, 85, 135)
-        x = x.permute(0, 2, 1).contiguous()  # → (batch, 135, 85)
-        x = self.input_projection(x)  # → (batch, 64, 85)
+        x = x.permute(0, 2, 1).contiguous()
+        x = self.input_projection(x)
         for block in self.tcn_blocks:
-            x = block(x)             # length preserved at 85
-        x = self.fc_layers(x)
-        return self.classifier(x)    # → (batch, num_classes)
+            x = block(x)
+        if self.temporal_pool is not None:
+            x = self.temporal_pool(x)
+            x = self.fc_layers(x)
+        else:
+            x = self.fc_layers(x)
+        return self.classifier(x)
 
     def receptive_field(self) -> int:
-        """Total receptive field in frames."""
-        return 1 + sum((self._kernel_size - 1) * (2 ** i)
-                       for i in range(self._num_layers))
+        """Total receptive field in frames (2 convs per residual block)."""
+        return 1 + sum(
+            2 * (self._kernel_size - 1) * (2 ** i)
+            for i in range(self._num_layers)
+        )
 
     def _init_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv1d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.BatchNorm1d):
@@ -143,10 +176,20 @@ class TemporalConvNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-def create_tcn(num_classes: int, dropout: float = 0.3) -> TemporalConvNet:
+def create_tcn(
+    num_classes: int,
+    dropout: float = 0.3,
+    input_dim: int = 135,
+    causal: bool = True,
+    pool: str = "avg",
+    **kwargs,
+) -> TemporalConvNet:
     return TemporalConvNet(
         num_classes=num_classes,
         dropout=dropout,
+        input_dim=input_dim,
         num_channels=[64, 128, 256, 256],
         num_layers=4,
+        causal=causal,
+        pool=pool,
     )

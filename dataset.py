@@ -63,12 +63,14 @@ def frame_to_vector(frame: dict) -> np.ndarray:
 def json_to_sequence(json_path: str) -> np.ndarray:
     """
     Carga un JSON y retorna una secuencia (n_frames_original, 135).
+    Acepta schema v1 (array) y v2 (documento con frames).
     """
-    with open(json_path) as f:
-        data = json.load(f)
+    from features import frame_to_vector_v1, load_landmark_json
 
-    frames = data if isinstance(data, list) else data.get("frames", [])
-    return np.stack([frame_to_vector(f) for f in frames], axis=0)
+    frames, _meta = load_landmark_json(json_path)
+    if not frames:
+        return np.zeros((0, FEATURE_DIM), dtype=np.float32)
+    return np.stack([frame_to_vector_v1(f) for f in frames], axis=0)
 
 
 # ── Interpolación temporal ────────────────────────────────────────────────────
@@ -153,61 +155,41 @@ def augment_sequence(seq: np.ndarray, rng: np.random.Generator) -> np.ndarray:
 
 # ── Carga del dataset completo ────────────────────────────────────────────────
 
-def _load_sequence_from_json(json_path: str, shoulder_norm: bool = True) -> np.ndarray | None:
-    """Load one video as (N_FRAMES, 135). Uses Fase 1 pipeline when shoulder_norm=True."""
-    if shoulder_norm:
-        from lsm_fingerprints.preprocess import prepare_sequence
+def _load_sequence_from_json(
+    json_path: str,
+    shoulder_norm: bool = True,
+    layout: str = "v1_135",
+) -> np.ndarray | None:
+    """Load one video as (N_FRAMES, feature_dim) for the requested layout."""
+    from features import LAYOUT_V1, LAYOUT_V2, prepare_sequence_v1, prepare_sequence_v2
 
-        return prepare_sequence(json_path=str(json_path))
+    if layout == LAYOUT_V2:
+        return prepare_sequence_v2(json_path=str(json_path))
+    # v1 / legacy
+    if shoulder_norm:
+        return prepare_sequence_v1(json_path=str(json_path))
     seq = json_to_sequence(str(json_path))
     if len(seq) < 10:
         return None
     return interpolate_sequence(seq, N_FRAMES)
 
 
-def load_raw_dataset(dataset_dir: str, min_videos: int = 2, shoulder_norm: bool = True):
-    """
-    Carga todos los _landmarks.json SIN augmentation.
-    Soporta dos estructuras:
-        - Plana   : dataset/palabra/video_landmarks.json
-        - Anidada : dataset/categoria/palabra/video_landmarks.json
-
-    Solo incluye clases con al menos min_videos secuencias válidas.
-
-    Args:
-        shoulder_norm: If True (default), use lsm_fingerprints.preprocess.prepare_sequence
-                       (shoulder anchor + valid-frame filter + interpolate). Matches Fase 1/iOS.
-
-    Returns:
-        X       : np.ndarray (N_videos, N_FRAMES, 135)
-        y       : np.ndarray (N_videos,) — índices de clase
-        classes : list[str] — nombres de clase ordenados alfabéticamente
-        meta    : list[dict] — metadata de cada muestra (clase, categoria, archivo)
-    """
-    dataset_dir = Path(dataset_dir)
-
-    # ── Detectar estructura ───────────────────────────────────────────────────
-    # Si las subcarpetas de primer nivel contienen directamente JSON → estructura plana
-    # Si contienen más subcarpetas → estructura anidada categoria/palabra
+def _discover_entries(dataset_dir: Path) -> tuple[list[tuple[str, str, Path]], bool]:
+    """Return ([(categoria, palabra, json_path), ...], has_direct_json)."""
     subdirs = [d for d in dataset_dir.iterdir()
                if d.is_dir() and not d.name.startswith("_") and not d.name.startswith(".")]
 
-    # Comprobar si alguna subdir de primer nivel tiene JSON directo
     has_direct_json = any(
         list(d.glob("*_landmarks.json"))
-        for d in subdirs[:5]  # solo checar las primeras 5
-    )
+        for d in subdirs[:5]
+    ) if subdirs else False
 
-    # Recopilar (categoria, palabra, json_path) para cada archivo
-    entries = []  # (categoria, palabra, json_path)
-
+    entries: list[tuple[str, str, Path]] = []
     if has_direct_json:
-        # Estructura plana: dataset/palabra/
         for word_dir in sorted(subdirs):
             for jf in sorted(word_dir.glob("*_landmarks.json")):
                 entries.append(("", word_dir.name, jf))
     else:
-        # Estructura anidada: dataset/categoria/palabra/
         for cat_dir in sorted(subdirs):
             if not cat_dir.is_dir():
                 continue
@@ -216,57 +198,118 @@ def load_raw_dataset(dataset_dir: str, min_videos: int = 2, shoulder_norm: bool 
                     continue
                 for jf in sorted(word_dir.glob("*_landmarks.json")):
                     entries.append((cat_dir.name, word_dir.name, jf))
+    return entries, has_direct_json
 
-    # ── Agrupar por palabra ───────────────────────────────────────────────────
+
+def _class_key(word: str, category: str, ambiguous_words: set[str]) -> str:
+    """Disambiguate words that appear in more than one category."""
+    if word in ambiguous_words and category:
+        return f"{word} ({category})"
+    return word
+
+
+def load_raw_dataset(
+    dataset_dir: str,
+    min_videos: int = 2,
+    shoulder_norm: bool = True,
+    layout: str = "v1_135",
+    max_videos_per_class: int | None = None,
+):
+    """
+    Carga todos los _landmarks.json SIN augmentation.
+
+    - Class key is the word folder; if the same word appears in two categories,
+      the key becomes ``word (category)``.
+    - ``min_videos`` counts *valid* sequences after preprocessing, not files.
+    - ``max_videos_per_class`` is applied later by split_utils.cap_and_split_indices
+      (all valid sequences are returned; the cap only affects the split).
+
+    Returns:
+        X, y, classes, meta
+    """
     from collections import defaultdict
-    word_entries = defaultdict(list)  # palabra → [(categoria, jf), ...]
+    from features import LAYOUT_V1, LAYOUT_V2, feature_dim_for_layout
+
+    if layout not in (LAYOUT_V1, LAYOUT_V2):
+        raise ValueError(f"Unknown layout: {layout}")
+
+    dataset_dir = Path(dataset_dir)
+    entries, has_direct_json = _discover_entries(dataset_dir)
+
+    # Words that appear in more than one category → disambiguate.
+    word_cats: dict[str, set[str]] = defaultdict(set)
+    for cat, word, _jf in entries:
+        if cat:
+            word_cats[word].add(cat)
+    ambiguous = {w for w, cats in word_cats.items() if len(cats) > 1}
+
+    # Group by disambiguated class key.
+    class_entries: dict[str, list[tuple[str, Path]]] = defaultdict(list)
     for cat, word, jf in entries:
-        word_entries[word].append((cat, jf))
+        key = _class_key(word, cat, ambiguous)
+        class_entries[key].append((cat, jf))
 
-    # Filtrar clases con menos de min_videos
-    valid_words   = sorted(k for k, v in word_entries.items() if len(v) >= min_videos)
-    skipped_words = sorted(k for k, v in word_entries.items() if len(v) < min_videos)
-
-    if skipped_words:
-        print(f"\n  ⚠ Clases excluidas por tener < {min_videos} videos ({len(skipped_words)}):")
-        for w in skipped_words:
-            count = len(word_entries[w])
-            print(f"     - {w} ({count} video{'s' if count != 1 else ''})")
-
-    classes       = valid_words
-    class_to_idx  = {cls: i for i, cls in enumerate(classes)}
-
-    X_list, y_list, meta_list = [], [], []
-    skipped_files = 0
-    total_files   = 0
-
-    for word in classes:
-        for cat, jf in word_entries[word]:
-            total_files += 1
+    # Load all sequences first, then filter by valid-count >= min_videos.
+    prepared: dict[str, list[tuple[np.ndarray, str, str]]] = defaultdict(list)
+    # class → [(seq, categoria, archivo), ...]
+    load_errors = 0
+    for key in sorted(class_entries.keys()):
+        for cat, jf in class_entries[key]:
             try:
-                seq = _load_sequence_from_json(str(jf), shoulder_norm=shoulder_norm)
+                seq = _load_sequence_from_json(
+                    str(jf), shoulder_norm=shoulder_norm, layout=layout,
+                )
                 if seq is None:
-                    skipped_files += 1
                     continue
-                X_list.append(seq)
-                y_list.append(class_to_idx[word])
-                meta_list.append({
-                    "clase":     word,
-                    "categoria": cat,
-                    "archivo":   str(jf),
-                })
+                prepared[key].append((seq, cat, str(jf)))
             except Exception as e:
                 print(f"  ⚠ Error en {jf}: {e}")
-                skipped_files += 1
+                load_errors += 1
 
+    valid_classes = sorted(k for k, v in prepared.items() if len(v) >= min_videos)
+    skipped = sorted(
+        (k, len(class_entries[k]), len(prepared.get(k, [])))
+        for k in class_entries
+        if len(prepared.get(k, [])) < min_videos
+    )
+
+    if skipped:
+        print(f"\n  ⚠ Clases excluidas por tener < {min_videos} secuencias válidas ({len(skipped)}):")
+        for name, n_files, n_valid in skipped[:40]:
+            print(f"     - {name} ({n_valid} válidas / {n_files} archivos)")
+        if len(skipped) > 40:
+            print(f"     ... y {len(skipped) - 40} más")
+
+    classes = valid_classes
+    class_to_idx = {cls: i for i, cls in enumerate(classes)}
+
+    X_list, y_list, meta_list = [], [], []
+    for word in classes:
+        for seq, cat, path in prepared[word]:
+            X_list.append(seq)
+            y_list.append(class_to_idx[word])
+            meta_list.append({
+                "clase": word,
+                "categoria": cat,
+                "archivo": path,
+            })
+
+    dim = feature_dim_for_layout(layout)
     estructura = "plana" if has_direct_json else "anidada (categoria/palabra)"
-    print(f"\n  Dataset cargado ({estructura}):")
+    print(f"\n  Dataset cargado ({estructura}, layout={layout}):")
     print(f"    Clases válidas      : {len(classes)}")
-    print(f"    Clases excluidas    : {len(skipped_words)}")
-    print(f"    Videos procesados   : {total_files - skipped_files}/{total_files}")
+    print(f"    Clases excluidas    : {len(skipped)}")
     print(f"    Videos en memoria   : {len(X_list)}")
-    if skipped_files:
-        print(f"    Archivos saltados   : {skipped_files}")
+    print(f"    Feature dim         : {dim}")
+    if ambiguous:
+        print(f"    Palabras desambiguadas: {sorted(ambiguous)}")
+    if load_errors:
+        print(f"    Errores de carga    : {load_errors}")
+    if max_videos_per_class is not None:
+        print(f"    Cap por clase       : {max_videos_per_class} (aplicado en el split)")
+
+    if not X_list:
+        raise RuntimeError("No valid sequences loaded")
 
     return (
         np.stack(X_list, axis=0),

@@ -97,6 +97,8 @@ enum SignSet: String, CaseIterable, Identifiable {
     case min12
     case min7
     case min5
+    case labMin5
+    case labCap5
     case legacy187
 
     var id: String { rawValue }
@@ -107,6 +109,8 @@ enum SignSet: String, CaseIterable, Identifiable {
         case .min12: return "Al menos 12 videos"
         case .min7: return "Al menos 7 videos"
         case .min5: return "Al menos 5 videos"
+        case .labMin5: return "LSM Videos Lab (≥5)"
+        case .labCap5: return "LSM Videos Lab (5 por palabra)"
         case .legacy187: return "Legacy"
         }
     }
@@ -117,6 +121,8 @@ enum SignSet: String, CaseIterable, Identifiable {
         case .min12: return "28 clases"
         case .min7: return "54 clases, incluye las de 12 o más"
         case .min5: return "286 clases, incluye las de 7 y 12"
+        case .labMin5: return "517 clases, layout v1, ciclo anterior"
+        case .labCap5: return "Cap 5 videos/clase, layout v2"
         case .legacy187: return "187 clases, anterior a LSMOutput"
         }
     }
@@ -133,10 +139,13 @@ struct LSMModel: Identifiable, Equatable {
     let isFingerprint: Bool
     let family: ModelFamily
     let signSet: SignSet
+    /// Override layout if metadata is missing. Default nil → read from Core ML or v1.
+    let preferredLayout: String?
 
     init(name: String, bundleName: String, classesBundleName: String? = nil,
          description: String, isFingerprint: Bool = false,
-         family: ModelFamily, signSet: SignSet) {
+         family: ModelFamily, signSet: SignSet,
+         preferredLayout: String? = nil) {
         self.name = name
         self.bundleName = bundleName
         self.classesBundleName = classesBundleName
@@ -144,6 +153,7 @@ struct LSMModel: Identifiable, Equatable {
         self.isFingerprint = isFingerprint
         self.family = family
         self.signSet = signSet
+        self.preferredLayout = preferredLayout
     }
 
     static func == (lhs: LSMModel, rhs: LSMModel) -> Bool {
@@ -152,6 +162,7 @@ struct LSMModel: Identifiable, Equatable {
             && lhs.isFingerprint == rhs.isFingerprint
             && lhs.family == rhs.family
             && lhs.signSet == rhs.signSet
+            && lhs.preferredLayout == rhs.preferredLayout
     }
 }
 
@@ -262,6 +273,42 @@ let AVAILABLE_MODELS: [LSMModel] = [
         signSet: .min5
     ),
     LSMModel(
+        name:        "CNN — Lab ≥5 (v1)",
+        bundleName:  "runs_lab_min5_cnn_lsmoutput",
+        classesBundleName: "runs_lab_min5_cnn_classes",
+        description: "517 clases, val Top-1 47.89%",
+        family: .cnn,
+        signSet: .labMin5,
+        preferredLayout: LSMConstants.layoutV1
+    ),
+    LSMModel(
+        name:        "TCN — Lab ≥5 (v1)",
+        bundleName:  "runs_lab_min5_tcn_lsmoutput",
+        classesBundleName: "runs_lab_min5_tcn_classes",
+        description: "517 clases, val Top-1 48.57%",
+        family: .tcn,
+        signSet: .labMin5,
+        preferredLayout: LSMConstants.layoutV1
+    ),
+    LSMModel(
+        name:        "CNN — Lab cap5 (v2)",
+        bundleName:  "runs_lab_cap5_cnn_lsmoutput",
+        classesBundleName: "runs_lab_cap5_cnn_classes",
+        description: "518 clases, val 36.68%, extra 26.63%",
+        family: .cnn,
+        signSet: .labCap5,
+        preferredLayout: LSMConstants.layoutV2
+    ),
+    LSMModel(
+        name:        "TCN — Lab cap5 (v2)",
+        bundleName:  "runs_lab_cap5_tcn_lsmoutput",
+        classesBundleName: "runs_lab_cap5_tcn_classes",
+        description: "518 clases, val 33.20%, extra 23.81%",
+        family: .tcn,
+        signSet: .labCap5,
+        preferredLayout: LSMConstants.layoutV2
+    ),
+    LSMModel(
         name:        "Fase 2 — Legacy v1",
         bundleName:  "coreml_models",
         classesBundleName: "classes",
@@ -338,32 +385,41 @@ private func loadClassLabels(for descriptor: LSMModel,
 // ── Landmark extraction ───────────────────────────────────────────────────────
 
 struct FrameData {
-    var vector:   [Float]     // 135 values
+    var vector:   [Float]     // 135 v1
+    var vectorV2: [Float]     // 162 v2
     var skeleton: SkeletonData
 }
 
 func extractFrameData(from pixelBuffer: CVPixelBuffer) -> FrameData {
     var vec      = [Float](repeating: 0, count: FEATURE_DIM)
+    var vecV2    = [Float](repeating: 0, count: LSMConstants.featureDimV2)
     var skeleton = SkeletonData()
 
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
                                         orientation: .up, options: [:])
 
-    // ── Hands ─────────────────────────────────────────────────────────────────
     let handRequest = VNDetectHumanHandPoseRequest()
     handRequest.maximumHandCount = 2
-    try? handler.perform([handRequest])
+    let poseRequest = VNDetectHumanBodyPoseRequest()
+    try? handler.perform([handRequest, poseRequest])
 
     if let observations = handRequest.results {
         for obs in observations {
             let isLeft = obs.chirality == .left
-            let offset = isLeft ? 0 : N_LEFT_HAND
+            let offsetV1 = isLeft ? 0 : N_LEFT_HAND
+            let offsetV2 = isLeft ? 0 : LSMConstants.nLeftHandV2
             var points: [CGPoint] = []
 
             for (i, joint) in HAND_JOINTS.enumerated() {
                 if let p = try? obs.recognizedPoint(joint), p.confidence > 0.1 {
-                    vec[offset + i * 2]     = Float(p.location.x)
-                    vec[offset + i * 2 + 1] = Float(1.0 - p.location.y)
+                    let x = Float(p.location.x)
+                    let y = Float(1.0 - p.location.y)
+                    let c = Float(p.confidence)
+                    vec[offsetV1 + i * 2]     = x
+                    vec[offsetV1 + i * 2 + 1] = y
+                    vecV2[offsetV2 + i * 3]     = x
+                    vecV2[offsetV2 + i * 3 + 1] = y
+                    vecV2[offsetV2 + i * 3 + 2] = c
                     points.append(CGPoint(x: p.location.x, y: p.location.y))
                 } else {
                     points.append(.zero)
@@ -373,10 +429,6 @@ func extractFrameData(from pixelBuffer: CVPixelBuffer) -> FrameData {
             else       { skeleton.rightHand = points }
         }
     }
-
-    // ── Pose ──────────────────────────────────────────────────────────────────
-    let poseRequest = VNDetectHumanBodyPoseRequest()
-    try? handler.perform([poseRequest])
 
     var posePoints = [CGPoint](repeating: .zero, count: 17)
     if let obs = poseRequest.results?.first {
@@ -391,10 +443,18 @@ func extractFrameData(from pixelBuffer: CVPixelBuffer) -> FrameData {
             vec[base + 2] = Float(p.confidence)
             posePoints[idx] = CGPoint(x: p.location.x, y: p.location.y)
         }
+        for joint in LSMConstants.poseV2Joints {
+            guard let p = try? obs.recognizedPoint(joint.joint),
+                  p.confidence > 0.1 else { continue }
+            let base = LSMConstants.poseOffsetV2 + joint.id * 3
+            vecV2[base]     = Float(p.location.x)
+            vecV2[base + 1] = Float(1.0 - p.location.y)
+            vecV2[base + 2] = Float(p.confidence)
+        }
     }
     skeleton.pose = posePoints
 
-    return FrameData(vector: vec, skeleton: skeleton)
+    return FrameData(vector: vec, vectorV2: vecV2, skeleton: skeleton)
 }
 
 // ── Temporal interpolation ────────────────────────────────────────────────────
@@ -450,6 +510,7 @@ private struct LoadedModelState {
     let fingerprintMatcher: FingerprintMatcher?
     let classes: [String]
     let useFingerprint: Bool
+    let featureLayout: String
     let warning: String?
 }
 
@@ -467,6 +528,8 @@ struct DebugInfo {
     var modelName:        String = "-"
     var nClasses:         Int    = 0
     var topConfidence:    Float  = 0
+    var featureLayout:    String = LSMConstants.layoutV1
+    var segmentState:     String = "-"
 }
 
 // ── Main pipeline ─────────────────────────────────────────────────────────────
@@ -493,6 +556,8 @@ class LandmarkPipeline: ObservableObject {
     private var fingerprintMatcher: FingerprintMatcher?
     private var classes: [String] = []
     private var useFingerprint = false
+    private var featureLayout: String = LSMConstants.layoutV1
+    private var liveSegmenter = LiveSegmenter()
     private var loadTask: Task<Void, Never>?
     private var inferenceTask: Task<Void, Never>?
     private var inferenceInFlight = false
@@ -503,9 +568,12 @@ class LandmarkPipeline: ObservableObject {
     private var frameCount = 0
     private var lastFPSTime = Date()
 
+    private var usesV2Layout: Bool { featureLayout == LSMConstants.layoutV2 }
+
     init() {
         #if DEBUG
         Phase1ParityCheck.verify()
+        Phase2ParityCheck.verifyBundledFixtures()
         #endif
     }
 
@@ -594,6 +662,7 @@ class LandmarkPipeline: ObservableObject {
             fingerprintMatcher: matcher,
             classes: matcher.classes,
             useFingerprint: true,
+            featureLayout: LSMConstants.layoutV1,
             warning: nil
         ))
     }
@@ -640,16 +709,40 @@ class LandmarkPipeline: ObservableObject {
             print("⚠ \(warning!)")
         }
 
+        let layout = resolveFeatureLayout(descriptor: descriptor, modelDescription: desc)
         progress(1.0)
-        print("✓ Modelo: \(descriptor.name) — \(loadedClasses.count) clases")
+        print("✓ Modelo: \(descriptor.name) — \(loadedClasses.count) clases — layout \(layout)")
 
         return .success(LoadedModelState(
             model: loadedModel,
             fingerprintMatcher: nil,
             classes: loadedClasses,
             useFingerprint: false,
+            featureLayout: layout,
             warning: warning
         ))
+    }
+
+    private func resolveFeatureLayout(descriptor: LSMModel, modelDescription: MLModelDescription) -> String {
+        if let preferred = descriptor.preferredLayout {
+            return preferred
+        }
+        if let meta = modelDescription.metadata[MLModelMetadataKey.creatorDefinedKey] as? [String: String],
+           let layout = meta["feature_layout"], !layout.isEmpty {
+            return layout
+        }
+        // Also check user-defined metadata dictionary if present
+        let raw = modelDescription.metadata
+        for (key, value) in raw {
+            let keyStr = "\(key)"
+            if keyStr.contains("feature_layout"), let s = value as? String {
+                return s
+            }
+            if let dict = value as? [String: Any], let s = dict["feature_layout"] as? String {
+                return s
+            }
+        }
+        return LSMConstants.layoutV1
     }
 
     private func expectedLogitCount(from desc: MLModelDescription) -> Int? {
@@ -666,10 +759,12 @@ class LandmarkPipeline: ObservableObject {
         fingerprintMatcher = state.fingerprintMatcher
         classes = state.classes
         useFingerprint = state.useFingerprint
+        featureLayout = state.featureLayout
         activeModel = descriptor
         loadError = nil
         debug.modelName = descriptor.name
         debug.nClasses = state.classes.count
+        debug.featureLayout = state.featureLayout
         reset()
     }
 
@@ -690,15 +785,9 @@ class LandmarkPipeline: ObservableObject {
 
         guard isBufferRecording else {
             debug.framesInBuffer = 0
+            debug.segmentState = "-"
             return
         }
-
-        // Buffer
-        frameBuffer.append(frameData.vector)
-        if frameBuffer.count > N_FRAMES * 2 {
-            frameBuffer.removeFirst(frameBuffer.count - N_FRAMES * 2)
-        }
-        debug.framesInBuffer = min(frameBuffer.count, N_FRAMES)
 
         // FPS
         frameCount += 1
@@ -710,15 +799,34 @@ class LandmarkPipeline: ObservableObject {
             lastFPSTime = now
         }
 
-        // Inference
+        if usesV2Layout && !useFingerprint {
+            if let segment = liveSegmenter.push(frameData.vectorV2) {
+                debug.segmentState = "ready"
+                debug.framesInBuffer = segment.count
+                runInference(on: segment)
+            } else {
+                debug.segmentState = liveSegmenter.debugLabel
+                debug.framesInBuffer = 0
+            }
+            return
+        }
+
+        // v1 / Fase 1: sliding window
+        frameBuffer.append(frameData.vector)
+        if frameBuffer.count > N_FRAMES * 2 {
+            frameBuffer.removeFirst(frameBuffer.count - N_FRAMES * 2)
+        }
+        debug.framesInBuffer = min(frameBuffer.count, N_FRAMES)
+        debug.segmentState = "window"
+
         if frameBuffer.count >= N_FRAMES && frameBuffer.count % inferenceStride == 0 {
-            runInference()
+            runInference(on: Array(frameBuffer.suffix(N_FRAMES)))
         }
     }
 
     // MARK: - Inference
 
-    private func runInference() {
+    private func runInference(on rawFrames: [[Float]]) {
         let t0 = Date()
 
         if useFingerprint {
@@ -735,14 +843,21 @@ class LandmarkPipeline: ObservableObject {
             return
         }
 
-        let recent = Array(frameBuffer.suffix(N_FRAMES))
-        guard let sequence = SequencePreprocessor.prepareSequence(from: recent) else {
-            return
+        let featureDim: Int
+        let sequence: [[Float]]
+        if usesV2Layout {
+            featureDim = LSMConstants.featureDimV2
+            guard let prepared = SequencePreprocessorV2.prepareSequence(from: rawFrames) else { return }
+            sequence = prepared
+        } else {
+            featureDim = FEATURE_DIM
+            guard let prepared = SequencePreprocessor.prepareSequence(from: rawFrames) else { return }
+            sequence = prepared
         }
         let flat = sequence.flatMap { $0 }
 
         guard let mlArray = try? MLMultiArray(
-            shape: [1, N_FRAMES as NSNumber, FEATURE_DIM as NSNumber],
+            shape: [1, N_FRAMES as NSNumber, featureDim as NSNumber],
             dataType: .float32) else {
             print("⚠ runInference: fallo al crear MLMultiArray")
             return
@@ -763,13 +878,11 @@ class LandmarkPipeline: ObservableObject {
             return
         }
 
-        // Intentar obtener logits — puede tener nombre distinto
         let featureNames = output.featureNames
         print("🔍 Output features: \(featureNames)")
 
         guard let logitsArray = output.featureValue(for: "logits")?.multiArrayValue else {
             print("⚠ runInference: no se encontró feature 'logits'. Disponibles: \(featureNames)")
-            // Intentar con el primer feature disponible
             if let firstName = featureNames.first,
                let arr = output.featureValue(for: firstName)?.multiArrayValue {
                 print("  Usando '\(firstName)' con \(arr.count) valores")
@@ -865,11 +978,14 @@ class LandmarkPipeline: ObservableObject {
 
     func reset() {
         frameBuffer  = []
+        liveSegmenter.reset()
         predictions  = []
         pendingGrading = nil
         isDetecting  = false
         skeleton     = SkeletonData()
         debug.framesInBuffer = 0
         debug.topConfidence  = 0
+        debug.segmentState = usesV2Layout ? liveSegmenter.debugLabel : (useFingerprint ? "window" : "window")
+        debug.featureLayout = featureLayout
     }
 }

@@ -114,15 +114,20 @@ Flags: `--input`/`-i`, `--output`/`-o`, optional `--manifest`/`-m`, `--overlay` 
 | Grading UI (Otra search, share) | `LSMMobileModelTesting/GradingViews.swift` |
 | Camera + grading shell UI | `LSMMobileModelTesting/ContentView.swift` (`ModelLoadingOverlay`, grading panel) |
 | Camera | `LSMMobileModelTesting/CameraManager.swift` |
-| Fase 1 preprocessing | `LSMMobileModelTesting/SequencePreprocessor.swift` |
+| Fase 1 / v1 preprocessing | `LSMMobileModelTesting/SequencePreprocessor.swift` |
+| v2 preprocessing | `LSMMobileModelTesting/SequencePreprocessorV2.swift` |
+| Live segmenter (v2 only) | `LSMMobileModelTesting/LiveSegmenter.swift` |
 | Fase 1 fingerprint | `LSMMobileModelTesting/FingerprintExtractor.swift` |
 | Fase 1 matching | `LSMMobileModelTesting/FingerprintMatcher.swift` |
-| Shared constants | `LSMMobileModelTesting/LSMConstants.swift` |
-| DEBUG parity check | `LSMMobileModelTesting/Phase1ParityCheck.swift` |
+| Shared constants (v1+v2) | `LSMMobileModelTesting/LSMConstants.swift` |
+| DEBUG Fase 1 parity | `LSMMobileModelTesting/Phase1ParityCheck.swift` |
+| DEBUG Fase 2 parity | `LSMMobileModelTesting/Phase2ParityCheck.swift` (fixtures `*_phase2_fixture.json`) |
+| Sign sets | `SignSet` in `LandmarkPipeline.swift` — includes `labMin5` (v1 517) and `labCap5` (v2) |
 | Bundled models | `LSMMobileModelTesting/LSMMobileModelTesting/` — see [Bundled model artifacts](#bundled-model-artifacts-tracked-in-git) |
 | Live test template | `TrainingPipeline/review/live_test_log_template.csv` |
 | Golden fixture | `LSMMobileModelTesting/golden_sequence.json` |
 | Xcode project | `LSMMobileModelTesting/LSMMobileModelTesting.xcodeproj/` |
+| Extractor sync check | `../scripts/check_extractor_sync.py` (CLI ↔ GUI engine sources) |
 
 ---
 

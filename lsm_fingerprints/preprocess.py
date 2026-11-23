@@ -139,12 +139,20 @@ def filter_valid_frames(seq: np.ndarray) -> np.ndarray:
 
 
 def load_raw_sequence(json_path: str) -> np.ndarray:
-    with open(json_path, encoding="utf-8") as f:
-        data = json.load(f)
-    frames = data if isinstance(data, list) else data.get("frames", [])
-    if not frames:
-        return np.zeros((0, FEATURE_DIM), dtype=np.float32)
-    return np.stack([frame_to_vector(f) for f in frames], axis=0)
+    # Prefer features.frame_to_vector_v1 (null-tolerant, schema v1+v2).
+    try:
+        from features import frame_to_vector_v1, load_landmark_json
+        frames, _meta = load_landmark_json(json_path)
+        if not frames:
+            return np.zeros((0, FEATURE_DIM), dtype=np.float32)
+        return np.stack([frame_to_vector_v1(f) for f in frames], axis=0)
+    except Exception:
+        with open(json_path, encoding="utf-8") as f:
+            data = json.load(f)
+        frames = data if isinstance(data, list) else data.get("frames", [])
+        if not frames:
+            return np.zeros((0, FEATURE_DIM), dtype=np.float32)
+        return np.stack([frame_to_vector(f) for f in frames], axis=0)
 
 
 def prepare_sequence(

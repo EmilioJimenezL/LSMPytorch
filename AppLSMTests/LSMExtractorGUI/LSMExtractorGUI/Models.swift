@@ -1,13 +1,30 @@
 import Foundation
 
-// ── Vector structure per frame ────────────────────────────────────────────────
-// [0:42]   left hand  — 21 points × (x, y)
-// [42:84]  right hand — 21 points × (x, y)
-// [84:135] pose       — 17 points × (x, y, visibility)
-// Total: 135 values per frame — compatible with Vision Framework
+// ── Vector structure (schema v2) ──────────────────────────────────────────────
+// Hands: 21 joints × (x, y, confidence); missing joints are null in JSON.
+// Pose:  12 Vision joints × (x, y, visibility, name) — no duplicated face slots.
+// Python converts this JSON into either v1 (135-d) or v2 (162-d) tensors.
 
+let LANDMARK_SCHEMA_VERSION = 2
+
+/// Distinct Vision body joints (no MediaPipe-style duplicates).
+let POSE_V2_JOINTS: [(id: Int, name: String)] = [
+    (0,  "nose"),
+    (1,  "left_eye"),
+    (2,  "right_eye"),
+    (3,  "left_ear"),
+    (4,  "right_ear"),
+    (5,  "neck"),
+    (6,  "left_shoulder"),
+    (7,  "right_shoulder"),
+    (8,  "left_elbow"),
+    (9,  "right_elbow"),
+    (10, "left_wrist"),
+    (11, "right_wrist"),
+]
+
+// Legacy aliases kept for overlay drawing connection indices.
 let POSE_INDICES = Array(0...16)
-
 let POSE_LABELS = [
     "nose", "left_eye_inner", "left_eye", "left_eye_outer",
     "right_eye_inner", "right_eye", "right_eye_outer",
@@ -144,11 +161,28 @@ struct DatasetManifest: Codable {
     }
 }
 
-// ── Landmark JSON models ──────────────────────────────────────────────────────
+// ── Landmark JSON models (schema v2) ──────────────────────────────────────────
 
+/// Hand / overlay point. Confidence is optional so overlay drawing can ignore it.
 struct Point2D: Codable {
     let x: Float
     let y: Float
+    let c: Float?
+
+    init(x: Float, y: Float, c: Float? = nil) {
+        self.x = x
+        self.y = y
+        self.c = c
+    }
+
+    enum CodingKeys: String, CodingKey { case x, y, c }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+        if let c { try container.encode(c, forKey: .c) }
+    }
 }
 
 struct PosePoint2D: Codable {
@@ -156,21 +190,59 @@ struct PosePoint2D: Codable {
     let x: Float
     let y: Float
     let visibility: Float
+    let name: String?
+
+    init(id: Int, x: Float, y: Float, visibility: Float, name: String? = nil) {
+        self.id = id
+        self.x = x
+        self.y = y
+        self.visibility = visibility
+        self.name = name
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, x, y, visibility, name
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+        try container.encode(visibility, forKey: .visibility)
+        if let name { try container.encode(name, forKey: .name) }
+    }
 }
 
+/// One frame in schema v2. Hand arrays may contain nulls for missing joints.
 struct FrameLandmarks: Codable {
     let frame: Int
     let timestampMs: Double
-    let leftHand: [Point2D]?
-    let rightHand: [Point2D]?
-    let pose: [PosePoint2D]?
+    let leftHand: [Point2D?]
+    let rightHand: [Point2D?]
+    let pose: [PosePoint2D]
 
     enum CodingKeys: String, CodingKey {
         case frame
         case timestampMs = "timestamp_ms"
-        case leftHand    = "leftHand"
-        case rightHand   = "rightHand"
+        case leftHand
+        case rightHand
         case pose
+    }
+}
+
+/// Top-level landmark file (schema v2).
+struct LandmarkDocument: Codable {
+    let schemaVersion: Int
+    let fps: Float
+    let width: Float
+    let height: Float
+    let orientation: String
+    let frames: [FrameLandmarks]
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion = "schema_version"
+        case fps, width, height, orientation, frames
     }
 }
 

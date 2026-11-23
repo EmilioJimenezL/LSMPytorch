@@ -337,7 +337,7 @@ Requisitos previos en TrainingPipeline (referencia de baseline):
 |---|---|---|
 | Bin en bundle | Local | `fingerprints.bin` se genera en el setup; no se sube a git |
 | CNN/TCN/3DCNN mlpackages + `*_classes.json` | Hecho | Copiados desde TrainingPipeline; versionados en git |
-| `AVAILABLE_MODELS` (14 backends) | Hecho | 5 de baseline + 9 por umbral de videos (`bundleName` + `classesBundleName`) |
+| `AVAILABLE_MODELS` | Hecho | Baseline + tiers + labMin5 (v1) + labCap5 (v2); layout vía `feature_layout` / `preferredLayout` |
 | Etiquetas de clase en vivo | Hecho | Mapeo explícito; sin `clase_N` si **Clases** = 307 en panel debug |
 | Calificación en vivo + CSV | Hecho | Top-5 + Otra; export ↑; `GradingLog.swift` requiere `import Combine` |
 | Overlay carga de modelo | Hecho | Progreso, éxito/error, revierte al modelo previo si falla |
@@ -432,17 +432,21 @@ Ver [AGENTS.md — Class labels (iOS)](./AGENTS.md#class-labels-ios) para la con
 
 | Archivo | Responsabilidad |
 |---|---|
-| `LandmarkPipeline.swift` | Vision, buffer, inferencia, `AVAILABLE_MODELS`, `ModelLoadPhase`, `pendingGrading` |
-| `GradingLog.swift` | `GradingSessionStore`, CSV append, `session_id` (`import Combine` requerido) |
+| `LandmarkPipeline.swift` | Vision (v1+v2), buffer / LiveSegmenter, inferencia, `AVAILABLE_MODELS`, SignSets |
+| `SequencePreprocessor.swift` | Preprocess v1 (Fase 1 + modelos legacy) |
+| `SequencePreprocessorV2.swift` | Preprocess v2 (layout 162, scale por hombro) |
+| `LiveSegmenter.swift` | Segmentación rest-to-rest para modelos v2 |
+| `Phase1ParityCheck.swift` / `Phase2ParityCheck.swift` | Paridad DEBUG (golden + fixtures Core ML) |
+| `LSMConstants.swift` | Constantes v1 (135) y v2 (162) |
+| `GradingLog.swift` | `GradingSessionStore`, CSV append, `session_id` |
 | `GradingViews.swift` | Búsqueda **Otra**, botones de opción, share sheet |
-| `SequencePreprocessor.swift` | Normalización hombro + filtro valid (Fase 1 y Fase 2) |
 | `FingerprintExtractor.swift` | Huella 810-dim (Fase 1) |
 | `FingerprintMatcher.swift` | Carga `fingerprints.bin`, cosine + DTW + voting |
 | `CameraManager.swift` | Sesión AVCapture, permisos, cambio de cámara |
-| `ContentView.swift` | UI: cámara, esqueleto, calificación, overlay de carga, export/delete |
+| `ContentView.swift` | UI: cámara, esqueleto, calificación, overlay de carga |
+| `runs_lab_cap5_*` | Modelos v2 lab (518 clases, SignSet `labCap5`) |
+| `runs_lab_min5_*` | Modelos v1 lab (517 clases, SignSet `labMin5`) |
 | `fingerprints.bin` | Base Fase 1 (307 clases embebidas) |
-| `runs_lsmoutput_*_classes.json` | Etiquetas fallback Fase 2 LSMOutput (307 c/u) |
-| `classes.json` | Etiquetas legacy Fase 2 (187) |
 | `runs_lsmoutput_*_lsmoutput.mlpackage/` | Modelos Core ML LSMOutput (CNN, TCN, 3D CNN) |
 | `coreml_models.mlpackage` | Modelo Core ML legacy |
 
