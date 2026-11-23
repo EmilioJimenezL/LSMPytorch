@@ -1,0 +1,5 @@
+# Conversion stack (also installed via TrainingPipeline/requirements.txt)
+torch>=2.1.0
+numpy>=1.24.0
+coremltools>=7.0
+rich>=13.0.0

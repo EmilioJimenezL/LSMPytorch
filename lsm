@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# lsm - launcher for the LSMPytorch orchestrator CLI (macOS / Linux / Git-Bash).
+# Prefers the repo's .venv Python, falls back to python3. Run `./lsm --help`.
+set -euo pipefail
+
+# Resolve symlinks so `ln -s /path/to/LSMPytorch/lsm ~/bin/lsm` works too.
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  case "$SOURCE" in /*) ;; *) SOURCE="$DIR/$SOURCE" ;; esac
+done
+ROOT="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+if [ ! -d "$ROOT/Orchestrator/lsm_cli" ]; then
+  echo "lsm: cannot find Orchestrator/lsm_cli next to $SOURCE (repo root: $ROOT)" >&2
+  exit 1
+fi
+
+if [ -x "$ROOT/.venv/bin/python" ]; then
+  PY="$ROOT/.venv/bin/python"
+elif [ -x "$ROOT/.venv/Scripts/python.exe" ]; then
+  PY="$ROOT/.venv/Scripts/python.exe"
+elif command -v python3 >/dev/null 2>&1; then
+  PY="$(command -v python3)"
+elif command -v python >/dev/null 2>&1; then
+  PY="$(command -v python)"
+else
+  echo "lsm: no Python found. Install Python 3.10+ and re-run (then: ./lsm setup)." >&2
+  exit 1
+fi
+
+export PYTHONPATH="$ROOT/Orchestrator${PYTHONPATH:+:$PYTHONPATH}"
+exec "$PY" -m lsm_cli "$@"
