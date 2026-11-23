@@ -1,0 +1,166 @@
+{
+  "n_total": 19,
+  "n_train": 12,
+  "n_val": 3,
+  "n_extra_test": 4,
+  "n_classes": 3,
+  "classes": [
+    "A",
+    "Abuela",
+    "Amarillo"
+  ],
+  "entries": [
+    {
+      "index": 0,
+      "split": "extra_test",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Abecedario/A/A_10_landmarks.json"
+    },
+    {
+      "index": 1,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Abecedario/A/A_11_landmarks.json"
+    },
+    {
+      "index": 2,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Abecedario/A/A_12_landmarks.json"
+    },
+    {
+      "index": 3,
+      "split": "val",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Abecedario/A/A_1_landmarks.json"
+    },
+    {
+      "index": 4,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Abecedario/A/A_2_landmarks.json"
+    },
+    {
+      "index": 5,
+      "split": "train",
+      "class": "A",
+      "class_idx": 0,
+      "category": "Abecedario",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Abecedario/A/A_3_landmarks.json"
+    },
+    {
+      "index": 6,
+      "split": "train",
+      "class": "Abuela",
+      "class_idx": 1,
+      "category": "Familia",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Familia/Abuela/Abuela_1_landmarks.json"
+    },
+    {
+      "index": 7,
+      "split": "train",
+      "class": "Abuela",
+      "class_idx": 1,
+      "category": "Familia",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Familia/Abuela/Abuela_2_landmarks.json"
+    },
+    {
+      "index": 8,
+      "split": "val",
+      "class": "Abuela",
+      "class_idx": 1,
+      "category": "Familia",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Familia/Abuela/Abuela_3_landmarks.json"
+    },
+    {
+      "index": 9,
+      "split": "train",
+      "class": "Abuela",
+      "class_idx": 1,
+      "category": "Familia",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Familia/Abuela/Abuela_4_landmarks.json"
+    },
+    {
+      "index": 10,
+      "split": "train",
+      "class": "Abuela",
+      "class_idx": 1,
+      "category": "Familia",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Familia/Abuela/Abuela_5_landmarks.json"
+    },
+    {
+      "index": 11,
+      "split": "extra_test",
+      "class": "Abuela",
+      "class_idx": 1,
+      "category": "Familia",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Familia/Abuela/Abuela_6_landmarks.json"
+    },
+    {
+      "index": 12,
+      "split": "extra_test",
+      "class": "Amarillo",
+      "class_idx": 2,
+      "category": "Colores",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Colores/Amarillo/Amarillo_10_landmarks.json"
+    },
+    {
+      "index": 13,
+      "split": "extra_test",
+      "class": "Amarillo",
+      "class_idx": 2,
+      "category": "Colores",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Colores/Amarillo/Amarillo_11_landmarks.json"
+    },
+    {
+      "index": 14,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 2,
+      "category": "Colores",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Colores/Amarillo/Amarillo_1_landmarks.json"
+    },
+    {
+      "index": 15,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 2,
+      "category": "Colores",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Colores/Amarillo/Amarillo_2_landmarks.json"
+    },
+    {
+      "index": 16,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 2,
+      "category": "Colores",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Colores/Amarillo/Amarillo_3_landmarks.json"
+    },
+    {
+      "index": 17,
+      "split": "train",
+      "class": "Amarillo",
+      "class_idx": 2,
+      "category": "Colores",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Colores/Amarillo/Amarillo_4_landmarks.json"
+    },
+    {
+      "index": 18,
+      "split": "val",
+      "class": "Amarillo",
+      "class_idx": 2,
+      "category": "Colores",
+      "path": "/Users/emilio/Desktop/Universidad/LSMPytorch/AppLSMTests/LSMExtractorCLI/build/sample_v2_out/Colores/Amarillo/Amarillo_5_landmarks.json"
+    }
+  ]
+}

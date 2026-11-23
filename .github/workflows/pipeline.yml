@@ -1,0 +1,76 @@
+name: pipeline
+
+on:
+  push:
+    branches: [main, refactor/**, feature/**]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup (CPU)
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            powershell -File ./lsm.ps1 setup --cpu -y
+          else
+            chmod +x ./lsm
+            ./lsm setup --cpu -y
+          fi
+
+      - name: Doctor
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            powershell -File ./lsm.ps1 doctor
+          else
+            ./lsm doctor
+          fi
+
+      - name: Pytest
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            powershell -File ./lsm.ps1 test --quick
+          else
+            ./lsm test --quick
+          fi
+
+      - name: Prepare + train (tiny fixture)
+        run: |
+          LSM=./lsm
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            LSM="powershell -File ./lsm.ps1"
+          fi
+          $LSM prepare \
+            --landmarks TrainingPipeline/tests/fixtures/tiny_landmarks \
+            --layout v2_162 --min-videos 5 --cap 5 --name ci_tiny -y
+          $LSM train \
+            --model cnn \
+            --cache Workspace/prepared/ci_tiny.npz \
+            --name ci_tiny_cnn \
+            --epochs 2 --batch 4 --pool attn --warmup 0 --patience 0 -y
+
+      - name: Convert (macOS + Linux)
+        if: runner.os != 'Windows'
+        run: |
+          ./lsm convert --run ci_tiny_cnn --cache Workspace/prepared/ci_tiny.npz -y
+          # On Linux, parity is skipped automatically; on macOS it should run.
+
+      - name: Convert note (Windows → WSL)
+        if: runner.os == 'Windows'
+        run: |
+          echo "Native Windows skips Core ML conversion (use WSL2). See README."

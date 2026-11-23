@@ -1,0 +1,27 @@
+{
+  "model": "tcn",
+  "layout": "v2_162",
+  "model_config": {
+    "input_dim": 162,
+    "layout": "v2_162",
+    "causal": false,
+    "pool": "attn",
+    "dropout": 0.3
+  },
+  "n_classes": 518,
+  "best_val_acc": 0.33204633204633205,
+  "stopped_early": true,
+  "epochs_run": 114,
+  "val": {
+    "top1": 0.33204633204633205,
+    "top5": 0.5308880308880309,
+    "n": 518
+  },
+  "extra_test": {
+    "n": 1029,
+    "top1": 0.23809523809523808,
+    "top5": 0.4645286686103013,
+    "top1_correct": 245,
+    "top5_correct": 478
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "model": "cnn",
+  "layout": "v2_162",
+  "model_config": {
+    "input_dim": 162,
+    "layout": "v2_162",
+    "causal": true,
+    "pool": "attn",
+    "dropout": 0.3
+  },
+  "n_classes": 518,
+  "best_val_acc": 0.3667953667953668,
+  "stopped_early": true,
+  "epochs_run": 87,
+  "val": {
+    "top1": 0.3667953667953668,
+    "top5": 0.5772200772200772,
+    "n": 518
+  },
+  "extra_test": {
+    "n": 1029,
+    "top1": 0.2662779397473275,
+    "top5": 0.5296404275996113,
+    "top1_correct": 274,
+    "top5_correct": 545
+  }
+}

@@ -1,4 +1,4 @@
-# --- Archivos de Python ---
+# --- Python ---
 __pycache__/
 *.py[cod]
 *.pyo
@@ -9,7 +9,7 @@ __pycache__/
 *.manifest
 *.spec
 
-# --- Entornos virtuales ---
+# --- Virtualenvs ---
 .env
 .venv
 env/
@@ -18,12 +18,12 @@ ENV/
 env.bak/
 venv.bak/
 
-# --- Logs y salidas ---
+# --- Logs ---
 *.log
 *.out
 *.err
 
-# --- Directorios de compilación ---
+# --- Build artifacts ---
 build/
 dist/
 develop-eggs/
@@ -34,48 +34,63 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 
-# --- Configuración de PyCharm ---
+# --- IDE ---
 .idea/
 *.iml
 
-# --- Cachés de PyTorch y datasets ---
-*.pt
+# --- Checkpoints (keep best_model.pt under Models/; ignore intermediates in Runs/) ---
 *.pth
 *.ckpt
-checkpoints/
-# directorio típico de TensorBoard, y restos de pruebas locales
-runs/
-runs_3dcnn_test/
-runs_3dcnn_test2/
-runs_lsmoutput_*/
-exports/
-reports/
-data/
-datasets/
-outputs/
-dataset/
+Runs/**/last.pt
+Runs/**/checkpoint_epoch*.pt
+Legacy/Runs/**/last.pt
+Legacy/Runs/**/checkpoint_epoch*.pt
+# Ignore loose .pt at repo root / run folders unless under Models/
+*.pt
+!Models/Pytorch/*.pt
+!Legacy/Models/Pytorch/*.pt
+!Legacy/Models/**/*.pt
 
-# --- Regenerated locally (see README, Puesta en marcha) ---
+# --- Local workspace (caches, scratch, logs) ---
+Workspace/prepared/
+Workspace/exports/
+Workspace/logs/
+Workspace/scratch/
+/prepared/
+/exports/
+/reports/
+
+# --- Legacy local training dirs (pre-reorg names; avoid /runs/ — case-insensitive FS clashes with Runs/) ---
+/runs_*/
+/data/
+/datasets/
+/outputs/
+/dataset/
+# Explicitly keep the PascalCase Runs/ tree trackable
+!/Runs/
+!/Runs/**/
+
+# --- Regenerated locally ---
 fingerprints.bin
-lsm_fingerprints/runs_pilot/
+Legacy/Fase1Fingerprints/runs_pilot/
 
 # --- Xcode user state ---
 **/xcuserdata/
 *.xcuserstate
 
-# --- Archivos temporales ---
+# --- Temp ---
 *.tmp
 *.temp
 *.swp
 *.swo
 *~
+.DS_Store
 
-# --- Archivos de documentación del agente (no README o AGENTS.md) ---
+# --- Docs: ignore ad-hoc markdown, keep README/AGENTS/skills ---
 *.md
 !README.md
 !AGENTS.md
-
-# --- Cap5 / local training caches (not app-bundled) ---
-/prepared/
-/runs_*/
-/exports/
+!**/README.md
+!**/AGENTS.md
+!.cursor/skills/**/*.md
+!**/SKILL.md

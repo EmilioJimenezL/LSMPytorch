@@ -1,0 +1,27 @@
+{
+  "model": "tcn",
+  "layout": "v2_162",
+  "model_config": {
+    "input_dim": 162,
+    "layout": "v2_162",
+    "causal": false,
+    "pool": "attn",
+    "dropout": 0.3
+  },
+  "n_classes": 3,
+  "best_val_acc": 0.3333333333333333,
+  "stopped_early": false,
+  "epochs_run": 2,
+  "val": {
+    "top1": 0.3333333333333333,
+    "top5": 1.0,
+    "n": 3
+  },
+  "extra_test": {
+    "n": 4,
+    "top1": 0.25,
+    "top5": 1.0,
+    "top1_correct": 1,
+    "top5_correct": 4
+  }
+}
