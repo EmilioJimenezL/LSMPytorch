@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 import pytest
 import torch
@@ -9,6 +11,12 @@ import torch
 from features import FEATURE_DIM_V1, FEATURE_DIM_V2, N_FRAMES
 from models import create_model
 from models.tcn import TemporalConvNet
+
+# coremltools can convert on Linux, but predict (and Windows BlobWriter) need macOS.
+requires_macos_coreml = pytest.mark.skipif(
+    sys.platform != "darwin",
+    reason="Core ML predict / BlobWriter only work on macOS",
+)
 
 
 @pytest.mark.parametrize("layout_dim,pool", [
@@ -69,6 +77,7 @@ def test_old_checkpoint_load_compat(tmp_path):
     assert m2(x).shape == (2, 4)
 
 
+@requires_macos_coreml
 def test_coreml_roundtrip_tiny():
     coremltools = pytest.importorskip("coremltools")
     m = create_model("1d_cnn", num_classes=3, input_dim=FEATURE_DIM_V2, pool="attn")

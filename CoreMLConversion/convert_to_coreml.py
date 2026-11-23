@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import _paths  # noqa: F401  — puts TrainingPipeline on sys.path
@@ -141,22 +142,25 @@ def convert(
     mlmodel.save(output_path)
     print(f"\n✅ Modelo guardado: {output_path}")
 
-    # Random smoke
+    # Random smoke (predict needs the macOS Core ML runtime)
     print("\nVerificando modelo...")
-    try:
-        loaded = ct.models.MLModel(output_path)
-        dummy_in = {"landmarks": np.random.randn(1, N_FRAMES, feature_dim).astype(np.float32)}
-        out = loaded.predict(dummy_in)
-        logits = list(out.values())[0]
-        probs = np.exp(logits) / np.exp(logits).sum()
-        flat = probs.reshape(-1)
-        top5 = np.argsort(flat)[::-1][:5]
-        print("  Top-5 (input aleatorio):")
-        for i, idx in enumerate(top5):
-            print(f"    {i+1}. {classes[idx]:<40} {flat[idx]*100:5.2f}%")
-    except Exception as e:
-        print(f"  Skip random predict: {e}")
-        loaded = ct.models.MLModel(output_path)
+    loaded = ct.models.MLModel(output_path)
+    if sys.platform != "darwin":
+        print("  Skip random predict: Core ML predict only works on macOS")
+    else:
+        try:
+            dummy_in = {"landmarks": np.random.randn(1, N_FRAMES, feature_dim).astype(np.float32)}
+            out = loaded.predict(dummy_in)
+            logits = list(out.values())[0]
+            probs = np.exp(logits) / np.exp(logits).sum()
+            flat = probs.reshape(-1)
+            top5 = np.argsort(flat)[::-1][:5]
+            print("  Top-5 (input aleatorio):")
+            for i, idx in enumerate(top5):
+                print(f"    {i+1}. {classes[idx]:<40} {flat[idx]*100:5.2f}%")
+        except Exception as e:
+            print(f"  Skip random predict: {e}")
+            loaded = ct.models.MLModel(output_path)
 
     parity = None
     if not skip_parity and (require_parity or cache_path):

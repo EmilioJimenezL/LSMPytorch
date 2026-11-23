@@ -41,6 +41,7 @@ jobs:
             ./lsm doctor
           fi
 
+      # test_coreml_roundtrip_tiny is skipped off macOS (predict / BlobWriter need Darwin).
       - name: Pytest
         run: |
           if [[ "${{ runner.os }}" == "Windows" ]]; then
@@ -64,11 +65,11 @@ jobs:
             --name ci_tiny_cnn \
             --epochs 2 --batch 4 --pool attn --warmup 0 --patience 0 -y
 
+      # convert works on Linux (parity auto-skipped); native Windows needs WSL2.
       - name: Convert (macOS + Linux)
         if: runner.os != 'Windows'
         run: |
           ./lsm convert --run ci_tiny_cnn --cache Workspace/prepared/ci_tiny.npz -y
-          # On Linux, parity is skipped automatically; on macOS it should run.
 
       - name: Convert note (Windows → WSL)
         if: runner.os == 'Windows'
